@@ -1,0 +1,26 @@
+{
+  "project": {
+    "name": "Mai Batata Hun",
+    "code": "MBH",
+    "type": "hackathon-prototype",
+    "description": "Smart Guided Troubleshooting Engine for Samsung Galaxy devices"
+  },
+  "workflow": {
+    "mode": "speed",
+    "granularity": "component",
+    "parallelization": true,
+    "research_before_questions": false,
+    "plan_review_convergence": false,
+    "auto_commit": true
+  },
+  "models": {
+    "researcher": "default",
+    "synthesizer": "default",
+    "roadmapper": "default"
+  },
+  "constraints": {
+    "deadline": "2026-09-25T23:59:00+05:30",
+    "team_size": 4,
+    "budget": "free-tier-only"
+  }
+}
