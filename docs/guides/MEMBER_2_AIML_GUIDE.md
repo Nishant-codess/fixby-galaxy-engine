@@ -15,35 +15,89 @@ You are the AI/ML Engineer. You own the **intelligence and semantic retrieval** 
 
 ---
 
-## 📋 Step 0 to Step 100 Execution Roadmap
+## 📋 Phase 0: Ground-Zero GitHub & Machine Setup
 
-### Step 0: Git Checkout & Isolation Setup
+### Step 0.0: Accept GitHub Collaborator Invitation
+1. Check your email or go to [github.com/notifications](https://github.com/notifications).
+2. Accept the collaborator invitation sent by the Team Lead (`<LEAD_GITHUB_USERNAME>`).
+3. Ensure you can view the repository at: `https://github.com/<LEAD_GITHUB_USERNAME>/mai-batata-hun-galaxy-engine`.
+
+---
+
+### Step 0.1: Configure Your Local Git Identity
+Open your terminal (or Git Bash / PowerShell on Windows) and configure your identity:
 ```bash
-# 1. Fetch latest changes from develop
+git config --global user.name "Your Full Name"
+git config --global user.email "your.email@example.com"
+```
+
+---
+
+### Step 0.2: Clone the Team Repository
+```bash
+# Clone the repository onto your machine
+git clone https://github.com/<LEAD_GITHUB_USERNAME>/mai-batata-hun-galaxy-engine.git
+
+# Enter the project directory
+cd mai-batata-hun-galaxy-engine
+```
+
+---
+
+### Step 0.3: Checkout Your Assigned Feature Branch
+The Team Lead has already pre-created your branch on GitHub:
+```bash
+# Fetch all remote branches from GitHub
 git fetch origin
-git checkout develop
 
-# 2. Create and switch to your feature branch
-git checkout -b feat/aiml-engine
+# Switch to your feature branch
+git checkout feat/aiml-engine
 
-# 3. Create virtual environment & install requirements
+# Verify you are on the right branch
+git branch
+# Output should show: * feat/aiml-engine
+```
+
+---
+
+### Step 0.4: Cross-Platform Virtual Environment Setup
+
+#### On macOS / Linux:
+```bash
 python3 -m venv venv
 source venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
+```
 
-# 4. Install AI/ML dependencies
-pip install google-genai groq sentence-transformers faiss-cpu pydantic pytest
+#### On Windows (PowerShell):
+```powershell
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+pip install --upgrade pip
+pip install -r requirements.txt
 ```
 
 ---
 
-### Step 10: Environment Variables & API Keys
-Create a `.env` file in your project root (ensure it is ignored by git):
+### Step 0.5: Set Up Your Local API Keys
+Duplicate `.env.example` to create your local `.env`:
+```bash
+# On Mac/Linux:
+cp .env.example .env
+
+# On Windows PowerShell:
+Copy-Item .env.example .env
+```
+Open `.env` in your editor and enter your free API keys:
 ```env
-GEMINI_API_KEY="your-gemini-api-key-here"
-GROQ_API_KEY="your-groq-api-key-here"
+GEMINI_API_KEY="your_gemini_api_key_here"
+GROQ_API_KEY="your_groq_api_key_here"
 ```
 
 ---
+
+## 📋 Phase 1: AI & ML Engine Implementation
 
 ### Step 20: Build Resilient Dual-LLM Client (`src/ai/llm_client.py`)
 Implement primary inference via Gemini Flash with automatic zero-delay fallback to Groq when Gemini is rate-limited:
@@ -59,7 +113,6 @@ class ResilientLLMClient:
         self.groq_key = os.getenv("GROQ_API_KEY")
 
     def generate_json(self, prompt: str, system_instruction: str) -> Dict[str, Any]:
-        """Attempts Gemini first; falls back to Groq if rate-limited or error occurs."""
         # 1. Try Gemini
         if self.gemini_key:
             try:
@@ -91,7 +144,7 @@ class ResilientLLMClient:
             except Exception as e:
                 print(f"[LLM] Groq fallback failed: {e}")
 
-        # 3. Safe Mock Fallback (Guarantees system never crashes in demo)
+        # 3. Safe Mock Fallback (Guarantees zero crashes during live testing)
         with open("contracts/mock_responses.json", "r") as f:
             return json.load(f)
 ```
@@ -132,14 +185,11 @@ def extract_structured_plan(complaint: str, reference_text: str = "") -> List[Go
 ---
 
 ### Step 40: Deeplink Semantic Matcher (`src/ai/matcher.py`)
-Builds a local FAISS index over the 575 Samsung settings deeplinks:
 ```python
 # src/ai/matcher.py
-import numpy as np
-from typing import List, Dict, Any, Optional
+from typing import List, Optional
 from contracts.schema import Goal
 
-# Pre-compiled list of common Samsung One UI Deeplinks
 SAMSUNG_DEEPLINKS = [
     {"title": "Battery & Device Care", "deeplink": "bixby://settings/device_care/battery", "keywords": "battery drain power usage limits"},
     {"title": "Device Optimization", "deeplink": "bixby://settings/device_care/optimize", "keywords": "optimize ram memory background clean"},
@@ -151,7 +201,6 @@ SAMSUNG_DEEPLINKS = [
 
 class DeeplinkMatcher:
     def __init__(self):
-        # Lightweight keyword + embedding fallback
         self.links = SAMSUNG_DEEPLINKS
 
     def match_deeplink(self, action_title: str, action_desc: str) -> Optional[str]:
@@ -168,7 +217,6 @@ class DeeplinkMatcher:
 matcher = DeeplinkMatcher()
 
 def match_action_deeplinks(goals: List[Goal]) -> List[Goal]:
-    """Enriches auto actions with matched verified Samsung deeplinks."""
     for goal in goals:
         for action in goal.actions:
             if action.type == "auto" and not action.deeplink:
@@ -181,7 +229,6 @@ def match_action_deeplinks(goals: List[Goal]) -> List[Goal]:
 ---
 
 ### Step 50: Hinglish & Multi-Language Normalizer (`src/ai/translator.py`)
-Normalizes conversational complaints into technical queries:
 ```python
 # src/ai/translator.py
 import re
@@ -204,18 +251,12 @@ def normalize_hinglish_query(query: str) -> str:
 ---
 
 ### Step 60: Innovation #2 — Diagnostic DAG Generator (`src/ai/graph_generator.py`)
-Generates the interactive decision graph from troubleshooting steps:
 ```python
 # src/ai/graph_generator.py
 from typing import List, Dict, Any
 from contracts.schema import Goal
 
 def generate_diagnostic_dag(goals: List[Goal]) -> Dict[str, Any]:
-    """
-    Constructs an interactive decision DAG from ordered actions:
-    Nodes: Actions with safety badges
-    Edges: Conditional escalation logic ('If issue persists -> try next')
-    """
     nodes = []
     edges = []
     node_id = 1
@@ -243,26 +284,30 @@ def generate_diagnostic_dag(goals: List[Goal]) -> Dict[str, Any]:
 
 ---
 
-### Step 70: Automated AI Testing (`tests/test_ai/test_ai_pipeline.py`)
-Test LLM extraction, Hinglish translation, and deeplink matching independently:
+### Step 80: Automated AI Testing
 ```bash
+python -m py_compile src/ai/*.py
 pytest tests/test_ai/ -v
 ```
 
 ---
 
-### Step 100: Pre-Commit & PR Checklist
+### Step 100: Pre-Commit & GitHub PR Checklist
 ```bash
-# 1. Verify code compiles and tests pass
-python3 -m py_compile src/ai/*.py
-pytest tests/test_ai/
+# 1. Pull latest develop to prevent merge conflicts
+git fetch origin develop
+git merge origin/develop
 
-# 2. Stage only your designated files
+# 2. Stage your files only
 git add src/ai/ tests/test_ai/
 
-# 3. Commit with semantic convention
-git commit -m "feat(ai): implement dual-LLM client, FAISS deeplink matcher, and DAG generator"
+# 3. Commit with semantic tag
+git commit -m "feat(ai): integrate dual-LLM client, deeplink matcher, and DAG generator"
 
-# 4. Push branch and open Pull Request to develop
+# 4. Push to your branch on GitHub
 git push origin feat/aiml-engine
+
+# 5. Open Pull Request to develop branch on GitHub:
+# Go to https://github.com/<LEAD_GITHUB_USERNAME>/mai-batata-hun-galaxy-engine/pulls
+# Click "New Pull Request" -> Base: develop <- Compare: feat/aiml-engine
 ```

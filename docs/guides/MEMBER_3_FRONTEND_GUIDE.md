@@ -17,36 +17,77 @@ You are the Frontend & UX Developer. You build the **visual centerpiece** that w
 
 ---
 
-## 📋 Step 0 to Step 100 Execution Roadmap
+## 📋 Phase 0: Ground-Zero GitHub & Local Setup
 
-### Step 0: Git Checkout & Isolation Setup
+### Step 0.0: Accept GitHub Collaborator Invitation
+1. Check your email or notifications at [github.com/notifications](https://github.com/notifications).
+2. Accept the collaborator invitation sent by the Team Lead (`<LEAD_GITHUB_USERNAME>`).
+
+---
+
+### Step 0.1: Configure Your Local Git Identity
 ```bash
-# 1. Fetch latest changes
-git fetch origin
-git checkout develop
-
-# 2. Create your feature branch
-git checkout -b feat/frontend-galaxy-ui
-
-# 3. No npm build or node backend required! 
-# You can serve static files with any standard lightweight tool:
-# E.g. VS Code Live Server extension OR:
-python3 -m http.server 3000 --directory src/frontend
+git config --global user.name "Your Full Name"
+git config --global user.email "your.email@example.com"
 ```
 
 ---
 
-### Step 10: Contract-First Development (Day 1 Mock Mode)
-You don't need the backend to start building! Copy `contracts/mock_responses.json` into `src/frontend/assets/mock.json` so you have real data immediately:
+### Step 0.2: Clone the Team Repository
+```bash
+# Clone the repository onto your machine
+git clone https://github.com/<LEAD_GITHUB_USERNAME>/mai-batata-hun-galaxy-engine.git
+
+# Enter the directory
+cd mai-batata-hun-galaxy-engine
+```
+
+---
+
+### Step 0.3: Checkout Your Assigned Feature Branch
+```bash
+# Fetch remote branches
+git fetch origin
+
+# Switch to your pre-created branch
+git checkout feat/frontend-galaxy-ui
+
+# Verify current branch
+git branch
+# Output should show: * feat/frontend-galaxy-ui
+```
+
+---
+
+### Step 0.4: Run Lightweight Local Web Server
+You don't need Python backend or Node.js to develop the frontend!
+Run any static web server:
+
+#### Option A: VS Code Live Server Extension
+Right-click `src/frontend/index.html` $\rightarrow$ **Open with Live Server**.
+
+#### Option B: Python Simple HTTP Server
+```bash
+# Serves the frontend directory on http://localhost:3000
+python3 -m http.server 3000 --directory src/frontend
+# (On Windows: python -m http.server 3000 --directory src/frontend)
+```
+
+---
+
+### Step 0.5: Set Up Day 1 Mock Data (100% Independent)
+Copy the locked contract mock so your UI can fetch data without waiting for the backend:
 ```bash
 mkdir -p src/frontend/assets src/frontend/css src/frontend/js
 cp contracts/mock_responses.json src/frontend/assets/mock.json
+# (On Windows: Copy-Item contracts/mock_responses.json src/frontend/assets/mock.json)
 ```
 
 ---
 
-### Step 20: Design System & Structure (`src/frontend/index.html` & `css/style.css`)
-Implement Samsung One UI typography, glassmorphism, and dark mode palette:
+## 📋 Phase 1: Visual UI & Experiential Innovations
+
+### Step 20: HTML & One UI Style System (`src/frontend/index.html` & `css/style.css`)
 ```html
 <!-- src/frontend/index.html -->
 <!DOCTYPE html>
@@ -79,7 +120,6 @@ Implement Samsung One UI typography, glassmorphism, and dark mode palette:
     <section class="phone-container">
       <div id="three-canvas-container"></div>
       <div class="phone-screen-overlay" id="phone-screen">
-        <!-- Interactive One UI Simulator renders here -->
         <div id="sim-screen" class="sim-screen"></div>
       </div>
     </section>
@@ -137,7 +177,6 @@ Implement Samsung One UI typography, glassmorphism, and dark mode palette:
 ---
 
 ### Step 30: 3D Galaxy Phone Scene (`src/frontend/js/phone_3d.js`)
-Sets up the Three.js viewport with lighting and camera:
 ```javascript
 // src/frontend/js/phone_3d.js
 function init3DPhone() {
@@ -150,14 +189,13 @@ function init3DPhone() {
   renderer.setSize(container.clientWidth, container.clientHeight);
   container.appendChild(renderer.domElement);
 
-  // Studio Lighting
   const ambient = new THREE.AmbientLight(0xffffff, 0.8);
   scene.add(ambient);
   const dirLight = new THREE.DirectionalLight(0x2d88ff, 1.2);
   dirLight.position.set(5, 10, 7);
   scene.add(dirLight);
 
-  // Geometric Galaxy Phone Mesh (Titanium Frame)
+  // Geometric Galaxy S24 Titanium Frame
   const geometry = new THREE.BoxGeometry(7, 14.5, 0.8);
   const material = new THREE.MeshStandardMaterial({ color: 0x1f242d, metalness: 0.85, roughness: 0.2 });
   const phone = new THREE.Mesh(geometry, material);
@@ -181,7 +219,6 @@ window.addEventListener("DOMContentLoaded", init3DPhone);
 ---
 
 ### Step 40: Visible Innovation #1 — Live One UI Simulator (`src/frontend/js/oneui_sim.js`)
-Animates simulated settings navigation on the phone screen:
 ```javascript
 // src/frontend/js/oneui_sim.js
 function simulateStepNavigation(actionTitle, deeplink) {
@@ -202,7 +239,6 @@ function simulateStepNavigation(actionTitle, deeplink) {
 ---
 
 ### Step 50: Visible Innovation #2 — Diagnostic DAG Visualizer (`src/frontend/js/dag_viewer.js`)
-Renders the decision tree with safety badges:
 ```javascript
 // src/frontend/js/dag_viewer.js
 function renderDAG(graphData) {
@@ -223,7 +259,6 @@ function renderDAG(graphData) {
 ---
 
 ### Step 60: Visible Innovation #3 — Engine X-Ray HUD (`src/frontend/js/hud_inspector.js`)
-Updates live telemetry stats when a query returns:
 ```javascript
 // src/frontend/js/hud_inspector.js
 function updateHUD(meta) {
@@ -238,7 +273,6 @@ function updateHUD(meta) {
 ---
 
 ### Step 70: Visible Innovation #5 — Bilingual Voice Assistant (`src/frontend/js/voice.js`)
-Integrates browser speech recognition and speech synthesis:
 ```javascript
 // src/frontend/js/voice.js
 function setupVoice() {
@@ -252,7 +286,7 @@ function setupVoice() {
   
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   const recognition = new SpeechRecognition();
-  recognition.lang = "hi-IN"; // Supports Hindi & English
+  recognition.lang = "hi-IN";
 
   micBtn.addEventListener("click", () => {
     recognition.start();
@@ -271,14 +305,12 @@ function setupVoice() {
 ---
 
 ### Step 80: Main App Controller (`src/frontend/js/app.js`)
-Connects mock data during Day 1-2, and switches to live backend on Day 3:
 ```javascript
 // src/frontend/js/app.js
 const BACKEND_URL = "http://localhost:8000/v1/troubleshoot";
 
 async function fetchTroubleshootPlan(query) {
   try {
-    // Try live backend first
     const res = await fetch(BACKEND_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -286,7 +318,7 @@ async function fetchTroubleshootPlan(query) {
     });
     return await res.json();
   } catch (err) {
-    console.warn("Backend not running yet — falling back to local mock data.");
+    console.warn("Backend server not reached — falling back to local mock data.");
     const mockRes = await fetch("assets/mock.json");
     return await mockRes.json();
   }
@@ -295,13 +327,22 @@ async function fetchTroubleshootPlan(query) {
 
 ---
 
-### Step 100: Pre-Commit & PR Checklist
+### Step 100: Pre-Commit & GitHub PR Checklist
 ```bash
-# 1. Test in browser (ensure 3D canvas loads and mock buttons work)
-# 2. Stage only frontend files
+# 1. Pull latest develop
+git fetch origin develop
+git merge origin/develop
+
+# 2. Stage your files only
 git add src/frontend/ tests/test_frontend/
 
-# 3. Commit and push to develop
+# 3. Commit with semantic tag
 git commit -m "feat(frontend): implement 3D Galaxy phone, One UI simulator, HUD, and voice orb"
+
+# 4. Push to your branch on GitHub
 git push origin feat/frontend-galaxy-ui
+
+# 5. Open Pull Request to develop branch on GitHub:
+# Go to https://github.com/<LEAD_GITHUB_USERNAME>/mai-batata-hun-galaxy-engine/pulls
+# Click "New Pull Request" -> Base: develop <- Compare: feat/frontend-galaxy-ui
 ```

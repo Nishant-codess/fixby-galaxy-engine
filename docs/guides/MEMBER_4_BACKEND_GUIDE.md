@@ -18,26 +18,78 @@ You are the Backend and Performance Systems Engineer. You own the **API infrastr
 
 ---
 
-## 📋 Step 0 to Step 100 Execution Roadmap
+## 📋 Phase 0: Ground-Zero GitHub & Local Setup
 
-### Step 0: Git Checkout & Isolation Setup
+### Step 0.0: Accept GitHub Collaborator Invitation
+1. Check your email or notifications at [github.com/notifications](https://github.com/notifications).
+2. Accept the collaborator invitation sent by the Team Lead (`<LEAD_GITHUB_USERNAME>`).
+
+---
+
+### Step 0.1: Configure Your Local Git Identity
 ```bash
-# 1. Fetch latest changes
-git fetch origin
-git checkout develop
-
-# 2. Create your feature branch
-git checkout -b feat/backend-fastapi
-
-# 3. Create virtual environment & install requirements
-python3 -m venv venv
-source venv/bin/activate
-
-# 4. Install backend dependencies
-pip install fastapi uvicorn httpx pydantic pytest
+git config --global user.name "Your Full Name"
+git config --global user.email "your.email@example.com"
 ```
 
 ---
+
+### Step 0.2: Clone the Team Repository
+```bash
+# Clone the repository onto your machine
+git clone https://github.com/<LEAD_GITHUB_USERNAME>/mai-batata-hun-galaxy-engine.git
+
+# Enter the directory
+cd mai-batata-hun-galaxy-engine
+```
+
+---
+
+### Step 0.3: Checkout Your Assigned Feature Branch
+```bash
+# Fetch all remote branches from GitHub
+git fetch origin
+
+# Switch to your feature branch
+git checkout feat/backend-fastapi
+
+# Verify current branch
+git branch
+# Output should show: * feat/backend-fastapi
+```
+
+---
+
+### Step 0.4: Cross-Platform Virtual Environment Setup
+
+#### On macOS / Linux:
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+#### On Windows (PowerShell):
+```powershell
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+---
+
+### Step 0.5: Local Environment Setup
+Create your local `.env`:
+```bash
+cp .env.example .env
+# (On Windows: Copy-Item .env.example .env)
+```
+
+---
+
+## 📋 Phase 1: API Server & Benchmark Suite Implementation
 
 ### Step 10: Create Backend Structure
 ```bash
@@ -113,7 +165,6 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Enable CORS for Member 3's frontend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -130,17 +181,14 @@ def health_check():
 def troubleshoot(request: TroubleshootRequest):
     start = time.time()
     try:
-        # Day 3 Integration: Call Member 1's pipeline if available
         from src.core.pipeline import run_troubleshoot_pipeline
         response = run_troubleshoot_pipeline(request.query, request.language or "auto")
     except (ImportError, Exception):
-        # Day 1-2 Fallback: Return contract mock
         with open("contracts/mock_responses.json", "r") as f:
             data = json.load(f)
             data["query"] = request.query
             response = TroubleshootResponse(**data)
             
-    # Record Telemetry
     telemetry.record(
         latency_ms=response.metadata.latency_ms,
         cache_hit=response.metadata.cache_hit,
@@ -170,7 +218,7 @@ def get_analytics():
 ---
 
 ### Step 40: Automated 100-Query Benchmark Suite (`src/backend/benchmark.py`)
-Generates the official `metrics.md` and `results.jsonl` deliverables:
+Generates official `metrics.md` and `results.jsonl` deliverables:
 ```python
 # src/backend/benchmark.py
 import time
@@ -189,7 +237,7 @@ SAMPLE_QUERIES = [
     "apps crashing randomly",
     "phone turns off suddenly",
     "slow charging on fast charger"
-] * 10  # 100 queries total
+] * 10
 
 def run_benchmark():
     print("🚀 Starting 100-Query Benchmark Suite...")
@@ -214,12 +262,10 @@ def run_benchmark():
             "category": res.metadata.complaint_category
         })
         
-    # Write results.jsonl
     with open("results.jsonl", "w") as f:
         for item in results:
             f.write(json.dumps(item) + "\n")
             
-    # Write metrics.md
     p50 = sorted(latencies)[50]
     p95 = sorted(latencies)[95]
     with open("metrics.md", "w") as f:
@@ -239,26 +285,34 @@ if __name__ == "__main__":
 
 ---
 
-### Step 50: Automated API Testing (`tests/test_backend/test_api.py`)
+### Step 50: Test Running the Server Locally
 ```bash
-# Run backend tests
-pytest tests/test_backend/ -v
+uvicorn src.backend.main:app --reload --port 8000
+# Test health check in another terminal or browser:
+curl http://localhost:8000/health
 ```
 
 ---
 
-### Step 100: Pre-Commit & PR Checklist
+### Step 100: Pre-Commit & GitHub PR Checklist
 ```bash
-# 1. Compile backend files & run tests
-python3 -m py_compile src/backend/*.py src/backend/endpoints/*.py
+# 1. Pull latest develop
+git fetch origin develop
+git merge origin/develop
+
+# 2. Compile backend files & run tests
+python3 -m py_compile src/backend/*.py
 pytest tests/test_backend/
 
-# 2. Stage only your designated files
+# 3. Stage only your designated files
 git add src/backend/ tests/test_backend/
 
-# 3. Commit with semantic convention
+# 4. Commit with semantic convention
 git commit -m "feat(backend): implement FastAPI endpoints, telemetry tracker, and benchmark suite"
 
-# 4. Push branch and open Pull Request to develop
+# 5. Push branch and open Pull Request to develop
 git push origin feat/backend-fastapi
+
+# 6. Open Pull Request on GitHub:
+# Base: develop <- Compare: feat/backend-fastapi
 ```
