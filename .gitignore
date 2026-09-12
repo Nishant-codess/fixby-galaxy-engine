@@ -67,6 +67,15 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Evaluation & Benchmark Outputs (keep templates, ignore run logs)
+# Evaluation & Benchmark Outputs
 scratch/
 *.log
+
+# Hackathon Reference Guides & Submission Templates (Stay local, do NOT push to GitHub)
+*.pdf
+*.pptx
+*.docx
+*.doc
+*.xlsx
+*.ppt
+samsung_prism_hackathon_analysis.md
