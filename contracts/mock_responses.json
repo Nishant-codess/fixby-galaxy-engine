@@ -1,166 +1,138 @@
 {
-  "query": "mera phone hang ho raha hai aur battery bhi jaldi khatam ho jaati hai",
-  "goals": [
-    {
-      "title": "Resolve Device Lag and Battery Drain",
-      "description": "Step-by-step diagnostic workflow to cool down the processor, free memory, and optimize power consumption.",
-      "actions": [
-        {
-          "title": "Clear System Cache and Close Background Apps",
-          "description": "Terminates lingering background processes that leak battery and spike CPU usage.",
-          "type": "auto",
-          "source": "siis_responses.json#42",
-          "deeplink": "bixby://settings/device_care/battery",
-          "confidence": 0.96,
-          "safety_level": "safe",
-          "steps": [
-            {
-              "title": "Open Device Care Settings",
-              "description": "Navigate to Settings > Device Care to inspect memory and battery consumption.",
-              "type": "auto",
-              "source": "siis_responses.json#42",
-              "deeplink": "bixby://settings/device_care",
-              "confidence": 0.98,
-              "safety_level": "safe"
-            },
-            {
-              "title": "Tap Optimize Now",
-              "description": "Allow One UI to automatically close dormant background applications and clear temporary memory.",
-              "type": "auto",
-              "source": "siis_responses.json#42",
-              "deeplink": "bixby://settings/device_care/optimize",
-              "confidence": 0.95,
-              "safety_level": "safe"
-            }
-          ]
-        },
-        {
-          "title": "Configure Background Usage Limits",
-          "description": "Puts power-hungry apps to deep sleep when the screen is turned off.",
-          "type": "auto",
-          "source": "siis_responses.json#88",
-          "deeplink": "bixby://settings/battery/background_usage_limits",
-          "confidence": 0.92,
-          "safety_level": "safe",
-          "steps": [
-            {
-              "title": "Open Battery Settings",
-              "description": "Go to Settings > Battery > Background Usage Limits.",
-              "type": "auto",
-              "source": "siis_responses.json#88",
-              "deeplink": "bixby://settings/battery",
-              "confidence": 0.94,
-              "safety_level": "safe"
-            },
-            {
-              "title": "Enable Put Unused Apps to Sleep",
-              "description": "Toggle on 'Put unused apps to sleep' to automatically limit background battery drain.",
-              "type": "auto",
-              "source": "siis_responses.json#88",
-              "deeplink": "bixby://settings/battery/background_usage_limits/auto_sleep",
-              "confidence": 0.91,
-              "safety_level": "safe"
-            }
-          ]
-        },
-        {
-          "title": "Reboot in Safe Mode (If Lag Persists)",
-          "description": "Boots Galaxy with third-party apps disabled to isolate malware or unstable app downloads.",
-          "type": "manual",
-          "source": "siis_responses.json#115",
-          "deeplink": null,
-          "confidence": 0.88,
-          "safety_level": "caution",
-          "steps": [
-            {
-              "title": "Press and Hold Power and Volume Down",
-              "description": "Press and hold the Side key and Volume down key until the Power off menu appears.",
-              "type": "manual",
-              "source": "siis_responses.json#115",
-              "deeplink": null,
-              "confidence": 0.90,
-              "safety_level": "safe"
-            },
-            {
-              "title": "Long Press Power Off Icon",
-              "description": "Touch and hold the 'Power off' icon until the green 'Safe mode' prompt appears, then tap it.",
-              "type": "manual",
-              "source": "siis_responses.json#115",
-              "deeplink": null,
-              "confidence": 0.87,
-              "safety_level": "caution"
-            }
-          ]
-        }
-      ]
-    }
+  "query": "battery draining fast",
+  "query_variations": [
+    "I am experiencing rapid drain with my device's battery.",
+    "my battery is doing this rapid drain thing",
+    "battery rapid drain",
+    "mera phone ka battery jaldi khatam ho raha hai",
+    "Samsung Galaxy battery rapid drain troubleshooting",
+    "why is my battery draining so fast?"
   ],
-  "metadata": {
-    "cache_hit": true,
-    "cache_tier": "tier2_semantic",
-    "latency_ms": 184.2,
-    "language_detected": "hi-Latn",
-    "normalized_query": "phone lag freezing and rapid battery drain",
-    "complaint_category": "performance.general_lag + battery.rapid_drain",
-    "grounding_score": 0.98,
-    "active_innovations": [
-      "Complaint-Solution Scorer",
-      "Auto Troubleshooting DAG Generator",
-      "Samsung Symptom Taxonomy",
-      "Cascading Semantic Cache",
-      "Hinglish Tech Idiom Normalizer"
+  "response": {
+    "contexts": [
+      {
+        "goal": "Follow these steps to perform this Battery Troubleshooting",
+        "title": "Battery drain",
+        "score": 0.91,
+        "actions": [
+          {
+            "actionName": "Background Usage Limits",
+            "description": "It will limit unused background apps",
+            "category": "auto",
+            "stepGroups": [
+              {
+                "steps": [
+                  "Open Settings on your Galaxy device",
+                  "Tap Battery",
+                  "Tap Background usage limits",
+                  "Turn on Put unused apps to sleep"
+                ],
+                "actionableDeeplink": {
+                  "deeplink": "bixby://settings/device_care/battery/background_limits",
+                  "description": "Direct link to Background usage limits",
+                  "classes": {
+                    "path": "Settings>Battery>Background usage limits"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "actionName": "Adaptive Battery Protection",
+            "description": "It will extend overall battery lifespan",
+            "category": "auto",
+            "stepGroups": [
+              {
+                "steps": [
+                  "Open Settings",
+                  "Tap Battery",
+                  "Tap Battery protection",
+                  "Select Adaptive mode"
+                ],
+                "actionableDeeplink": {
+                  "deeplink": "bixby://settings/device_care/battery/protection",
+                  "description": "Direct link to Battery protection",
+                  "classes": {
+                    "path": "Settings>Battery>Battery protection"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "actionName": "Factory Data Reset",
+            "description": "It will reset device to defaults",
+            "category": "critical",
+            "stepGroups": [
+              {
+                "steps": [
+                  "Open Settings",
+                  "Tap General management",
+                  "Tap Reset",
+                  "Select Factory data reset as a last resort"
+                ],
+                "actionableDeeplink": {
+                  "deeplink": "bixby://settings/general/reset",
+                  "description": "Direct link to Reset options",
+                  "classes": {
+                    "path": "Settings>General management>Reset"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
     ]
+  },
+  "meta": {
+    "latency_ms": 184.2,
+    "cache_hit": true,
+    "cache_tier": "tier2_slot_hash",
+    "model": "gemini-1.5-flash",
+    "cost_usd": 0.0001,
+    "complaint_category": "battery.rapid_drain",
+    "language_detected": "en",
+    "confidence_breakdown": {
+      "retrieval": 0.94,
+      "consistency": 0.90,
+      "coverage": 0.88
+    },
+    "hallucination_check_passed": true,
+    "screen_resolution": "leaf_screen",
+    "pipeline_source": "live"
   },
   "diagnostic_graph": {
     "nodes": [
       {
-        "id": "node_1",
-        "label": "Optimize Device Care",
-        "action_index": 0,
-        "safety_level": "safe",
-        "deeplink": "bixby://settings/device_care/optimize",
-        "status": "recommended"
-      },
-      {
-        "id": "node_2",
+        "id": "n1",
         "label": "Background Usage Limits",
-        "action_index": 1,
-        "safety_level": "safe",
-        "deeplink": "bixby://settings/battery/background_usage_limits",
-        "status": "recommended"
+        "category": "auto",
+        "color": "#10b981"
       },
       {
-        "id": "node_3",
-        "label": "Isolate in Safe Mode",
-        "action_index": 2,
-        "safety_level": "caution",
-        "deeplink": null,
-        "status": "contingent"
+        "id": "n2",
+        "label": "Adaptive Battery",
+        "category": "auto",
+        "color": "#10b981"
       },
       {
-        "id": "node_4",
-        "label": "Authorized Service Center Inspection",
-        "action_index": null,
-        "safety_level": "critical",
-        "deeplink": "bixby://samsung_members/get_help",
-        "status": "fallback"
+        "id": "n3",
+        "label": "Factory Data Reset",
+        "category": "critical",
+        "color": "#ef4444"
       }
     ],
     "edges": [
       {
-        "from": "node_1",
-        "to": "node_2",
-        "label": "If memory cleared, optimize battery"
+        "from": "n1",
+        "to": "n2",
+        "label": "If issue persists"
       },
       {
-        "from": "node_2",
-        "to": "node_3",
-        "label": "If battery/lag persists after 1 hour"
-      },
-      {
-        "from": "node_3",
-        "to": "node_4",
-        "label": "If device still overheats in Safe Mode"
+        "from": "n2",
+        "to": "n3",
+        "label": "Last resort"
       }
     ]
   }

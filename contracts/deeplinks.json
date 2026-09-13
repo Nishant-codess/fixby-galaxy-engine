@@ -1,0 +1,114 @@
+[
+  {
+    "id": "DL_BATTERY_CARE",
+    "deeplink": "bixby://settings/device_care/battery",
+    "description": "Battery usage details and battery optimization options",
+    "classes": {
+      "path": "Settings>Battery"
+    }
+  },
+  {
+    "id": "DL_BG_LIMITS",
+    "deeplink": "bixby://settings/device_care/battery/background_limits",
+    "description": "Put unused apps to deep sleep to prevent background battery drain",
+    "classes": {
+      "path": "Settings>Battery>Background usage limits"
+    }
+  },
+  {
+    "id": "DL_BATTERY_PROTECT",
+    "deeplink": "bixby://settings/device_care/battery/protection",
+    "description": "Adaptive battery protection mode to extend battery lifespan",
+    "classes": {
+      "path": "Settings>Battery>Battery protection"
+    }
+  },
+  {
+    "id": "DL_CHARGING_SETTINGS",
+    "deeplink": "bixby://settings/device_care/battery/charging",
+    "description": "Toggle fast charging, super fast charging, and fast wireless charging",
+    "classes": {
+      "path": "Settings>Battery>Charging settings"
+    }
+  },
+  {
+    "id": "DL_DISPLAY_MOTION",
+    "deeplink": "bixby://settings/display/motion_smoothness",
+    "description": "Adjust screen refresh rate between 60Hz and 120Hz adaptive smoothness",
+    "classes": {
+      "path": "Settings>Display>Motion smoothness"
+    }
+  },
+  {
+    "id": "DL_DISPLAY_TOUCH",
+    "deeplink": "bixby://settings/display/touch_sensitivity",
+    "description": "Increase touch screen sensitivity for use with screen protectors",
+    "classes": {
+      "path": "Settings>Display>Touch sensitivity"
+    }
+  },
+  {
+    "id": "DL_NAVIGATION_BAR",
+    "deeplink": "bixby://settings/display/navigation_bar",
+    "description": "Configure swipe gesture navigation or buttons on navigation bar",
+    "classes": {
+      "path": "Settings>Display>Navigation bar"
+    }
+  },
+  {
+    "id": "DL_CAMERA_SETTINGS",
+    "deeplink": "bixby://settings/apps/camera",
+    "description": "Camera application settings, permissions, and reset options",
+    "classes": {
+      "path": "Settings>Apps>Camera"
+    }
+  },
+  {
+    "id": "DL_APPS_MANAGEMENT",
+    "deeplink": "bixby://settings/apps",
+    "description": "Manage all installed applications, storage, and clear app cache",
+    "classes": {
+      "path": "Settings>Apps"
+    }
+  },
+  {
+    "id": "DL_DEVICE_CARE_STORAGE",
+    "deeplink": "bixby://settings/device_care/storage",
+    "description": "Clean temporary files, cached data, and unused apps to free storage",
+    "classes": {
+      "path": "Settings>Device care>Storage"
+    }
+  },
+  {
+    "id": "DL_DEVICE_CARE_MEMORY",
+    "deeplink": "bixby://settings/device_care/memory",
+    "description": "Clean RAM memory and configure RAM Plus virtual memory",
+    "classes": {
+      "path": "Settings>Device care>Memory"
+    }
+  },
+  {
+    "id": "DL_WIFI_SETTINGS",
+    "deeplink": "bixby://settings/connections/wifi",
+    "description": "Wi-Fi connections, advanced intelligent Wi-Fi, and network reset",
+    "classes": {
+      "path": "Settings>Connections>Wi-Fi"
+    }
+  },
+  {
+    "id": "DL_RESET_NETWORK",
+    "deeplink": "bixby://settings/general/reset/network",
+    "description": "Reset Wi-Fi, Bluetooth, and mobile network settings to default",
+    "classes": {
+      "path": "Settings>General management>Reset>Reset network settings"
+    }
+  },
+  {
+    "id": "DL_FACTORY_RESET",
+    "deeplink": "bixby://settings/general/reset/factory",
+    "description": "Reset device completely to factory default settings",
+    "classes": {
+      "path": "Settings>General management>Reset>Factory data reset"
+    }
+  }
+]

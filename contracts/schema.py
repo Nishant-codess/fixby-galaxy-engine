@@ -1,82 +1,115 @@
 """
 contracts/schema.py
 Official Samsung PRISM GenAI Hackathon (Theme 2) Schema Definitions
-Strict Pydantic v2 data models defining the input/output contracts across all 4 team members.
+Samsung-exact Pydantic v2 data models defining the input/output contracts across all 4 team members.
 """
 
-from typing import List, Optional, Literal, Dict, Any
-from pydantic import BaseModel, Field, HttpUrl
+from enum import Enum
+from typing import Dict, List, Optional, Literal
+from pydantic import BaseModel, Field
 
 
-class Step(BaseModel):
-    title: str = Field(..., description="Actionable, imperative step title, e.g., 'Turn off Wi-Fi'")
-    description: str = Field(..., description="Clear instructions explaining how to perform this specific step.")
-    type: Literal["auto", "manual"] = Field("manual", description="'auto' if can be automated via deeplink, else 'manual'")
-    source: Optional[str] = Field(None, description="Grounding reference, e.g. 'siis_responses.json#47'")
-    deeplink: Optional[str] = Field(None, description="Verified Samsung URI, e.g. 'bixby://settings/...'")
-    confidence: Optional[float] = Field(None, ge=0.0, le=1.0, description="Confidence score between 0.0 and 1.0")
-    safety_level: Literal["safe", "caution", "critical"] = Field("safe", description="Diagnostic risk rating")
+class ActionCategory(str, Enum):
+    auto = "auto"          # standard config screen, reachable via deeplink
+    manual = "manual"       # physical intervention, no deeplink possible
+    critical = "critical"   # disruptive/irreversible — must be ordered last
+
+
+class BaseDeeplink(BaseModel):
+    deeplink: str
+
+
+class Deeplink(BaseDeeplink):
+    description: str
+    message: Optional[str] = ""
+    classes: Optional[Dict[str, str]] = None
+    originalType: Optional[str] = None
+
+
+class Condition(str, Enum):
+    greater = "greater"
+    equal = "equal"
+    less = "less"
+
+
+class ResultType(str, Enum):
+    boolean = "boolean"
+    intNum = "integer"
+    string = "str"
+    floatNum = "float"
+
+
+class ValidationDeeplink(BaseDeeplink):
+    key: str
+    resultType: Optional[ResultType] = None
+    condition: Optional[Condition] = None
+    value: Optional[str] = None
 
 
 class StepGroup(BaseModel):
-    title: str = Field(..., description="Grouping header, e.g., 'Preliminary Diagnostic Steps'")
-    steps: List[Step] = Field(default_factory=list, description="Ordered list of steps within this group")
+    steps: List[str]
+    validationDeeplink: Optional[ValidationDeeplink] = None
+    actionableDeeplink: Optional[Deeplink] = None
 
 
 class Action(BaseModel):
-    title: str = Field(..., description="High-level solution action, e.g., 'Optimize Battery Settings'")
-    description: Optional[str] = Field(None, description="Summary of this diagnostic solution")
-    type: Literal["auto", "manual", "mixed"] = Field("manual", description="Execution type of the action")
-    source: Optional[str] = Field(None, description="Grounding reference document/index")
-    deeplink: Optional[str] = Field(None, description="Primary Samsung URI to launch for this action")
-    confidence: Optional[float] = Field(None, ge=0.0, le=1.0, description="Overall action confidence")
-    safety_level: Literal["safe", "caution", "critical"] = Field("safe")
-    step_groups: Optional[List[StepGroup]] = Field(default_factory=list, description="Categorized step groups")
-    steps: Optional[List[Step]] = Field(default_factory=list, description="Flat list of steps if groups not used")
+    actionName: str
+    description: str                                      # 5-7 words, starts with "It will"
+    stepGroups: List[StepGroup]
+    category: ActionCategory = ActionCategory.manual
 
 
 class Goal(BaseModel):
-    title: str = Field(..., description="User's overarching troubleshooting goal, e.g., 'Resolve Battery Drain & Overheating'")
-    description: str = Field(..., description="Concise goal explanation")
-    actions: List[Action] = Field(..., min_length=1, description="List of structured actions to achieve this goal")
+    goal: str             # EXACT: "Follow these steps to perform this <Topic> Troubleshooting"
+    title: str             # 2-3 words, sentence case
+    actions: List[Action]  # auto before critical
+    score: float = Field(..., ge=0.0, le=1.0)
 
 
-class PipelineMetadata(BaseModel):
-    cache_hit: bool = Field(False, description="True if served from semantic or hash cache")
-    cache_tier: Optional[Literal["tier1_hash", "tier2_semantic", "none"]] = Field("none")
-    latency_ms: float = Field(..., description="Total processing time in milliseconds")
-    language_detected: str = Field("en", description="Detected language code, e.g. 'en', 'hi', 'ko'")
-    normalized_query: Optional[str] = Field(None, description="Hinglish/multilingual normalized query")
-    complaint_category: Optional[str] = Field(None, description="Taxonomy classification, e.g. 'battery.rapid_drain'")
-    grounding_score: float = Field(1.0, ge=0.0, le=1.0, description="Verification grounding score against source data")
-    active_innovations: List[str] = Field(default_factory=list, description="List of algorithms engaged in this response")
+class ContextDeeplinkResponse(BaseModel):
+    contexts: List[Goal] = Field(default_factory=list)
+    fallback: Optional[Literal["no_match", "no_siis_context"]] = None
 
 
 class TroubleshootRequest(BaseModel):
-    query: str = Field(..., min_length=2, description="User complaint text, e.g. 'phone battery dying fast and lagging'")
-    language: Optional[str] = Field("auto", description="'auto' or language code like 'en', 'hi', 'ko'")
-    device_model: Optional[str] = Field("Galaxy S24", description="Samsung device model")
+    query: str = Field(..., min_length=2)
+    siis_response: Optional[str] = None
+    language: Optional[str] = "auto"
+    device_model: Optional[str] = "Galaxy S24"
+
+
+class PipelineMeta(BaseModel):
+    latency_ms: float
+    cache_hit: bool
+    cache_tier: Literal["tier1_hash", "tier2_slot_hash", "tier3_embedding", "cold"]
+    model: Optional[str] = None
+    cost_usd: float = 0.0
+    complaint_category: Optional[str] = None
+    language_detected: Optional[str] = "en"
+    confidence_breakdown: Optional[Dict[str, float]] = None
+    hallucination_check_passed: bool = True
+    screen_resolution: Literal["leaf_screen", "parent_menu", "manual_only"] = "leaf_screen"
+    pipeline_source: Literal["live", "mock"] = "live"
 
 
 class TroubleshootResponse(BaseModel):
     query: str
-    goals: List[Goal]
-    metadata: PipelineMetadata
-    diagnostic_graph: Optional[Dict[str, Any]] = Field(None, description="Dynamic DAG graph data for visual UI rendering")
+    query_variations: List[str] = Field(default_factory=list)
+    response: ContextDeeplinkResponse
+    meta: PipelineMeta
+    diagnostic_graph: Optional[Dict] = None
 
 
 class FeedbackRequest(BaseModel):
     query: str
-    action_title: str
-    step_title: Optional[str] = None
-    rating: Literal[1, -1] = Field(..., description="1 for positive feedback, -1 for negative feedback")
-    comment: Optional[str] = None
+    action_name: str
+    rating: int = Field(..., ge=-1, le=1)
 
 
 class FeedbackResponse(BaseModel):
-    status: str = "success"
+    status: str
     message: str
-    updated_cache_weight: Optional[float] = None
+    updated_cache_weight: float
 
 
 class AnalyticsResponse(BaseModel):
@@ -86,5 +119,7 @@ class AnalyticsResponse(BaseModel):
     avg_latency_ms: float
     latency_p50_ms: float
     latency_p95_ms: float
+    latency_p99_ms: float
     top_complaint_categories: Dict[str, int]
     language_distribution: Dict[str, int]
+    pipeline_source_breakdown: Dict[str, int]
