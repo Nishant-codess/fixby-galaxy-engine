@@ -1,3 +1,4 @@
+import os
 # src/backend/main.py — FastAPI Gateway (Mock Mode for Days 1-2)
 import json
 import time
@@ -42,7 +43,7 @@ def troubleshoot(request: TroubleshootRequest):
     # =========================================================================
     # DAYS 1-2 MOCK BLOCK: (Swapped on Day 3 for live pipeline call)
     # =========================================================================
-    with open("contracts/mock_responses.json", "r", encoding="utf-8") as f:
+    with open(os.path.join(os.path.dirname(__file__), "../../contracts/mock_responses.json"), "r", encoding="utf-8") as f:
         data = json.load(f)
 
     data["query"] = request.query
