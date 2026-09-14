@@ -67,7 +67,7 @@ def troubleshoot(request: TroubleshootRequest):
 def submit_feedback(request: FeedbackRequest):
     return FeedbackResponse(
         status="accepted",
-        message=f"Recorded feedback for {request.action_title}",
+        message=f"Recorded feedback for {request.action_name}",
         updated_cache_weight=1.1 if request.rating > 0 else 0.8
     )
 

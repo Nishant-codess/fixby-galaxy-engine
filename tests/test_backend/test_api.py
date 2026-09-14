@@ -24,3 +24,14 @@ def test_analytics_endpoint():
     res = client.get("/v1/analytics")
     assert res.status_code == 200
     assert "cache_hit_rate_pct" in res.json()
+
+
+def test_feedback_endpoint():
+    res = client.post("/v1/feedback", json={
+        "query": "battery draining fast",
+        "action_name": "Background Usage Limits",
+        "rating": 1
+    })
+    assert res.status_code == 200
+    assert res.json()["status"] == "accepted"
+    assert "Background Usage Limits" in res.json()["message"]
