@@ -25,7 +25,7 @@ def run_benchmark(target_url: str = "http://127.0.0.1:8000/v1/troubleshoot") -> 
     cache_hits = 0
     total = len(BENCHMARK_QUERIES)
 
-    print(f"🚀 Running Fixby 10-query audit against {target_url}...")
+    print(f"Running Fixby 10-query audit against {target_url}...")
 
     for q in BENCHMARK_QUERIES:
         t0 = time.time()
@@ -36,7 +36,7 @@ def run_benchmark(target_url: str = "http://127.0.0.1:8000/v1/troubleshoot") -> 
 
             if r.status_code == 200:
                 data = r.json()
-                if data.get("metadata", {}).get("cache_hit"):
+                if data.get("meta", {}).get("cache_hit"):
                     cache_hits += 1
 
                 # Scan for URL leaks
@@ -67,7 +67,7 @@ def run_benchmark(target_url: str = "http://127.0.0.1:8000/v1/troubleshoot") -> 
     with open("metrics.md", "w", encoding="utf-8") as f:
         f.write(report)
 
-    print("✅ Benchmark complete! Written to metrics.md")
+    print("Benchmark complete! Written to metrics.md")
     return {"p50": p50, "p95": p95, "url_leaks": url_leaks, "hit_rate": hit_rate}
 
 

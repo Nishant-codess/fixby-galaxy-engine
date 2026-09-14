@@ -48,16 +48,16 @@ def troubleshoot(request: TroubleshootRequest):
 
     data["query"] = request.query
     latency = round((time.time() - start) * 1000, 1)
-    data["metadata"]["latency_ms"] = latency
+    data["meta"]["latency_ms"] = latency
     resp = TroubleshootResponse(**data)
     # =========================================================================
 
     telemetry.record(
-        latency_ms=resp.metadata.latency_ms,
-        cache_hit=resp.metadata.cache_hit,
+        latency_ms=resp.meta.latency_ms,
+        cache_hit=resp.meta.cache_hit,
         source="mock",
-        category=resp.metadata.complaint_category or "general",
-        language=resp.metadata.language_detected or "en"
+        category=resp.meta.complaint_category or "general",
+        language=resp.meta.language_detected or "en"
     )
 
     return resp
