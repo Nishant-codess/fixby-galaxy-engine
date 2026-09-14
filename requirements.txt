@@ -1,6 +1,7 @@
 # Core & Contract Schemas
 pydantic>=2.7.0
 numpy>=1.26.0
+networkx>=3.0.0
 
 # Backend & API Server
 fastapi>=0.111.0
