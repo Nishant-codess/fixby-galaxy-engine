@@ -19,7 +19,7 @@ BENCHMARK_QUERIES = [
 ]
 
 
-def run_benchmark(target_url: str = "http://localhost:8000/v1/troubleshoot") -> Dict[str, Any]:
+def run_benchmark(target_url: str = "http://127.0.0.1:8000/v1/troubleshoot") -> Dict[str, Any]:
     latencies = []
     url_leaks = 0
     cache_hits = 0
@@ -36,7 +36,7 @@ def run_benchmark(target_url: str = "http://localhost:8000/v1/troubleshoot") -> 
 
             if r.status_code == 200:
                 data = r.json()
-                if data.get("meta", {}).get("cache_hit"):
+                if data.get("metadata", {}).get("cache_hit"):
                     cache_hits += 1
 
                 # Scan for URL leaks
