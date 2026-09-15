@@ -4,7 +4,7 @@
 
 <div align="center">
 
-![Fixby Engine Hero Banner](docs/assets/fixby_hero_banner.jpg)
+![Fixby Architecture Whiteboard Diagram](docs/assets/fixby_architecture_whiteboard.jpg)
 
 [![CI Status](https://github.com/Nishant-codess/fixby-galaxy-engine/actions/workflows/ci.yml/badge.svg)](https://github.com/Nishant-codess/fixby-galaxy-engine/actions)
 [![Python Version](https://img.shields.io/badge/Python-3.9%2B-blue.svg?logo=python&logoColor=white)](https://python.org)
