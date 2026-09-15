@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fixby Engine — Precision AI Diagnostic</title>
+  <meta name="description" content="Instant, hallucination-free troubleshooting for Samsung Galaxy devices.">
+
+  <!-- Premium Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Sora:wght@400;600;700;800&family=Geist:wght@400;500;600&family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Three.js + GSAP for 3D Scroll Reveals -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- UnrealBloomPass dependencies -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+  <!-- Style System -->
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/responsive.css">
+
+  <style>
+    /* Specific layout overrides for the 3D scroll experience */
+    body {
+      background-color: var(--color-bg-0);
+      overflow-x: hidden;
+    }
+    
+    #webgl-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .glass-overlay {
+      position: relative;
+      z-index: 10;
+      pointer-events: none; /* Let clicks pass through to 3D if needed, but text needs pointer events */
+    }
+
+    .glass-overlay > * {
+      pointer-events: auto; /* Enable clicks on actual content */
+    }
+
+    /* Scroll sections spacer */
+    .scroll-section {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: var(--space-24) var(--space-8);
+      position: relative;
+    }
+
+    .hero-title {
+      font-family: var(--font-display-elegant);
+      font-size: var(--text-hero);
+      line-height: 1;
+      margin-bottom: var(--space-6);
+      text-shadow: 0 4px 24px rgba(0,0,0,0.8);
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, #e5e1ec, #9c7a58);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background 3D Canvas -->
+  <canvas id="webgl-canvas"></canvas>
+
+  <!-- Content Overlay -->
+  <div class="glass-overlay">
+    
+    <!-- Navigation Bar -->
+    <header>
+      <nav class="navbar card-glass" style="margin: 24px; border-radius: var(--radius-pill); padding: 12px 24px;">
+        <a href="index.html" class="nav-brand" style="font-family: var(--font-display-modern);">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          Fixby
+        </a>
+        <div style="flex-grow: 1;"></div>
+        <a href="demo.html" class="btn btn-primary" style="font-family: var(--font-mono); letter-spacing: 0.05em; text-transform: uppercase; font-size: 0.75rem;">
+          Initialize Demo
+          <svg class="icon" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </nav>
+    </header>
+
+    <main>
+      <!-- Hero Section -->
+      <section class="scroll-section" id="section-hero">
+        <div class="container" style="max-width: 800px; padding-top: 10vh;">
+          <div class="hero-eyebrow" style="color: var(--color-accent-tertiary); font-family: var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase;">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+            Aetheric System Active
+          </div>
+          <h1 class="hero-title">
+            Precision.<br>
+            <span class="gradient-text">Absolute.</span>
+          </h1>
+          <p class="hero-subtitle" style="font-size: var(--text-subtitle); color: var(--color-text-secondary); max-width: 600px; margin-bottom: var(--space-8);">
+            Zero hallucinations. We map natural language directly to exact One UI leaf nodes with sub-200ms latency.
+          </p>
+          <a href="#section-problem" class="btn card-glass" style="border: var(--glass-border-accent); display: inline-flex; align-items: center; gap: 8px;">
+            Scroll to Initiate
+            <svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+          </a>
+        </div>
+      </section>
+
+      <!-- The Problem -->
+      <section class="scroll-section" id="section-problem" style="min-height: 150vh; align-items: flex-end;">
+        <div class="container" style="max-width: 500px; margin-right: 10%;">
+          <div class="card-glass" style="padding: var(--space-8); backdrop-filter: var(--glass-blur);">
+            <h2 style="font-size: var(--text-display); font-family: var(--font-display-modern); margin-bottom: var(--space-4);">The Void of Search</h2>
+            <p style="color: var(--color-text-secondary); margin-bottom: var(--space-6);">Traditional LLMs fabricate paths. Search engines offer 10-step articles. When a user needs a fix, they need surgical accuracy, not an essay.</p>
+            
+            <div style="border-left: 2px solid var(--color-critical); padding-left: 16px; margin-bottom: 24px;">
+              <span style="color: var(--color-critical); font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em;">Standard AI Response</span>
+              <p style="font-family: var(--font-mono); font-size: 0.875rem; color: #a1a1aa; margin-top: 8px;">"Go to settings://fake-url/factory-reset"</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- The Pipeline -->
+      <section class="scroll-section" id="section-pipeline" style="min-height: 200vh;">
+        <div class="container" style="max-width: 600px; margin-left: 10%;">
+          <div class="card-glass" style="padding: var(--space-8); border-top: var(--glass-border-accent); background: var(--glass-bg-card);">
+            <div class="hero-eyebrow" style="color: var(--color-accent-secondary); font-family: var(--font-mono);">01 / ARCHITECTURE</div>
+            <h2 style="font-size: var(--text-display); margin-bottom: var(--space-6); line-height: 1.1;">Deterministic Extraction</h2>
+            
+            <ul style="list-style: none; display: flex; flex-direction: column; gap: 24px;">
+              <li style="display: flex; gap: 16px; align-items: flex-start;">
+                <svg class="icon" style="color: var(--color-accent-primary); width: 24px; height: 24px;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                <div>
+                  <h4 style="font-family: var(--font-display-modern); margin-bottom: 4px;">Semantic Normalizer</h4>
+                  <p style="color: var(--color-text-muted); font-size: 0.875rem;">Translates Hinglish into pure intent vectors.</p>
+                </div>
+              </li>
+              <li style="display: flex; gap: 16px; align-items: flex-start;">
+                <svg class="icon" style="color: var(--color-accent-secondary); width: 24px; height: 24px;" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                <div>
+                  <h4 style="font-family: var(--font-display-modern); margin-bottom: 4px;">Knowledge Graph Retrieval</h4>
+                  <p style="color: var(--color-text-muted); font-size: 0.875rem;">Strict mapping to One UI configuration schemas.</p>
+                </div>
+              </li>
+              <li style="display: flex; gap: 16px; align-items: flex-start;">
+                <svg class="icon" style="color: var(--color-safe); width: 24px; height: 24px;" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                <div>
+                  <h4 style="font-family: var(--font-display-modern); margin-bottom: 4px;">Circuit Breaker Verification</h4>
+                  <p style="color: var(--color-text-muted); font-size: 0.875rem;">Never hallucinates a destructive action.</p>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- CTA Footer -->
+      <section class="scroll-section" id="section-cta" style="align-items: center; text-align: center;">
+        <h2 style="font-size: clamp(3rem, 6vw, 6rem); font-family: var(--font-display-elegant); margin-bottom: var(--space-6);">Enter the Engine</h2>
+        <p style="color: var(--color-text-secondary); max-width: 400px; margin-bottom: var(--space-8);">Test the diagnostic console with natural language.</p>
+        <a href="demo.html" class="btn btn-primary" style="padding: 16px 40px; font-size: 1.25rem; font-family: var(--font-display-modern); border-radius: var(--radius-sm); box-shadow: var(--shadow-glow-primary);">
+          Initialize Demo
+        </a>
+      </section>
+    </main>
+  </div>
+
+  <script src="js/3d_scroll_engine.js"></script>
+</body>
+</html>
