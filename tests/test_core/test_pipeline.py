@@ -183,6 +183,11 @@ def test_cache_tier1_exact_and_tier2_slot():
 # 6. Pipeline End-to-End Execution & Schema Validation
 # ============================================================================
 def test_pipeline_execution_cold_and_cache_hit():
+    from src.core.cache import cache
+    cache.tier1_exact.clear()
+    cache.tier2_slots.clear()
+    cache.tier3_vectors.clear()
+
     query = "my galaxy battery is draining so fast"
 
     # Cold run

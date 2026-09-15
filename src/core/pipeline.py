@@ -26,7 +26,7 @@ from contracts.schema import (
     Deeplink,
     ActionCategory,
 )
-from src.core.taxonomy import classify_complaint_taxonomy, extract_slots
+from src.core.taxonomy import classify_complaint_taxonomy, extract_slots, detect_query_language
 from src.core.cache import cache
 from src.core.settings_graph import settings_graph
 from src.core.validator import validate_and_repair
@@ -119,6 +119,7 @@ def run_troubleshoot_pipeline(query: str, siis_response: Optional[str] = None) -
     # Stage 0: Taxonomy Classification & Slot Extraction (<0.1ms)
     complaint_cats = classify_complaint_taxonomy(query)
     slots = extract_slots(query)
+    lang = detect_query_language(query)
 
     # Stages 1-3: 3-Tier Cascading Cache Check (<20ms)
     cached_val, tier = cache.get(query, slots)
@@ -126,9 +127,11 @@ def run_troubleshoot_pipeline(query: str, siis_response: Optional[str] = None) -
         latency = round((time.time() - start_time) * 1000, 2)
         # Deep copy to prevent mutating cached state
         resp_copy = copy.deepcopy(cached_val)
+        resp_copy.query = query
         resp_copy.meta.latency_ms = latency
         resp_copy.meta.cache_hit = True
         resp_copy.meta.cache_tier = tier
+        resp_copy.meta.language_detected = lang
         return resp_copy
 
     # Stage 4: Candidate Deeplink Retrieval (CALLED BEFORE EXTRACTION)
@@ -163,7 +166,7 @@ def run_troubleshoot_pipeline(query: str, siis_response: Optional[str] = None) -
         model="stub-pipeline",
         cost_usd=0.0,
         complaint_category=complaint_cats[0] if complaint_cats else "general.unknown",
-        language_detected="en",
+        language_detected=lang,
         confidence_breakdown={"retrieval": 0.92, "consistency": 0.85, "coverage": 0.88},
         hallucination_check_passed=True,
         screen_resolution="leaf_screen",
