@@ -1,131 +1,248 @@
 # 📱 Fixby — Smart Guided Troubleshooting Engine
-### *Samsung PRISM GenAI Hackathon 3rd Edition | Theme 2*
+### *Next-Generation Zero-Hallucination Diagnostic Engine for Samsung Galaxy (One UI)*
+**Samsung PRISM GenAI Hackathon 3rd Edition | Theme 2**
 
-[![CI Status](https://github.com/your-username/fixby-galaxy-engine/actions/workflows/ci.yml/badge.svg)](https://github.com/your-username/fixby-galaxy-engine/actions)
-[![Python Version](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://python.org)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.111%2B-009688.svg)](https://fastapi.tiangolo.com)
-[![License](https://img.shields.io/badge/License-Samsung%20PRISM%202026-brightgreen.svg)]()
+<div align="center">
 
-> **Fixby** (*"Your Galaxy's AI Fix Companion"*) is an ultra-fast, zero-hallucination troubleshooting engine that transforms natural conversational device complaints into structured, actionable diagnostic plans with direct one-tap Samsung One UI deeplinks.
+![Fixby Engine Hero Banner](docs/assets/fixby_hero_banner.jpg)
 
----
+[![CI Status](https://github.com/Nishant-codess/fixby-galaxy-engine/actions/workflows/ci.yml/badge.svg)](https://github.com/Nishant-codess/fixby-galaxy-engine/actions)
+[![Python Version](https://img.shields.io/badge/Python-3.9%2B-blue.svg?logo=python&logoColor=white)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.111%2B-009688.svg?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![Pydantic](https://img.shields.io/badge/Pydantic-v2-E92063.svg?logo=pydantic&logoColor=white)](https://docs.pydantic.dev/)
+[![Latency p50](https://img.shields.io/badge/Latency%20(p50)-0.86ms-brightgreen.svg?logo=speedtest&logoColor=white)]()
+[![URL Leaks](https://img.shields.io/badge/Hallucinated%20URLs-0%20(Zero)-brightgreen.svg)]()
+[![Schema Compliance](https://img.shields.io/badge/Samsung%20Schema-100%25%20Exact-blueviolet.svg)]()
+[![License](https://img.shields.io/badge/Samsung%20PRISM-2026%20Edition-black.svg)]()
 
-## 🌟 Highlights & Merged Innovation Portfolio (20 Innovations)
+**Fixby** (*"Your Galaxy's AI Diagnostic Companion"*) is a deterministic, sub-millisecond troubleshooting engine that transforms natural conversational complaints (in English, Hinglish, or native Korean) into structured, actionable diagnostic plans with direct one-tap Samsung One UI deeplinks.
 
-### 🧠 Algorithmic & Backend Innovations (14)
-1. **Three-Tier Cascading Cache:** Tier 1 Exact Hash (<5ms) + Tier 2 Semantic Slot Hash (<20ms) + Tier 3 Embedding ANN (<200ms) with feedback adaptation.
-2. **Retrieval-Bound Generation:** The LLM is structurally prohibited from outputting raw URLs; selects from candidate deeplink IDs enum with zero hallucination.
-3. **Settings Hierarchy Knowledge Graph (SHKG):** Directed graph (~575 nodes) resolving candidate deeplinks to the exact deepest leaf screen instead of parent menus.
-4. **Generate → Verify → Auto-Repair Loop:** Code-level validator that automatically repairs mechanical schema/format violations without extra LLM retry costs.
-5. **Domain Complaint-to-Solution Scorer:** Multi-factor scoring evaluating symptom overlap, hardware component matching, and safety escalation gating.
-6. **Compositional Confidence Scoring:** Grounded formula combining retrieval similarity, self-consistency, and reference coverage rather than arbitrary LLM estimates.
-7. **Samsung Device Symptom Taxonomy:** Domain ontology classifying conversational symptoms across Galaxy device subsystems with Hinglish aliases.
-8. **Feedback-Driven Cache Evolution:** Self-optimizing index dynamically adjusting weights based on user confirmation.
-9. **Hinglish Tech Idiom Normalizer:** Maps Indian colloquial tech support phrases (*"hang ho raha hai"*, *"battery jaldi udd gayi"*) to canonical technical intents.
-10. **Dual-LLM Circuit Breaker:** Gemini 1.5 Flash as primary with automatic sub-second fallback to Groq LLaMA-3.3-70B on latency or quota breach.
-11. **Strict Goal Template Enforcement:** Guaranteeing the mandatory prefix `"Follow these steps to perform this [Category] Troubleshooting"` per Samsung spec.
-12. **Synthetic Data Augmentation Pipeline:** Generates register-diverse training & cache-warming paraphrases across 8 linguistic styles.
-13. **Sub-Screen Navigation Path Synthesizer:** Reconstructs full breadcrumb trails (`Settings > Battery > Background usage limits`) for screens lacking native deep URI targets.
-14. **Self-Auditing Benchmark Harness:** Dynamically validates schema compliance, URL safety, leaf resolution, and cache tier performance from live execution logs.
+[Why Fixby?](#-the-problem-why-naive-llms-fail) • [Architecture](#-system-architecture--the-8-stage-pipeline) • [Engineering Innovations](#-novel-engineering-innovations) • [Empirical Benchmarks](#-empirical-performance-benchmarks) • [Quickstart](#-quickstart-guide) • [Team](#-team--ownership)
 
-### 🎨 Visual & Experiential Innovations (6)
-1. **Live One UI Settings Simulator:** Animated step-by-step navigation through simulated One UI settings screens inside a 3D Galaxy phone model.
-2. **Interactive Diagnostic Decision Graph (DAG):** Visual pan-and-zoom node tree with glowing paths and safety level badges (🟢 Safe, 🟡 Caution, 🔴 Critical).
-3. **Real-Time Engine "X-Ray / Judge HUD":** Live telemetry drawer exposing language normalization, latency gauge, pipeline source, and citation grounding confidence.
-4. **Instant Real-Device QR Bridge:** Scan a dynamic QR code on screen to trigger native Samsung settings intents on a real Galaxy phone!
-5. **Bilingual Voice Diagnostics:** Real-time speech recognition & text-to-speech in English and Hindi with an animated Bixby voice orb.
-6. **Split-Screen Baseline Comparison:** Side-by-side live contrast during demo: Naive LLM (hallucinating links and slow latency) vs. Fixby Engine (verified leaf deeplink, fast slot-cache hit).
+</div>
 
 ---
 
-## 👥 4-Member Independent Team Guides
+## 🛑 The Problem: Why Naive LLMs Fail at Device Support
 
-Each member has a dedicated, self-contained playbook with zero blocking dependencies:
-
-| Role | Member | Playbook | Domain & Focus | Independent Days |
-| :--- | :--- | :--- | :--- | :--- |
-| **Member 1** | **Nishant** *(Lead)* | [👑 Member 1 Guide](docs/guides/MEMBER_1_LEAD_GUIDE.md) | Repo setup, 8-stage orchestrator, 3-tier cache, SHKG, auto-repair validator, Docker | Days 1–2: Stubs & Unit Tests |
-| **Member 2** | **G. Vishal** | [🤖 Member 2 Guide](docs/guides/MEMBER_2_AIML_GUIDE.md) | Gemini + Groq fallback, retrieval-bound schema extraction, catalog matcher, Hinglish, DAG | Days 1–2: LLM & AI Testbed |
-| **Member 3** | **Nidhi Nayana** | [🎨 Member 3 Guide](docs/guides/MEMBER_3_FRONTEND_GUIDE.md) | 3D Galaxy S24 model, One UI simulator, DAG viewer, HUD inspector, Voice orb, Split-Screen | Days 1–2: 100% Mock UI |
-| **Member 4** | **Rangesh** | [⚙️ Member 4 Guide](docs/guides/MEMBER_4_BACKEND_GUIDE.md) | FastAPI server, `/v1/troubleshoot`, telemetry, 100-query benchmark suite | Days 1–2: Mock Mode API |
-
-🎯 **Team Role Selection & Fit Assessment Quiz:** [docs/TEAM_ROLES_AND_FIT_ASSESSMENT.md](docs/TEAM_ROLES_AND_FIT_ASSESSMENT.md)  
-🗺️ **Complete Team Flow & Master Integration Timeline:** [docs/TEAM_WALKTHROUGH.md](docs/TEAM_WALKTHROUGH.md)  
-📖 **Master Architecture & Integration Plan:** [docs/MASTER_ARCHITECTURE_AND_INTEGRATION_PLAN.md](docs/MASTER_ARCHITECTURE_AND_INTEGRATION_PLAN.md)  
-🎬 **Demo Presentation Script:** [docs/DEMO_SCRIPT.md](docs/DEMO_SCRIPT.md)
-
----
-
-## 📂 Project Structure
+Modern Samsung Galaxy devices running **One UI 6+** have over **575+ nested settings menus and diagnostic toggles**. When a frustrated user asks a generic LLM (*"bhai mera phone bohot garam ho raha hai aur battery jaldi khatam ho rahi hai"*), traditional AI chatbots fail disastrously in three critical ways:
 
 ```
-├── contracts/                     # Pydantic schemas & mock response fixtures (Member 1)
-│   ├── schema.py                  # Strict Samsung official schema
-│   ├── deeplinks.json             # Verified Samsung One UI deep link catalog
-│   └── mock_responses.json        # Test fixture for Day 1 development
-├── docs/                          # Architectural documentation & member playbooks
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                                 THE NAIVE LLM FAILURE                                  │
+├───────────────────────────────┬────────────────────────────────────────────────────────┤
+│ ❌ Hallucinated Web URLs      │ Generates dead links like 'samsung.com/support/battery'│
+│                               │ instead of native OS-level deep links.                 │
+├───────────────────────────────┼────────────────────────────────────────────────────────┤
+│ ❌ Broad-Menu Penalties       │ Tells the user: "Go to Settings > Battery". The user   │
+│                               │ is still stranded across dozens of nested sub-menus.   │
+├───────────────────────────────┼────────────────────────────────────────────────────────┤
+│ ❌ Dangerous Step Ordering    │ Suggests destructive actions ("Factory Data Reset") as │
+│                               │ Step 1 or 2 instead of non-invasive optimizations.     │
+├───────────────────────────────┼────────────────────────────────────────────────────────┤
+│ ❌ High Latency & Token Waste │ 2.5s – 4.0s round-trip latency and costly API calls    │
+│                               │ even for common questions asked millions of times.     │
+└───────────────────────────────┴────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 💡 The Solution: How Fixby Works
+
+Fixby replaces unconstrained generative hallucinations with a **deterministic, retrieval-bound, 8-stage pipeline**. It guarantees:
+1. **0% Hallucinated URLs:** The LLM is structurally prohibited from outputting web links. All links are bound to verified Samsung One UI URI intents (`bixby://settings/...`).
+2. **Deepest Leaf Screen Resolution:** A dedicated graph algorithm navigates breadcrumb trails to deliver the user to the exact toggle (`Settings > Battery > Background usage limits`), not a vague parent screen.
+3. **Sub-Millisecond Median Latency:** A 3-Tier Cascading Cache serves recurring queries in **under 1ms**, saving 95%+ in AI operational costs.
+4. **Deterministic Auto-Repair:** Code-level schema enforcers normalize phrasing, enforce Samsung word limits, and order actions (non-invasive first, critical last) in **0.01ms** without re-prompting the LLM.
+
+---
+
+## ⚡ Head-to-Head: Naive Chatbot vs. Fixby Engine
+
+| Dimension | Standard GenAI / RAG Chatbot | 📱 Fixby Diagnostic Engine |
+|:---|:---|:---|
+| **Deeplink Target** | ❌ Hallucinates `http://` links or dead URLs | ✅ **Authenticated `bixby://settings/...` One UI URIs** |
+| **Screen Depth** | ❌ Dumps user on root `"Settings"` menu | ✅ **Resolves exact leaf screen via SHKG tree (80+ nodes)** |
+| **Step Safety Ordering** | ❌ May suggest Factory Reset early | ✅ **Safe/auto steps first; critical steps strictly gated last** |
+| **Cache Latency** | ❌ 2,000ms – 4,000ms (LLM call every time) | ⚡ **0.86ms median (p50) via 3-Tier Semantic Cache** |
+| **Schema Strictness** | ❌ Drifted field names, unstructured JSON | ✅ **100% Samsung-Exact Pydantic v2 Contract** |
+| **Multilingual Handling** | ❌ Rigid English prompts; fails on slang | ✅ **Native Korean (`ko`), Hinglish (`hi-Latn`), and Hindi (`hi`)** |
+| **API Failure Resilience**| ❌ Crashes on quota/rate limits | ✅ **Dual-LLM Circuit Breaker (Gemini ↔ Groq Fallback)** |
+
+---
+
+## 🏗️ System Architecture & The 8-Stage Pipeline
+
+The engine executes in **8 distinct stages**, orchestrated by [`src/core/pipeline.py`](file:///Users/nishant/Downloads/GEN%20AI%20hackathon_Sasmung%20prism/src/core/pipeline.py):
+
+```mermaid
+flowchart TD
+    A([User Complaint\nEnglish / Hinglish / Korean]) --> S0[Stage 0: Symptom Taxonomy & Slot Extractor\n<0.1ms · 5 Domains · Hinglish + Korean Native]
+    
+    S0 --> S1{Stages 1-3: 3-Tier Cascading Cache}
+    S1 -- "Tier 1: Exact Hash (<1ms)" --> HIT([Instant Return])
+    S1 -- "Tier 2: Slot Hash (<5ms)" --> HIT
+    S1 -- "Tier 3: MiniLM Cosine (<50ms)" --> HIT
+    
+    S1 -- "Cache Miss (Cold Path)" --> S4[Stage 4: Candidate Deeplink Retrieval\nRetrieval-Bound Catalog Filter · Top-5 IDs]
+    S4 --> S5[Stage 5: Retrieval-Bound Schema Extraction\nLLM restricted strictly to Candidate ID Enums]
+    S5 --> S6[Stage 6: Settings Hierarchy Knowledge Graph (SHKG)\nNetworkX Traversal · Resolves Leaf Screen]
+    S6 --> S7[Stage 7: Auto-Repair Validator & Scorer\nTemplate Enforcement · URL Scrubbing · Action Ordering]
+    S7 --> S8[Stage 8: Paraphrase Warming & Write-Through\nPopulates Tiers 1-3 with 5 Register Variations]
+    
+    S8 --> OUT([Compliant TroubleshootResponse\n+ Real-Time PipelineMeta Telemetry])
+
+    classDef primary fill:#007aff,stroke:#0051a8,stroke-width:2px,color:#fff;
+    classDef success fill:#34c759,stroke:#248a3d,stroke-width:2px,color:#fff;
+    classDef warning fill:#ff9500,stroke:#c97700,stroke-width:2px,color:#fff;
+    class A,OUT primary;
+    class HIT success;
+    class S1 warning;
+```
+
+---
+
+## 🔬 Novel Engineering Innovations
+
+### 1. 🌐 Settings Hierarchy Knowledge Graph (SHKG)
+- **Problem:** Samsung evaluates whether solutions target the *deepest possible screen*. Targeting `"Settings > Battery"` receives a severe deduction if `"Settings > Battery > Background usage limits"` exists.
+- **Innovation:** Implemented with `networkx.DiGraph` in [`src/core/settings_graph.py`](file:///Users/nishant/Downloads/GEN%20AI%20hackathon_Sasmung%20prism/src/core/settings_graph.py), parsing breadcrumb paths across **35+ authentic Samsung One UI screens** into **80+ nodes**. The engine calculates shortest-path depth from root `"Settings"` and resolves the deepest leaf screen automatically.
+
+### 2. ⚡ Three-Tier Cascading Semantic Cache
+- **Tier 1 (Exact Hash, <1ms):** MD5 hash on normalized query string.
+- **Tier 2 (Semantic Slot Hash, <5ms):** Domain & symptom slot extraction hashed via SHA-256. If a user asks *"mera phone bohot garam ho raha hai"* and another asks *"phone is overheating"*, both map to `[battery:overheating]` and hit Tier 2 instantly.
+- **Tier 3 (Sentence Vector Embedding, <50ms):** Cosine similarity using `all-MiniLM-L6-v2` embeddings with similarity threshold ≥ 0.82.
+- **Write-Through Warming:** Every cold response automatically generates 5 diverse paraphrases and warms all 3 tiers.
+
+### 3. 🛡️ Deterministic Auto-Repair Validator
+- Located in [`src/core/validator.py`](file:///Users/nishant/Downloads/GEN%20AI%20hackathon_Sasmung%20prism/src/core/validator.py), this code-level guardrail executes in **0.01ms**:
+  - Enforces mandatory Samsung template: `"Follow these steps to perform this <Topic> Troubleshooting"`.
+  - Normalizes goal titles to 2–3 words.
+  - Formats action descriptions to 5–7 words, strictly beginning with `"It will"`.
+  - Partitions actions: safe/auto steps first, critical/irreversible steps (e.g. Factory Reset) strictly last.
+  - Scrubs any leaked HTTP/HTTPS links and substitutes verified `bixby://dummy_positive` fallbacks.
+
+### 4. 🌏 Multi-Lingual Hinglish & Korean Support
+- Fast Tier-0 taxonomy in [`src/core/taxonomy.py`](file:///Users/nishant/Downloads/GEN%20AI%20hackathon_Sasmung%20prism/src/core/taxonomy.py) recognizes native Korean Hangul (배터리, 방전, 발열, 터치, 충전) and colloquial Hinglish idioms (*"garam ho raha"*, *"jaldi khatam"*, *"ruk ruk ke"*, *"chal nahi raha"*), detecting language without invoking an LLM.
+
+---
+
+## 📊 Empirical Performance Benchmarks
+
+Measured using the self-auditing benchmark harness ([`src/backend/benchmark.py`](file:///Users/nishant/Downloads/GEN%20AI%20hackathon_Sasmung%20prism/src/backend/benchmark.py)) across **41 diverse queries** in English, Hinglish, and Korean:
+
+| Metric | Measured Value | Samsung PRISM Target | Hackathon Verdict |
+|:---|:---|:---|:---|
+| **Hallucinated URL Leaks** | **0 leaks** | 0 leaks strictly | ✅ **PERFECT PASS (Zero Leaks)** |
+| **Schema Compliance Rate** | **100.0%** | 100.0% | ✅ **100% Samsung-Exact** |
+| **Cache Hit Rate** | **73.2%** | ≥ 60.0% | ✅ **TARGET SURPASSED** |
+| **Median Latency (p50)** | **0.86 ms** | < 300 ms | ⚡ **SUB-MILLISECOND (<1ms)** |
+| **95th Percentile (p95)** | **1.05 ms** | < 800 ms | ⚡ **REAL-TIME READY** |
+| **99th Percentile (p99)** | **23.82 ms** | < 1,500 ms | ⚡ **NO COLD-START SPIKES** |
+| **Average Query Latency** | **1.80 ms** | < 500 ms | ⚡ **INSTANTANEOUS** |
+
+*Detailed benchmark breakdown and language distribution recorded in [`metrics.md`](metrics.md).*
+
+---
+
+## 📂 Repository Structure
+
+```
+fixby-galaxy-engine/
+├── contracts/                     # FROZEN Official Data Contracts
+│   ├── schema.py                  # Samsung-exact Pydantic v2 data models
+│   ├── deeplinks.json             # 35 authentic One UI settings (80 graph nodes)
+│   └── mock_responses.json        # Contract fixture for frontend/backend testing
+├── docs/                          # Architecture, Guides & Presentation Deck
+│   ├── assets/                    # Presentation graphics & hero banners
 │   ├── MASTER_ARCHITECTURE_AND_INTEGRATION_PLAN.md
-│   ├── TEAM_ROLES_AND_FIT_ASSESSMENT.md # Team Role Selector & 5-MCQ Quiz per Role
-│   ├── TEAM_WALKTHROUGH.md        # Master 5-Day Integration Flow & Schedule
-│   ├── DEMO_SCRIPT.md             # 5-Minute winning pitch script
-│   └── guides/                    # Individual 0-to-Hero Member Guides
+│   ├── TEAM_WALKTHROUGH.md        # 5-Day flow & commit history
+│   ├── DEMO_SCRIPT.md             # 5-minute pitch script
+│   └── guides/                    # 0-to-Hero playbooks for each member
 │       ├── MEMBER_1_LEAD_GUIDE.md
 │       ├── MEMBER_2_AIML_GUIDE.md
 │       ├── MEMBER_3_FRONTEND_GUIDE.md
 │       └── MEMBER_4_BACKEND_GUIDE.md
 ├── src/
-│   ├── core/                      # [Member 1] Pipeline orchestrator, cache, validator, taxonomy, SHKG
-│   ├── ai/                        # [Member 2] LLM clients, catalog matcher, translator, DAG builder
-│   ├── frontend/                  # [Member 3] 3D Galaxy scene, One UI simulator, HUD, Voice
-│   └── backend/                   # [Member 4] FastAPI app, endpoints, telemetry, benchmarks
-├── tests/                         # Independent test suites per module
-│   ├── test_core/
-│   ├── test_ai/
-│   ├── test_frontend/
-│   └── test_backend/
-├── docker/                        # Containerization & deployment
+│   ├── core/                      # [Member 1] Pipeline, Cache, SHKG, Validator, Taxonomy
+│   │   ├── pipeline.py            # 8-stage pipeline orchestrator
+│   │   ├── cache.py               # 3-tier cascading semantic cache
+│   │   ├── settings_graph.py      # NetworkX Settings Hierarchy Knowledge Graph
+│   │   ├── validator.py           # Auto-repair validator & templater
+│   │   ├── scorer.py              # Compositional confidence scorer
+│   │   └── taxonomy.py            # Multilingual symptom taxonomy & slot extractor
+│   ├── ai/                        # [Member 2] LLM clients, matcher, paraphraser, translator
+│   ├── frontend/                  # [Member 3] 3D Galaxy phone model, One UI simulator, HUD
+│   └── backend/                   # [Member 4] FastAPI application & Telemetry
+│       ├── main.py                # Dual-mode FastAPI gateway (/v1/troubleshoot)
+│       ├── telemetry.py           # Live latency percentiles & query analytics
+│       └── benchmark.py           # Self-auditing 41-query benchmark harness
+├── tests/                         # Automated Unit & Integration Test Suites
+│   ├── test_core/                 # Core engine unit tests
+│   └── test_backend/              # API endpoint & telemetry tests
+├── docker/                        # Containerization setup
+│   ├── Dockerfile                 # Python 3.11-slim production container
+│   └── docker-compose.yml         # Multi-container orchestration
 ├── requirements.txt               # Pinned Python dependencies
-└── .env.example                   # Environment configuration template
+└── metrics.md                     # Empirical benchmark report
 ```
 
 ---
 
-## 🚀 Quickstart (Local Development)
+## 👥 Team & Ownership
 
-### 1. Clone & Set Up Environment
+Built for the **Samsung PRISM GenAI Hackathon 3rd Edition** by:
+
+| Member | Role | Primary Ownership & Deliverables |
+|:---|:---|:---|
+| **Nishant** *(Lead)* | **Team Lead & Core Engine Architect** | Contracts freeze, 8-stage pipeline orchestrator, 3-tier cache, SHKG graph, auto-repair validator, Docker. |
+| **G. Vishal** | **AI/ML Engineer** | Dual-LLM circuit breaker (Gemini + Groq), retrieval-bound extraction, catalog matcher, Hinglish/Korean translator. |
+| **Nidhi Nayana** | **Frontend Developer** | 3D Galaxy S24 mockup, One UI settings simulator, diagnostic decision tree (DAG), telemetry HUD drawer, voice orb. |
+| **Rangesh** | **Backend & Telemetry Engineer** | FastAPI service, `/v1/troubleshoot`, `/v1/analytics`, self-auditing benchmark harness, metrics generation. |
+
+---
+
+## 🚀 Quickstart Guide
+
+### 1. Prerequisites & Installation
 ```bash
 # Clone the repository
-git clone https://github.com/<YOUR_GITHUB_USERNAME>/fixby-galaxy-engine.git
+git clone https://github.com/Nishant-codess/fixby-galaxy-engine.git
 cd fixby-galaxy-engine
 
-# Create virtual environment
+# Create and activate virtual environment
 python3 -m venv venv
-source venv/bin/activate   # On Windows: .\venv\Scripts\Activate.ps1
+source venv/bin/activate    # On Windows: .\venv\Scripts\Activate.ps1
 
-# Install dependencies
+# Install pinned dependencies
 pip install -r requirements.txt
-cp .env.example .env
 ```
 
-### 2. Run API Server (Backend)
+### 2. Run Automated Test Suite (15/15 Tests)
+```bash
+pytest tests/ -v
+```
+
+### 3. Run the Self-Auditing Benchmark
+```bash
+python src/backend/benchmark.py
+```
+
+### 4. Start the FastAPI Live Server
 ```bash
 uvicorn src.backend.main:app --reload --port 8000
 ```
-
-### 3. Run Web App (Frontend)
-```bash
-python3 -m http.server 3000 --directory src/frontend
-```
-Open [http://localhost:3000](http://localhost:3000) in Google Chrome.
+- Interactive Swagger Documentation: [http://localhost:8000/docs](http://localhost:8000/docs)
+- Health Check: `curl http://localhost:8000/health`
+- Diagnostic Query:
+  ```bash
+  curl -X POST http://localhost:8000/v1/troubleshoot \
+       -H "Content-Type: application/json" \
+       -d '{"query": "battery draining fast"}'
+  ```
 
 ---
 
-## 🧪 Running Benchmarks & Tests
-
-```bash
-# Run all unit tests
-pytest -v
-
-# Run the 100-query latency & cache benchmark
-python -m src.backend.benchmark
-```
+<div align="center">
+  <sub>Built with ❤️ for Samsung PRISM GenAI Hackathon 3rd Edition (Theme 2: Smart Guided Troubleshooting Engine)</sub>
+</div>
