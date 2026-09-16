@@ -1,0 +1,100 @@
+{"query_id": 1, "query": "phone hang ho raha hai", "latency_ms": 1172.8, "cache_hit": false, "cache_tier": "cold", "pipeline_source": "live", "category": "performance.general_lag"}
+{"query_id": 2, "query": "battery draining fast", "latency_ms": 180.4, "cache_hit": false, "cache_tier": "cold", "pipeline_source": "live", "category": "battery.rapid_drain"}
+{"query_id": 3, "query": "wifi keeps disconnecting", "latency_ms": 234.8, "cache_hit": false, "cache_tier": "cold", "pipeline_source": "live", "category": "connectivity.wifi_drop"}
+{"query_id": 4, "query": "device overheating while gaming", "latency_ms": 214.2, "cache_hit": false, "cache_tier": "cold", "pipeline_source": "live", "category": "battery.overheating"}
+{"query_id": 5, "query": "camera blurry and slow to open", "latency_ms": 173.9, "cache_hit": false, "cache_tier": "cold", "pipeline_source": "live", "category": "camera.crash_or_slow + performance.general_lag"}
+{"query_id": 6, "query": "storage full cannot take photos", "latency_ms": 112.9, "cache_hit": false, "cache_tier": "cold", "pipeline_source": "live", "category": "performance.storage_pressure"}
+{"query_id": 7, "query": "touch screen unresponsive", "latency_ms": 102.7, "cache_hit": false, "cache_tier": "cold", "pipeline_source": "live", "category": "display.touch_unresponsive"}
+{"query_id": 8, "query": "apps crashing randomly", "latency_ms": 93.9, "cache_hit": false, "cache_tier": "cold", "pipeline_source": "live", "category": "performance.app_crash"}
+{"query_id": 9, "query": "phone turns off suddenly", "latency_ms": 89.6, "cache_hit": false, "cache_tier": "cold", "pipeline_source": "live", "category": "battery.unexpected_shutdown"}
+{"query_id": 10, "query": "slow charging on fast charger", "latency_ms": 91.4, "cache_hit": false, "cache_tier": "cold", "pipeline_source": "live", "category": "battery.slow_charging + performance.general_lag"}
+{"query_id": 11, "query": "phone hang ho raha hai", "latency_ms": 0.1, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "performance.general_lag"}
+{"query_id": 12, "query": "battery draining fast", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "battery.rapid_drain"}
+{"query_id": 13, "query": "wifi keeps disconnecting", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "connectivity.wifi_drop"}
+{"query_id": 14, "query": "device overheating while gaming", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "battery.overheating"}
+{"query_id": 15, "query": "camera blurry and slow to open", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "camera.crash_or_slow + performance.general_lag"}
+{"query_id": 16, "query": "storage full cannot take photos", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "performance.storage_pressure"}
+{"query_id": 17, "query": "touch screen unresponsive", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "display.touch_unresponsive"}
+{"query_id": 18, "query": "apps crashing randomly", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "performance.app_crash"}
+{"query_id": 19, "query": "phone turns off suddenly", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "battery.unexpected_shutdown"}
+{"query_id": 20, "query": "slow charging on fast charger", "latency_ms": 0.1, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "battery.slow_charging + performance.general_lag"}
+{"query_id": 21, "query": "phone hang ho raha hai", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "performance.general_lag"}
+{"query_id": 22, "query": "battery draining fast", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "battery.rapid_drain"}
+{"query_id": 23, "query": "wifi keeps disconnecting", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "connectivity.wifi_drop"}
+{"query_id": 24, "query": "device overheating while gaming", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "battery.overheating"}
+{"query_id": 25, "query": "camera blurry and slow to open", "latency_ms": 0.1, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "camera.crash_or_slow + performance.general_lag"}
+{"query_id": 26, "query": "storage full cannot take photos", "latency_ms": 0.1, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "performance.storage_pressure"}
+{"query_id": 27, "query": "touch screen unresponsive", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "display.touch_unresponsive"}
+{"query_id": 28, "query": "apps crashing randomly", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "performance.app_crash"}
+{"query_id": 29, "query": "phone turns off suddenly", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "battery.unexpected_shutdown"}
+{"query_id": 30, "query": "slow charging on fast charger", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "battery.slow_charging + performance.general_lag"}
+{"query_id": 31, "query": "phone hang ho raha hai", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "performance.general_lag"}
+{"query_id": 32, "query": "battery draining fast", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "battery.rapid_drain"}
+{"query_id": 33, "query": "wifi keeps disconnecting", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "connectivity.wifi_drop"}
+{"query_id": 34, "query": "device overheating while gaming", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "battery.overheating"}
+{"query_id": 35, "query": "camera blurry and slow to open", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "camera.crash_or_slow + performance.general_lag"}
+{"query_id": 36, "query": "storage full cannot take photos", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "performance.storage_pressure"}
+{"query_id": 37, "query": "touch screen unresponsive", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "display.touch_unresponsive"}
+{"query_id": 38, "query": "apps crashing randomly", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "performance.app_crash"}
+{"query_id": 39, "query": "phone turns off suddenly", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "battery.unexpected_shutdown"}
+{"query_id": 40, "query": "slow charging on fast charger", "latency_ms": 0.1, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "battery.slow_charging + performance.general_lag"}
+{"query_id": 41, "query": "phone hang ho raha hai", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "performance.general_lag"}
+{"query_id": 42, "query": "battery draining fast", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "battery.rapid_drain"}
+{"query_id": 43, "query": "wifi keeps disconnecting", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "connectivity.wifi_drop"}
+{"query_id": 44, "query": "device overheating while gaming", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "battery.overheating"}
+{"query_id": 45, "query": "camera blurry and slow to open", "latency_ms": 0.1, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "camera.crash_or_slow + performance.general_lag"}
+{"query_id": 46, "query": "storage full cannot take photos", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "performance.storage_pressure"}
+{"query_id": 47, "query": "touch screen unresponsive", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "display.touch_unresponsive"}
+{"query_id": 48, "query": "apps crashing randomly", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "performance.app_crash"}
+{"query_id": 49, "query": "phone turns off suddenly", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "battery.unexpected_shutdown"}
+{"query_id": 50, "query": "slow charging on fast charger", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "battery.slow_charging + performance.general_lag"}
+{"query_id": 51, "query": "phone hang ho raha hai", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "performance.general_lag"}
+{"query_id": 52, "query": "battery draining fast", "latency_ms": 0.1, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "battery.rapid_drain"}
+{"query_id": 53, "query": "wifi keeps disconnecting", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "connectivity.wifi_drop"}
+{"query_id": 54, "query": "device overheating while gaming", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "battery.overheating"}
+{"query_id": 55, "query": "camera blurry and slow to open", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "camera.crash_or_slow + performance.general_lag"}
+{"query_id": 56, "query": "storage full cannot take photos", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "performance.storage_pressure"}
+{"query_id": 57, "query": "touch screen unresponsive", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "display.touch_unresponsive"}
+{"query_id": 58, "query": "apps crashing randomly", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "performance.app_crash"}
+{"query_id": 59, "query": "phone turns off suddenly", "latency_ms": 0.1, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "battery.unexpected_shutdown"}
+{"query_id": 60, "query": "slow charging on fast charger", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "battery.slow_charging + performance.general_lag"}
+{"query_id": 61, "query": "phone hang ho raha hai", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "performance.general_lag"}
+{"query_id": 62, "query": "battery draining fast", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "battery.rapid_drain"}
+{"query_id": 63, "query": "wifi keeps disconnecting", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "connectivity.wifi_drop"}
+{"query_id": 64, "query": "device overheating while gaming", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "battery.overheating"}
+{"query_id": 65, "query": "camera blurry and slow to open", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "camera.crash_or_slow + performance.general_lag"}
+{"query_id": 66, "query": "storage full cannot take photos", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "performance.storage_pressure"}
+{"query_id": 67, "query": "touch screen unresponsive", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "display.touch_unresponsive"}
+{"query_id": 68, "query": "apps crashing randomly", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "performance.app_crash"}
+{"query_id": 69, "query": "phone turns off suddenly", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "battery.unexpected_shutdown"}
+{"query_id": 70, "query": "slow charging on fast charger", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "battery.slow_charging + performance.general_lag"}
+{"query_id": 71, "query": "phone hang ho raha hai", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "performance.general_lag"}
+{"query_id": 72, "query": "battery draining fast", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "battery.rapid_drain"}
+{"query_id": 73, "query": "wifi keeps disconnecting", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "connectivity.wifi_drop"}
+{"query_id": 74, "query": "device overheating while gaming", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "battery.overheating"}
+{"query_id": 75, "query": "camera blurry and slow to open", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "camera.crash_or_slow + performance.general_lag"}
+{"query_id": 76, "query": "storage full cannot take photos", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "performance.storage_pressure"}
+{"query_id": 77, "query": "touch screen unresponsive", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "display.touch_unresponsive"}
+{"query_id": 78, "query": "apps crashing randomly", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "performance.app_crash"}
+{"query_id": 79, "query": "phone turns off suddenly", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "battery.unexpected_shutdown"}
+{"query_id": 80, "query": "slow charging on fast charger", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "battery.slow_charging + performance.general_lag"}
+{"query_id": 81, "query": "phone hang ho raha hai", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "performance.general_lag"}
+{"query_id": 82, "query": "battery draining fast", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "battery.rapid_drain"}
+{"query_id": 83, "query": "wifi keeps disconnecting", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "connectivity.wifi_drop"}
+{"query_id": 84, "query": "device overheating while gaming", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "battery.overheating"}
+{"query_id": 85, "query": "camera blurry and slow to open", "latency_ms": 0.1, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "camera.crash_or_slow + performance.general_lag"}
+{"query_id": 86, "query": "storage full cannot take photos", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "performance.storage_pressure"}
+{"query_id": 87, "query": "touch screen unresponsive", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "display.touch_unresponsive"}
+{"query_id": 88, "query": "apps crashing randomly", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "performance.app_crash"}
+{"query_id": 89, "query": "phone turns off suddenly", "latency_ms": 0.1, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "battery.unexpected_shutdown"}
+{"query_id": 90, "query": "slow charging on fast charger", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "battery.slow_charging + performance.general_lag"}
+{"query_id": 91, "query": "phone hang ho raha hai", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "performance.general_lag"}
+{"query_id": 92, "query": "battery draining fast", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "battery.rapid_drain"}
+{"query_id": 93, "query": "wifi keeps disconnecting", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "connectivity.wifi_drop"}
+{"query_id": 94, "query": "device overheating while gaming", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "battery.overheating"}
+{"query_id": 95, "query": "camera blurry and slow to open", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "camera.crash_or_slow + performance.general_lag"}
+{"query_id": 96, "query": "storage full cannot take photos", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "performance.storage_pressure"}
+{"query_id": 97, "query": "touch screen unresponsive", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "display.touch_unresponsive"}
+{"query_id": 98, "query": "apps crashing randomly", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "performance.app_crash"}
+{"query_id": 99, "query": "phone turns off suddenly", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "battery.unexpected_shutdown"}
+{"query_id": 100, "query": "slow charging on fast charger", "latency_ms": 0.0, "cache_hit": true, "cache_tier": "tier1_hash", "pipeline_source": "live", "category": "battery.slow_charging + performance.general_lag"}
