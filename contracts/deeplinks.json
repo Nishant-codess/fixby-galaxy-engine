@@ -278,5 +278,45 @@
     "classes": {
       "path": "Settings>General management>Reset>Factory data reset"
     }
+  },
+  {
+    "id": "DL_SOUND_SPEAKER",
+    "deeplink": "bixby://settings/sound/volume",
+    "description": "Adjust media, ringtone, call and system speaker volume",
+    "classes": {
+      "path": "Settings>Sounds and vibration>Volume"
+    }
+  },
+  {
+    "id": "DL_ADAPT_SOUND",
+    "deeplink": "bixby://settings/sound/adapt_sound",
+    "description": "Personalize sound frequencies and hearing profile for calls and media",
+    "classes": {
+      "path": "Settings>Sounds and vibration>Sound quality and effects>Adapt sound"
+    }
+  },
+  {
+    "id": "DL_STORAGE_CLEANUP",
+    "deeplink": "bixby://settings/device_care/storage",
+    "description": "Clean unused app cache, temporary files, duplicate images and empty trash",
+    "classes": {
+      "path": "Settings>Device Care>Storage"
+    }
+  },
+  {
+    "id": "DL_FINGERPRINT_SECURITY",
+    "deeplink": "bixby://settings/security/biometrics/fingerprints",
+    "description": "Register, test, and calibrate biometric fingerprint recognition",
+    "classes": {
+      "path": "Settings>Security and privacy>Biometrics>Fingerprints"
+    }
+  },
+  {
+    "id": "DL_SECURE_FOLDER",
+    "deeplink": "bixby://settings/security/secure_folder",
+    "description": "Manage encrypted private sandbox for confidential apps and documents",
+    "classes": {
+      "path": "Settings>Security and privacy>Secure Folder"
+    }
   }
 ]

@@ -169,27 +169,59 @@ class PlanExtractor:
         domain = slots.get("domain", "battery")
         topic = domain.capitalize()
 
+        if domain == "sound":
+            action_name = "Dolby Atmos Audio"
+            desc = "It will optimize speaker audio quality"
+            deeplink = "bixby://settings/sound/dolby_atmos"
+            path = "Settings>Sounds and vibration>Sound quality and effects"
+            steps = ["Open Settings on your Galaxy device", "Tap Sounds and vibration", "Tap Sound quality and effects", "Turn on Dolby Atmos for rich audio"]
+        elif domain == "storage":
+            action_name = "Storage Space Cleanup"
+            desc = "It will clean unnecessary device storage"
+            deeplink = "bixby://settings/device_care/storage"
+            path = "Settings>Device Care>Storage"
+            steps = ["Open Settings on your Galaxy device", "Tap Device Care", "Tap Storage", "Empty Trash and delete temporary files"]
+        elif domain == "security":
+            action_name = "Biometric Fingerprint Calibration"
+            desc = "It will calibrate your biometric fingerprint"
+            deeplink = "bixby://settings/security/biometrics/fingerprints"
+            path = "Settings>Security and privacy>Biometrics>Fingerprints"
+            steps = ["Open Settings on your Galaxy device", "Tap Security and privacy", "Tap Biometrics", "Check registered fingerprints"]
+        elif domain == "display":
+            action_name = "Motion Smoothness"
+            desc = "It will optimize screen refresh rate"
+            deeplink = "bixby://settings/display/motion_smoothness"
+            path = "Settings>Display>Motion smoothness"
+            steps = ["Open Settings on your Galaxy device", "Tap Display", "Select Motion smoothness", "Choose Adaptive 120Hz"]
+        elif domain == "connectivity":
+            action_name = "Reset Network Settings"
+            desc = "It will restore default wireless connections"
+            deeplink = "bixby://settings/general/reset/network"
+            path = "Settings>General management>Reset>Reset network settings"
+            steps = ["Open Settings on your Galaxy device", "Tap General management", "Tap Reset", "Tap Reset network settings"]
+        else:
+            action_name = "Background Usage Limits" if domain == "battery" else "Device Care"
+            desc = "It will limit unused background apps" if domain == "battery" else "It will optimize device system performance"
+            deeplink = "bixby://settings/device_care/battery/background_limits" if domain == "battery" else "bixby://settings/device_care"
+            path = "Settings>Battery>Background usage limits" if domain == "battery" else "Settings>Device Care"
+            steps = ["Open Settings on your Galaxy device", "Tap Battery", "Tap Background usage limits", "Turn on Put unused apps to sleep"] if domain == "battery" else ["Open Settings on your Galaxy device", "Tap Device Care", "Tap Optimize now"]
+
         return [
             Goal(
                 goal=f"Follow these steps to perform this {topic} Troubleshooting",
                 title=f"{topic} drain" if domain == "battery" else f"{topic} issue",
                 actions=[
                     Action(
-                        actionName="Background Usage Limits" if domain == "battery" else "Device Care",
-                        description="It will limit unused background apps",
+                        actionName=action_name,
+                        description=desc,
                         category=ActionCategory.auto,
                         stepGroups=[
                             StepGroup(
-                                steps=[
-                                    "Open Settings on your Galaxy device",
-                                    "Tap Battery",
-                                    "Tap Background usage limits",
-                                    "Turn on Put unused apps to sleep"
-                                ],
+                                steps=steps,
                                 actionableDeeplink=Deeplink(
-                                    deeplink="bixby://settings/device_care/battery/background_limits",
-                                    description="Direct link to Background usage limits",
-                                    classes={"path": "Settings>Battery>Background usage limits"}
+                                    deeplink=deeplink,
+                                    description=f"Direct link to {action_name}",
+                                    classes={"path": path}
                                 )
                             )
                         ]

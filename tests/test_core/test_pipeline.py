@@ -17,7 +17,7 @@ from src.core.cache import CascadingSemanticCache
 from src.core.settings_graph import SettingsHierarchyGraph
 from src.core.validator import build_goal_string, validate_and_repair
 from src.core.scorer import compute_compositional_confidence
-from src.core.pipeline import run_troubleshoot_pipeline
+from src.core.pipeline import run_troubleshoot_pipeline, run_followup_pipeline
 
 
 # ============================================================================
@@ -213,3 +213,90 @@ def test_pipeline_execution_cold_and_cache_hit():
     assert resp_warm.meta.cache_hit is True
     assert resp_warm.meta.cache_tier == "tier1_hash"
     assert resp_warm.meta.latency_ms >= 0
+
+
+def test_taxonomy_sound_storage_security():
+    # Sound domain
+    sound_cats = classify_complaint_taxonomy("phone speaker crackling and sound distorted")
+    assert "sound.speaker_distortion" in sound_cats
+    sound_slots = extract_slots("phone speaker crackling and sound distorted")
+    assert sound_slots["domain"] == "sound"
+
+    # Storage domain
+    storage_cats = classify_complaint_taxonomy("phone storage full clean storage and trash")
+    assert any("storage" in c for c in storage_cats)
+    storage_slots = extract_slots("storage cleanup and empty trash")
+    assert storage_slots["domain"] == "storage"
+
+    # Security domain
+    sec_cats = classify_complaint_taxonomy("biometric fingerprint sensor not working")
+    assert "security.biometrics_fingerprint" in sec_cats
+    sec_slots = extract_slots("biometric fingerprint sensor not working")
+    assert sec_slots["domain"] == "security"
+
+
+def test_dynamic_confidence_scoring():
+    from src.core.scorer import (
+        calculate_retrieval_similarity,
+        calculate_consistency_score,
+        calculate_coverage_score,
+    )
+
+    # Retrieval similarity varies with token overlap
+    item = {
+        "id": "DL_BATTERY_CARE",
+        "description": "Battery usage details and battery optimization",
+        "classes": {"path": "Settings>Battery"}
+    }
+    high_sim = calculate_retrieval_similarity("battery usage optimization", item)
+    low_sim = calculate_retrieval_similarity("screen brightness touch", item)
+    assert high_sim > low_sim
+
+    # Consistency score decreases with repairs
+    clean_score = calculate_consistency_score(0)
+    repaired_score = calculate_consistency_score(2)
+    assert clean_score == 1.0
+    assert repaired_score < clean_score
+
+    # Coverage score responds to SIIS context
+    cov_high = calculate_coverage_score(
+        "battery overheating",
+        leaf_screen_id="DL_BATTERY_CARE",
+        siis_response="Battery overheating diagnostic report"
+    )
+    cov_no_siis = calculate_coverage_score(
+        "battery overheating",
+        leaf_screen_id="DL_BATTERY_CARE",
+        siis_response=None
+    )
+    assert cov_high >= 0.88
+    assert cov_no_siis == 0.90
+
+
+def test_session_state_persistence_across_turns():
+    from src.core.session import session_manager
+    session_id = "test-session-persist-123"
+    session_manager.clear(session_id)
+
+    # Turn 2 followup with explicit attempted action
+    res_turn2 = run_followup_pipeline(
+        query="battery still draining fast",
+        attempted_action_ids=["Background Usage Limits"],
+        turn=2,
+        session_id=session_id
+    )
+    assert res_turn2.turn == 2
+    assert "Background Usage Limits" in res_turn2.previous_attempted_actions
+
+    # Turn 3 followup: pass None for attempted_action_ids to verify it retrieves from session
+    res_turn3 = run_followup_pipeline(
+        query="phone still hot battery draining",
+        attempted_action_ids=None,
+        turn=3,
+        session_id=session_id
+    )
+    assert res_turn3.turn == 3
+    assert "Background Usage Limits" in res_turn3.previous_attempted_actions
+    assert res_turn3.escalation_level == "CRITICAL"
+    assert res_turn3.is_terminal is True
+

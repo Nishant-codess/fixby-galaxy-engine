@@ -31,7 +31,13 @@ from src.core.taxonomy import classify_complaint_taxonomy, extract_slots, detect
 from src.core.cache import cache
 from src.core.settings_graph import settings_graph
 from src.core.validator import validate_and_repair
-from src.core.scorer import compute_compositional_confidence
+from src.core.scorer import (
+    compute_compositional_confidence,
+    calculate_retrieval_similarity,
+    calculate_consistency_score,
+    calculate_coverage_score,
+)
+from src.core.session import session_manager
 
 # Import Member 2 Live AI Engine Modules
 try:
@@ -85,6 +91,50 @@ def _stub_extract_structured_plan(query: str, candidate_ids: List[str], siis_res
             "Choose Adaptive 120Hz"
         ]
         goal_title = "Display stutter"
+    elif domain == "sound":
+        action_name = "Dolby Atmos Audio"
+        desc = "It will optimize speaker audio quality"
+        deeplink = "bixby://settings/sound/dolby_atmos"
+        steps = [
+            "Open Settings on your Galaxy device",
+            "Tap Sounds and vibration",
+            "Tap Sound quality and effects",
+            "Turn on Dolby Atmos for rich audio"
+        ]
+        goal_title = "Sound quality"
+    elif domain == "storage":
+        action_name = "Storage Space Cleanup"
+        desc = "It will clean unnecessary device storage"
+        deeplink = "bixby://settings/device_care/storage"
+        steps = [
+            "Open Settings on your Galaxy device",
+            "Tap Device Care",
+            "Tap Storage",
+            "Empty Trash and delete temporary files"
+        ]
+        goal_title = "Storage cleanup"
+    elif domain == "security":
+        action_name = "Biometric Fingerprint Calibration"
+        desc = "It will calibrate your biometric fingerprint"
+        deeplink = "bixby://settings/security/biometrics/fingerprints"
+        steps = [
+            "Open Settings on your Galaxy device",
+            "Tap Security and privacy",
+            "Tap Biometrics",
+            "Tap Fingerprints and check registered prints"
+        ]
+        goal_title = "Biometrics security"
+    elif domain == "connectivity":
+        action_name = "Reset Network Settings"
+        desc = "It will restore default wireless connections"
+        deeplink = "bixby://settings/general/reset/network"
+        steps = [
+            "Open Settings on your Galaxy device",
+            "Tap General management",
+            "Tap Reset",
+            "Tap Reset network settings"
+        ]
+        goal_title = "Network connection"
     else:
         action_name = "Device Care Optimization"
         desc = "It will optimize device system performance"
@@ -210,8 +260,14 @@ def run_troubleshoot_pipeline(query: str, siis_response: Optional[str] = None) -
 
     # Stage 7: Auto-Repair Validation & Compositional Scoring
     topic = slots.get("domain", "Device")
-    repaired_goals, _ = validate_and_repair(raw_goals, topic=topic)
-    score = compute_compositional_confidence(retrieval_sim=0.92, consistency_score=0.85, coverage_score=0.88)
+    repaired_goals, repairs = validate_and_repair(raw_goals, topic=topic)
+
+    top_item = settings_graph.catalog_map.get(leaf_id) if leaf_id else None
+    sim_val = calculate_retrieval_similarity(query, top_item)
+    cons_val = calculate_consistency_score(len(repairs))
+    cov_val = calculate_coverage_score(query, leaf_screen_id=leaf_id, siis_response=siis_response)
+
+    score = compute_compositional_confidence(retrieval_sim=sim_val, consistency_score=cons_val, coverage_score=cov_val)
     for g in repaired_goals:
         g.score = score
 
@@ -233,7 +289,7 @@ def run_troubleshoot_pipeline(query: str, siis_response: Optional[str] = None) -
         cost_usd=0.0,
         complaint_category=complaint_cats[0] if complaint_cats else "general.unknown",
         language_detected=lang,
-        confidence_breakdown={"retrieval": 0.92, "consistency": 0.85, "coverage": 0.88},
+        confidence_breakdown={"retrieval": sim_val, "consistency": cons_val, "coverage": cov_val},
         hallucination_check_passed=True,
         screen_resolution="leaf_screen",
         pipeline_source="live"
@@ -264,7 +320,20 @@ def run_followup_pipeline(
     filtering out previously attempted actions and generating an escalation DAG.
     """
     start_time = time.time()
-    attempted = attempted_action_ids or []
+    
+    # Session state tracking: accumulate previously attempted actions
+    if session_id:
+        prior_attempted = session_manager.get_attempted_actions(session_id)
+        if attempted_action_ids is None:
+            attempted = list(prior_attempted)
+        else:
+            attempted = list(attempted_action_ids)
+            for a in prior_attempted:
+                if a not in attempted:
+                    attempted.append(a)
+    else:
+        attempted = list(attempted_action_ids or [])
+
     slots = extract_slots(query)
     complaint_cats = classify_complaint_taxonomy(query)
     lang = detect_query_language(query)
@@ -389,7 +458,224 @@ def run_followup_pipeline(
                     )
                 )]
             ))
-    else:  # performance / connectivity / general
+    elif domain == "sound":
+        if level == "CAUTION":
+            actions.append(Action(
+                actionName="Adapt Sound Profile",
+                description="It will personalize frequency hearing curve",
+                category=ActionCategory.auto,
+                stepGroups=[StepGroup(
+                    steps=[
+                        "Open Settings",
+                        "Tap Sounds and vibration",
+                        "Tap Sound quality and effects",
+                        "Select Adapt Sound for your age"
+                    ],
+                    actionableDeeplink=Deeplink(
+                        deeplink="bixby://settings/sound/adapt_sound",
+                        description="Direct link to Adapt Sound"
+                    )
+                )]
+            ))
+            actions.append(Action(
+                actionName="Dolby Atmos Audio",
+                description="It will enhance spatial speaker audio",
+                category=ActionCategory.auto,
+                stepGroups=[StepGroup(
+                    steps=[
+                        "Open Settings",
+                        "Tap Sounds and vibration",
+                        "Tap Sound quality and effects",
+                        "Toggle Dolby Atmos to On"
+                    ],
+                    actionableDeeplink=Deeplink(
+                        deeplink="bixby://settings/sound/dolby_atmos",
+                        description="Direct link to Dolby Atmos"
+                    )
+                )]
+            ))
+        else:
+            actions.append(Action(
+                actionName="Audio Speaker Diagnostics",
+                description="It will run hardware speaker test",
+                category=ActionCategory.auto,
+                stepGroups=[StepGroup(
+                    steps=[
+                        "Open Samsung Members app",
+                        "Tap Diagnostics",
+                        "Select Speaker test"
+                    ],
+                    actionableDeeplink=Deeplink(
+                        deeplink="bixby://samsung_members/diagnostics/speaker",
+                        description="Direct link to Speaker Diagnostics"
+                    )
+                )]
+            ))
+            actions.append(Action(
+                actionName="Factory Data Reset",
+                description="It will restore factory default settings",
+                category=ActionCategory.critical,
+                stepGroups=[StepGroup(
+                    steps=[
+                        "Back up audio and personal data",
+                        "Open Settings",
+                        "Tap General management",
+                        "Tap Reset",
+                        "Select Factory data reset"
+                    ],
+                    actionableDeeplink=Deeplink(
+                        deeplink="bixby://settings/general/reset",
+                        description="Direct link to Factory reset"
+                    )
+                )]
+            ))
+    elif domain == "storage":
+        if level == "CAUTION":
+            actions.append(Action(
+                actionName="Storage Space Cleanup",
+                description="It will clean unnecessary device storage",
+                category=ActionCategory.auto,
+                stepGroups=[StepGroup(
+                    steps=[
+                        "Open Settings",
+                        "Tap Device Care",
+                        "Tap Storage",
+                        "Empty Trash and delete temporary files"
+                    ],
+                    actionableDeeplink=Deeplink(
+                        deeplink="bixby://settings/device_care/storage",
+                        description="Direct link to Storage cleanup"
+                    )
+                )]
+            ))
+        else:
+            actions.append(Action(
+                actionName="Wipe Cache Partition",
+                description="It will clear corrupted system cache",
+                category=ActionCategory.critical,
+                stepGroups=[StepGroup(
+                    steps=[
+                        "Turn off your Galaxy phone",
+                        "Connect device to PC via USB cable",
+                        "Hold Volume Up and Power button",
+                        "Select Wipe cache partition",
+                        "Select Reboot system now"
+                    ],
+                    actionableDeeplink=Deeplink(
+                        deeplink="bixby://settings/general/reset",
+                        description="Direct link to Recovery options"
+                    )
+                )]
+            ))
+    elif domain == "security":
+        if level == "CAUTION":
+            actions.append(Action(
+                actionName="Biometric Fingerprint Calibration",
+                description="It will calibrate your biometric fingerprint",
+                category=ActionCategory.auto,
+                stepGroups=[StepGroup(
+                    steps=[
+                        "Open Settings",
+                        "Tap Security and privacy",
+                        "Tap Biometrics",
+                        "Tap Fingerprints and re-register fingers"
+                    ],
+                    actionableDeeplink=Deeplink(
+                        deeplink="bixby://settings/security/biometrics/fingerprints",
+                        description="Direct link to Fingerprints"
+                    )
+                )]
+            ))
+        else:
+            actions.append(Action(
+                actionName="Security Diagnostic Test",
+                description="It will diagnose device security status",
+                category=ActionCategory.auto,
+                stepGroups=[StepGroup(
+                    steps=[
+                        "Open Samsung Members app",
+                        "Tap Diagnostics",
+                        "Select Security status test"
+                    ],
+                    actionableDeeplink=Deeplink(
+                        deeplink="bixby://samsung_members/diagnostics/security",
+                        description="Direct link to Security Diagnostics"
+                    )
+                )]
+            ))
+            actions.append(Action(
+                actionName="Factory Data Reset",
+                description="It will restore factory default settings",
+                category=ActionCategory.critical,
+                stepGroups=[StepGroup(
+                    steps=[
+                        "Back up all credentials and files",
+                        "Open Settings",
+                        "Tap General management",
+                        "Tap Reset",
+                        "Select Factory data reset"
+                    ],
+                    actionableDeeplink=Deeplink(
+                        deeplink="bixby://settings/general/reset",
+                        description="Direct link to Factory reset"
+                    )
+                )]
+            ))
+    elif domain == "connectivity":
+        if level == "CAUTION":
+            actions.append(Action(
+                actionName="Reset Network Settings",
+                description="It will restore default wireless connections",
+                category=ActionCategory.auto,
+                stepGroups=[StepGroup(
+                    steps=[
+                        "Open Settings",
+                        "Tap General management",
+                        "Tap Reset",
+                        "Tap Reset network settings"
+                    ],
+                    actionableDeeplink=Deeplink(
+                        deeplink="bixby://settings/general/reset/network",
+                        description="Direct link to Reset network settings"
+                    )
+                )]
+            ))
+        else:
+            actions.append(Action(
+                actionName="Network Hardware Diagnostics",
+                description="It will test wireless hardware antennas",
+                category=ActionCategory.auto,
+                stepGroups=[StepGroup(
+                    steps=[
+                        "Open Samsung Members app",
+                        "Tap Diagnostics",
+                        "Select Wi-Fi and Mobile network test"
+                    ],
+                    actionableDeeplink=Deeplink(
+                        deeplink="bixby://samsung_members/diagnostics/network",
+                        description="Direct link to Network Diagnostics"
+                    )
+                )]
+            ))
+            actions.append(Action(
+                actionName="Factory Data Reset",
+                description="It will restore factory default settings",
+                category=ActionCategory.critical,
+                stepGroups=[StepGroup(
+                    steps=[
+                        "Back up all personal data to Samsung Cloud",
+                        "Open Settings",
+                        "Tap General management",
+                        "Tap Reset",
+                        "Select Factory data reset"
+                    ],
+                    actionableDeeplink=Deeplink(
+                        deeplink="bixby://settings/general/reset",
+                        description="Direct link to Factory reset"
+                    )
+                )]
+            ))
+    else:  # performance / general
         if level == "CAUTION":
             actions.append(Action(
                 actionName="Manage Unused Apps",
@@ -474,6 +760,18 @@ def run_followup_pipeline(
         screen_resolution="leaf_screen",
         pipeline_source="live"
     )
+
+    if session_id:
+        suggested_names = [a.actionName for a in repaired_goals[0].actions] if (repaired_goals and repaired_goals[0].actions) else []
+        session_manager.record_turn(
+            session_id=session_id,
+            query=query,
+            turn=turn,
+            escalation=level,
+            suggested_actions=suggested_names,
+            attempted_actions=attempted,
+            graph=dag_graph
+        )
 
     return FollowupResponse(
         query=query,
