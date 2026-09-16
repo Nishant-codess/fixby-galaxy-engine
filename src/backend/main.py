@@ -93,10 +93,13 @@ def troubleshoot_followup(request: FollowupRequest):
 
 @app.post("/v1/feedback", response_model=FeedbackResponse)
 def submit_feedback(request: FeedbackRequest):
+    from src.core.cache import cache
+    cache.record_feedback(request.query, request.rating)
+    updated_weight = cache.weights.get(cache._hash_exact(request.query), 1.1 if request.rating > 0 else 0.8)
     return FeedbackResponse(
         status="accepted",
         message=f"Recorded feedback for {request.action_name}",
-        updated_cache_weight=1.1 if request.rating > 0 else 0.8
+        updated_cache_weight=round(updated_weight, 2)
     )
 
 

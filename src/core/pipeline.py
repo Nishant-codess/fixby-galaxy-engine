@@ -133,6 +133,48 @@ def run_troubleshoot_pipeline(query: str, siis_response: Optional[str] = None) -
     slots = extract_slots(query)
     lang = detect_query_language(query)
 
+    # Domain Boundary Guard: Reject out-of-scope queries (e.g. smart fridge, gibberish) to prevent hallucination
+    if not siis_response:
+        from src.core.taxonomy import SYMPTOM_TAXONOMY
+        lower = query.lower()
+        all_keywords = set()
+        for domain_kws in SYMPTOM_TAXONOMY.values():
+            for kw_set in domain_kws.values():
+                all_keywords.update(kw_set)
+
+        device_words = {
+            'phone', 'galaxy', 'samsung', 'device', 'mobile', 'android', 'bixby',
+            'one ui', 'setting', 'settings', 'apps', 'app', 'ram', 'storage', 'wifi',
+            'bluetooth', 'network', 'sound', 'audio', 'call', 'screen', 'display',
+            'battery', 'charge', 'charging', 'camera', 'touch',
+            '폰', '앱', '카메라', '화면', '터치', '배터리', '충전', '설정', '소리'
+        }
+        has_kw = any(kw in lower for kw in all_keywords)
+        has_device = any(w in lower for w in device_words)
+
+        if not has_kw and not has_device and complaint_cats == ["general.unknown"]:
+            latency = round((time.time() - start_time) * 1000, 2)
+            meta = PipelineMeta(
+                latency_ms=latency,
+                cache_hit=False,
+                cache_tier="cold",
+                model="groq-llama3-70b" if AI_MODULES_AVAILABLE else "stub-pipeline",
+                cost_usd=0.0,
+                complaint_category="general.unknown",
+                language_detected=lang,
+                confidence_breakdown={"retrieval": 0.0, "consistency": 0.0, "coverage": 0.0},
+                hallucination_check_passed=True,
+                screen_resolution="manual_only",
+                pipeline_source="live"
+            )
+            return TroubleshootResponse(
+                query=query,
+                query_variations=[],
+                response=ContextDeeplinkResponse(contexts=[], fallback="no_siis_context"),
+                meta=meta,
+                diagnostic_graph=None
+            )
+
     # Stages 1-3: 3-Tier Cascading Cache Check (<20ms)
     cached_val, tier = cache.get(query, slots)
     if cached_val is not None:

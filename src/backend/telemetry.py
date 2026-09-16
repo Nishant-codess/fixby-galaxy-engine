@@ -13,15 +13,18 @@ class EngineTelemetry:
         self.category_counts: Dict[str, int] = {}
         self.languages: Dict[str, int] = {}
 
-    def record(self, latency_ms: float, cache_hit: bool, source: str = "live", category: str = "general", language: str = "en"):
+    def record(self, latency_ms: float, cache_hit: bool, source: str = "live", category: str = "general", language: str = "en", **kwargs):
         self.total_queries += 1
         self.latencies.append(latency_ms)
         if cache_hit:
             self.cache_hits += 1
 
-        self.pipeline_sources[source] = self.pipeline_sources.get(source, 0) + 1
+        effective_source = kwargs.get("pipeline_source", source)
+        effective_lang = kwargs.get("lang", language)
+
+        self.pipeline_sources[effective_source] = self.pipeline_sources.get(effective_source, 0) + 1
         self.category_counts[category] = self.category_counts.get(category, 0) + 1
-        self.languages[language] = self.languages.get(language, 0) + 1
+        self.languages[effective_lang] = self.languages.get(effective_lang, 0) + 1
 
     def get_summary(self) -> Dict[str, Any]:
         if not self.latencies:

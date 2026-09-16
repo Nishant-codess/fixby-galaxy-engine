@@ -29,6 +29,7 @@ class CascadingSemanticCache:
         self.similarity_threshold = similarity_threshold
         self.max_tier3_size = max_tier3_size
         self.weights: Dict[str, float] = {}
+        self.feedback_weights = self.weights
 
     def _hash_exact(self, query: str) -> str:
         return hashlib.md5(query.strip().lower().encode("utf-8")).hexdigest()
@@ -122,6 +123,11 @@ class CascadingSemanticCache:
         if len(self.tier3_vectors) >= self.max_tier3_size:
             self.tier3_vectors.pop(0)  # LRU eviction
         self.tier3_vectors.append((vec, val, query, domain))
+
+    def record_feedback(self, query: str, rating: int):
+        k = self._hash_exact(query)
+        current = self.weights.get(k, 1.0)
+        self.weights[k] = min(current * 1.1, 2.0) if rating > 0 else max(current * 0.8, 0.2)
 
     def clear(self):
         self.tier1_exact.clear()

@@ -74,6 +74,7 @@ def run_benchmark(target_url: Optional[str] = None) -> Dict[str, Any]:
 
     latencies: List[float] = []
     url_leaks = 0
+    safety_violations = 0
     cache_hits = 0
     schema_passes = 0
     lang_counts: Dict[str, int] = {}
@@ -132,6 +133,13 @@ def run_benchmark(target_url: Optional[str] = None) -> Dict[str, Any]:
                         if sg_list and sg_list[0].get("actionableDeeplink"):
                             top_deeplink = sg_list[0]["actionableDeeplink"].get("deeplink", "")
 
+                        seen_critical = False
+                        for act in actions_list:
+                            if act.get("category") == "critical":
+                                seen_critical = True
+                            elif seen_critical:
+                                safety_violations += 1
+
                 # Anti-Hallucination: Scan for URL leaks
                 raw_text = str(data.get("response", {}))
                 if re.search(r"https?://|www\.", raw_text):
@@ -184,6 +192,7 @@ def run_benchmark(target_url: Optional[str] = None) -> Dict[str, Any]:
 | Metric | Measured Value | Samsung Target | Hackathon Status |
 |:---|:---|:---|:---|
 | **Hallucinated URL Leaks** | **{url_leaks}** | 0 leaks strictly | {'PASS (Zero Leaks)' if url_leaks == 0 else 'FAIL'} |
+| **Safety Ordering Violations** | **{safety_violations}** | 0 violations strictly | {'PASS (Zero Violations)' if safety_violations == 0 else 'FAIL'} |
 | **Schema Compliance Rate** | **{schema_compliance:.1f}%** | 100.0% | {'100% Samsung-Exact' if schema_compliance == 100 else 'DEFECTS'} |
 | **Cache Hit Rate** | **{hit_rate:.1f}%** | >= 60.0% | {'PASS (Goal Surpassed)' if hit_rate >= 60 else 'ADAPTING'} |
 | **Median Latency (p50)** | **{p50:.2f} ms** | < 300 ms | {'ULTRA-FAST (<10ms)' if p50 < 10 else 'PASS'} |
