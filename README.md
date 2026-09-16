@@ -131,7 +131,7 @@ Measured using the self-auditing benchmark harness ([`src/backend/benchmark.py`]
 | **99th Percentile (p99)** | **23.82 ms** | < 1,500 ms | **NO COLD-START SPIKES** |
 | **Average Query Latency** | **1.80 ms** | < 500 ms | **INSTANTANEOUS** |
 
-*Detailed benchmark breakdown and language distribution recorded in [`metrics.md`](metrics.md).*
+*Detailed benchmark breakdown and language distribution recorded in [`metrics.md`](metrics.md) and [`results.jsonl`](results.jsonl).*
 
 ---
 
@@ -139,7 +139,9 @@ Measured using the self-auditing benchmark harness ([`src/backend/benchmark.py`]
 
 ```
 fixby-galaxy-engine/
-├── contracts/                     # FROZEN Official Data Contracts
+├── .github/workflows/             # Automated CI pipeline
+│   └── ci.yml                     # Linting, 25-test pytest suite, and benchmark runner
+├── contracts/                     # Official Data Contracts
 │   ├── schema.py                  # Samsung-exact Pydantic v2 data models
 │   ├── deeplinks.json             # 35 authentic One UI settings (80 graph nodes)
 │   └── mock_responses.json        # Contract fixture for frontend/backend testing
@@ -148,7 +150,7 @@ fixby-galaxy-engine/
 │   ├── MASTER_ARCHITECTURE_AND_INTEGRATION_PLAN.md
 │   ├── TEAM_WALKTHROUGH.md        # 5-Day flow & commit history
 │   ├── DEMO_SCRIPT.md             # 5-minute pitch script
-│   └── guides/                    # 0-to-Hero playbooks for each member
+│   └── guides/                    # Guides for each member
 │       ├── MEMBER_1_LEAD_GUIDE.md
 │       ├── MEMBER_2_AIML_GUIDE.md
 │       ├── MEMBER_3_FRONTEND_GUIDE.md
@@ -169,12 +171,17 @@ fixby-galaxy-engine/
 │       └── benchmark.py           # Self-auditing 41-query benchmark harness
 ├── tests/                         # Automated Unit & Integration Test Suites
 │   ├── test_core/                 # Core engine unit tests
+│   ├── test_ai/                   # AI/ML engine unit tests
 │   └── test_backend/              # API endpoint & telemetry tests
 ├── docker/                        # Containerization setup
-│   ├── Dockerfile                 # Python 3.11-slim production container
-│   └── docker-compose.yml         # Multi-container orchestration
+│   ├── Dockerfile                 # Python 3.11-slim backend container
+│   ├── Dockerfile.frontend        # Nginx alpine frontend container
+│   ├── nginx.conf                 # Reverse proxy configuration
+│   └── docker-compose.yml         # Container configuration
+├── docker-compose.yml             # Root multi-container orchestration
 ├── requirements.txt               # Pinned Python dependencies
-└── metrics.md                     # Empirical benchmark report
+├── metrics.md                     # Empirical benchmark markdown scorecard
+└── results.jsonl                  # Per-query Theme 2 JSON Lines evaluation dataset
 ```
 
 ---
@@ -208,17 +215,17 @@ source venv/bin/activate    # On Windows: .\venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 ```
 
-### 2. Run Automated Test Suite (15/15 Tests)
+### 2. Run Automated Test Suite (25/25 Tests)
 ```bash
 pytest tests/ -v
 ```
 
-### 3. Run the Self-Auditing Benchmark
+### 3. Run the Self-Auditing Benchmark (Outputs metrics.md and results.jsonl)
 ```bash
-python src/backend/benchmark.py
+python -m src.backend.benchmark
 ```
 
-### 4. Start the FastAPI Live Server
+### 4. Start the FastAPI Live Server Locally
 ```bash
 uvicorn src.backend.main:app --reload --port 8000
 ```
@@ -230,6 +237,13 @@ uvicorn src.backend.main:app --reload --port 8000
        -H "Content-Type: application/json" \
        -d '{"query": "battery draining fast"}'
   ```
+
+### 5. Run Full Stack with Docker (One-Command Launch)
+```bash
+docker compose up --build
+```
+- Backend API & Swagger: [http://localhost:8000/docs](http://localhost:8000/docs)
+- Frontend 3D UI & Console: [http://localhost:3000](http://localhost:3000)
 
 ---
 

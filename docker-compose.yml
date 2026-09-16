@@ -1,10 +1,10 @@
-# docker/docker-compose.yml — Fixby Multi-Container Configuration
+# docker-compose.yml — Fixby Galaxy Engine Production Multi-Container Orchestration
 version: '3.8'
 
 services:
   backend:
     build:
-      context: ..
+      context: .
       dockerfile: docker/Dockerfile
     container_name: fixby_backend
     restart: unless-stopped
@@ -24,7 +24,7 @@ services:
 
   frontend:
     build:
-      context: ..
+      context: .
       dockerfile: docker/Dockerfile.frontend
     container_name: fixby_frontend
     restart: unless-stopped
