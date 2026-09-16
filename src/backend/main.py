@@ -1,6 +1,4 @@
-import os
-# src/backend/main.py — FastAPI Gateway (Mock Mode for Days 1-2)
-import json
+# src/backend/main.py
 import time
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -10,19 +8,15 @@ from contracts.schema import (
     FeedbackRequest, FeedbackResponse, AnalyticsResponse
 )
 from src.backend.telemetry import telemetry
+from src.core.pipeline import run_troubleshoot_pipeline
+from src.core.cache import cache
 
-app = FastAPI(
-    title="Fixby — Samsung Galaxy Troubleshooting API",
-    description="Engine for Samsung PRISM GenAI Hackathon 3rd Edition",
-    version="1.1.0"
-)
+app = FastAPI(title="Mai Batata Hun — Samsung Galaxy Troubleshooting API", version="1.1.0")
 
-# CORS Configuration
-# Note: allow_credentials=False because this API uses no browser session cookies
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=False,
+    allow_credentials=False,   # fix #14
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -105,16 +99,4 @@ def submit_feedback(request: FeedbackRequest):
 
 @app.get("/v1/analytics", response_model=AnalyticsResponse)
 def get_analytics():
-    summary = telemetry.get_summary()
-    return AnalyticsResponse(
-        total_queries=summary["total_queries"],
-        cache_hits=summary.get("cache_hits", 0),
-        cache_hit_rate_pct=summary["cache_hit_rate_pct"],
-        avg_latency_ms=summary["avg_latency_ms"],
-        latency_p50_ms=summary["latency_p50_ms"],
-        latency_p95_ms=summary["latency_p95_ms"],
-        latency_p99_ms=summary["latency_p99_ms"],
-        top_complaint_categories=summary.get("top_complaint_categories", {}),
-        language_distribution=summary.get("language_distribution", {}),
-        pipeline_source_breakdown=summary.get("pipeline_source_breakdown", {})
-    )
+    return AnalyticsResponse(**telemetry.get_summary())
