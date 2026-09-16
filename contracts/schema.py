@@ -100,6 +100,25 @@ class TroubleshootResponse(BaseModel):
     diagnostic_graph: Optional[Dict] = None
 
 
+class FollowupRequest(BaseModel):
+    query: str = Field(..., min_length=2)
+    session_id: Optional[str] = None
+    turn: int = Field(default=2, ge=2)
+    attempted_action_ids: List[str] = Field(default_factory=list)
+    device_model: Optional[str] = "Galaxy S24"
+
+
+class FollowupResponse(BaseModel):
+    query: str
+    turn: int
+    escalation_level: Literal["AUTO", "CAUTION", "CRITICAL"]
+    previous_attempted_actions: List[str]
+    response: ContextDeeplinkResponse
+    meta: PipelineMeta
+    diagnostic_graph: Optional[Dict] = None
+    is_terminal: bool = False
+
+
 class FeedbackRequest(BaseModel):
     query: str
     action_name: str

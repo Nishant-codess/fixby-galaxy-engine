@@ -173,8 +173,13 @@ def test_cache_tier1_exact_and_tier2_slot():
     assert tier2 == "tier2_slot_hash"
     assert val2 == sample_data
 
+    # Tier 3 Semantic Vector Hit (similar subword phrasing when slots are empty/missing)
+    val_vec, tier_vec = test_cache.get("battery draining quickly on galaxy", slots=None)
+    assert tier_vec == "tier3_embedding"
+    assert val_vec == sample_data
+
     # Cold Miss
-    val3, tier3 = test_cache.get("unseen query", slots={"domain": "unknown", "symptom": "none"})
+    val3, tier3 = test_cache.get("unseen query about camera lens error", slots={"domain": "camera", "symptom": "none"})
     assert tier3 == "cold"
     assert val3 is None
 

@@ -6,6 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contracts.schema import (
     TroubleshootRequest, TroubleshootResponse,
+    FollowupRequest, FollowupResponse,
     FeedbackRequest, FeedbackResponse, AnalyticsResponse
 )
 from src.backend.telemetry import telemetry
@@ -63,6 +64,27 @@ def troubleshoot(request: TroubleshootRequest):
         cache_hit=resp.meta.cache_hit,
         source=source,
         category=resp.meta.complaint_category or "general",
+        language=resp.meta.language_detected or "en"
+    )
+
+    return resp
+
+
+@app.post("/v1/troubleshoot/followup", response_model=FollowupResponse)
+def troubleshoot_followup(request: FollowupRequest):
+    from src.core.pipeline import run_followup_pipeline
+    resp = run_followup_pipeline(
+        query=request.query,
+        attempted_action_ids=request.attempted_action_ids,
+        turn=request.turn,
+        session_id=request.session_id
+    )
+
+    telemetry.record(
+        latency_ms=resp.meta.latency_ms,
+        cache_hit=resp.meta.cache_hit,
+        source="followup_escalation",
+        category=resp.meta.complaint_category or "general.escalation",
         language=resp.meta.language_detected or "en"
     )
 

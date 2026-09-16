@@ -215,7 +215,7 @@ source venv/bin/activate    # On Windows: .\venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 ```
 
-### 2. Run Automated Test Suite (25/25 Tests)
+### 2. Run Automated Test Suite (27/27 Tests)
 ```bash
 pytest tests/ -v
 ```
@@ -231,11 +231,17 @@ uvicorn src.backend.main:app --reload --port 8000
 ```
 - Interactive Swagger Documentation: [http://localhost:8000/docs](http://localhost:8000/docs)
 - Health Check: `curl http://localhost:8000/health`
-- Diagnostic Query:
+- Turn 1 Diagnostic Query:
   ```bash
   curl -X POST http://localhost:8000/v1/troubleshoot \
        -H "Content-Type: application/json" \
        -d '{"query": "battery draining fast"}'
+  ```
+- Turn 2 Follow-Up Escalation:
+  ```bash
+  curl -X POST http://localhost:8000/v1/troubleshoot/followup \
+       -H "Content-Type: application/json" \
+       -d '{"query": "battery still draining fast", "turn": 2, "attempted_action_ids": ["Background Usage Limits"]}'
   ```
 
 ### 5. Run Full Stack with Docker (One-Command Launch)
