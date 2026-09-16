@@ -32,6 +32,17 @@ from src.core.settings_graph import settings_graph
 from src.core.validator import validate_and_repair
 from src.core.scorer import compute_compositional_confidence
 
+# Import Member 2 Live AI Engine Modules
+try:
+    from src.ai.matcher import get_candidate_ids as live_get_candidate_ids
+    from src.ai.extractor import extract_structured_plan as live_extract_structured_plan
+    from src.ai.paraphraser import generate_query_variations as live_generate_query_variations
+    from src.ai.graph_generator import generate_diagnostic_graph as live_generate_diagnostic_graph
+    AI_MODULES_AVAILABLE = True
+except ImportError:
+    AI_MODULES_AVAILABLE = False
+
+
 # ============================================================================
 # DAY 1-2 STUBS: Standalone testbed before Day 3 Member 2 integration
 # ============================================================================
@@ -135,10 +146,16 @@ def run_troubleshoot_pipeline(query: str, siis_response: Optional[str] = None) -
         return resp_copy
 
     # Stage 4: Candidate Deeplink Retrieval (CALLED BEFORE EXTRACTION)
-    candidate_ids = _stub_get_candidate_ids(query, top_k=5)
+    if AI_MODULES_AVAILABLE:
+        candidate_ids = live_get_candidate_ids(query, top_k=5)
+    else:
+        candidate_ids = _stub_get_candidate_ids(query, top_k=5)
 
     # Stage 5: Retrieval-Bound Schema Extraction
-    raw_goals = _stub_extract_structured_plan(query, candidate_ids, siis_response)
+    if AI_MODULES_AVAILABLE:
+        raw_goals = live_extract_structured_plan(query, candidate_ids, siis_response)
+    else:
+        raw_goals = _stub_extract_structured_plan(query, candidate_ids, siis_response)
 
     # Stage 6: SHKG Leaf Resolution
     leaf_id = settings_graph.resolve_deepest_screen(candidate_ids, domain=slots.get("domain"))
@@ -156,14 +173,20 @@ def run_troubleshoot_pipeline(query: str, siis_response: Optional[str] = None) -
         g.score = score
 
     # Stage 8: Paraphrase Generation & Write-Through Cache Warming
-    variations = _stub_generate_paraphrases(query)
+    if AI_MODULES_AVAILABLE:
+        variations = live_generate_query_variations(query, slots)
+        diag_graph = live_generate_diagnostic_graph(repaired_goals)
+    else:
+        variations = _stub_generate_paraphrases(query)
+        diag_graph = None
+
     latency = round((time.time() - start_time) * 1000, 2)
 
     meta = PipelineMeta(
         latency_ms=latency,
         cache_hit=False,
         cache_tier="cold",
-        model="stub-pipeline",
+        model="groq-llama3-70b" if AI_MODULES_AVAILABLE else "stub-pipeline",
         cost_usd=0.0,
         complaint_category=complaint_cats[0] if complaint_cats else "general.unknown",
         language_detected=lang,
@@ -177,7 +200,8 @@ def run_troubleshoot_pipeline(query: str, siis_response: Optional[str] = None) -
         query=query,
         query_variations=variations,
         response=ContextDeeplinkResponse(contexts=repaired_goals),
-        meta=meta
+        meta=meta,
+        diagnostic_graph=diag_graph
     )
 
     # Warm cache with query variations (write-through)
