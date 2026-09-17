@@ -1,6 +1,9 @@
 # src/backend/main.py
 import time
-from fastapi import FastAPI
+import os
+from collections import defaultdict
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from contracts.schema import TroubleshootRequest, TroubleshootResponse, FeedbackRequest, FeedbackResponse, AnalyticsResponse
 from src.backend.telemetry import telemetry
@@ -16,6 +19,33 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+FIXBY_API_KEY = os.getenv("FIXBY_API_KEY", "test-api-key-123")
+RATE_LIMIT = 100  # max requests per second per IP
+rate_limit_data = defaultdict(lambda: {"count": 0, "reset_time": 0.0})
+
+@app.middleware("http")
+async def security_and_rate_limit(request: Request, call_next):
+    if request.url.path.startswith("/v1/"):
+        # 1. API Key Auth
+        api_key = request.headers.get("X-API-Key")
+        if api_key != FIXBY_API_KEY:
+            return JSONResponse(status_code=401, content={"detail": "Invalid or missing X-API-Key header"})
+        
+        # 2. Rate Limiting
+        client_ip = request.client.host if request.client else "unknown"
+        current_time = time.time()
+        user_data = rate_limit_data[client_ip]
+        
+        if current_time > user_data["reset_time"]:
+            user_data["count"] = 1
+            user_data["reset_time"] = current_time + 1.0
+        else:
+            if user_data["count"] >= RATE_LIMIT:
+                return JSONResponse(status_code=429, content={"detail": "Too Many Requests"})
+            user_data["count"] += 1
+
+    return await call_next(request)
 
 @app.get("/health")
 def health_check():
