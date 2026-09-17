@@ -1,6 +1,10 @@
 # src/backend/telemetry.py
+import sqlite3
+import os
 from typing import Dict, List
 import numpy as np
+
+DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "telemetry.db")
 
 class TelemetryCollector:
     def __init__(self):
@@ -10,8 +14,50 @@ class TelemetryCollector:
         self.categories: Dict[str, int] = {}
         self.languages: Dict[str, int] = {}
         self.pipeline_sources: Dict[str, int] = {"live": 0, "mock": 0}
+        
+        self._init_db()
+        self._load_from_db()
+
+    def _init_db(self):
+        with sqlite3.connect(DB_PATH) as conn:
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS telemetry_logs (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    latency_ms REAL,
+                    cache_hit BOOLEAN,
+                    category TEXT,
+                    lang TEXT,
+                    pipeline_source TEXT,
+                    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            conn.commit()
+
+    def _load_from_db(self):
+        with sqlite3.connect(DB_PATH) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT latency_ms, cache_hit, category, lang, pipeline_source FROM telemetry_logs")
+            rows = cursor.fetchall()
+            for row in rows:
+                latency_ms, cache_hit, category, lang, pipeline_source = row
+                self.total_queries += 1
+                self.latencies.append(latency_ms)
+                if cache_hit:
+                    self.cache_hits += 1
+                self.categories[category] = self.categories.get(category, 0) + 1
+                self.languages[lang] = self.languages.get(lang, 0) + 1
+                self.pipeline_sources[pipeline_source] = self.pipeline_sources.get(pipeline_source, 0) + 1
 
     def record(self, latency_ms: float, cache_hit: bool, category: str, lang: str, pipeline_source: str = "live"):
+        # Persist to DB
+        with sqlite3.connect(DB_PATH) as conn:
+            conn.execute(
+                "INSERT INTO telemetry_logs (latency_ms, cache_hit, category, lang, pipeline_source) VALUES (?, ?, ?, ?, ?)",
+                (latency_ms, bool(cache_hit), category, lang, pipeline_source)
+            )
+            conn.commit()
+            
+        # Update in-memory state
         self.total_queries += 1
         self.latencies.append(latency_ms)
         if cache_hit:
