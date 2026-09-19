@@ -1,7 +1,7 @@
 /* src/frontend/js/app.js - Demo Page Master Controller */
 
 // TOGGLE: false = use mock.json, true = fetch live backend API
-const USE_LIVE_API = false;
+const USE_LIVE_API = true;
 const BACKEND_URL = 'http://localhost:8000/v1/troubleshoot';
 
 class AppController {
