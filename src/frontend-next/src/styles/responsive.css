@@ -1,0 +1,138 @@
+/* src/frontend/css/responsive.css - Responsive Media Queries */
+
+/* Tablet & Smaller Screens (≤ 1024px) */
+@media (max-width: 1024px) {
+  .hero-grid {
+    grid-template-columns: 1fr;
+    text-align: center;
+    gap: var(--space-8);
+  }
+
+  .hero-text-content {
+    align-items: center;
+  }
+
+  .hero-subtitle {
+    max-width: 100%;
+  }
+
+  .hero-phone-card {
+    max-width: 380px;
+    margin: 0 auto;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-6);
+  }
+
+  .stat-item:nth-child(2)::after {
+    display: none;
+  }
+
+  .problem-container {
+    grid-template-columns: 1fr;
+  }
+
+  .problem-sticky-text {
+    position: static;
+  }
+
+  .pipeline-viewer {
+    grid-template-columns: 1fr;
+  }
+
+  .pipeline-stepper {
+    position: static;
+    flex-direction: row;
+    overflow-x: auto;
+    padding-bottom: var(--space-4);
+  }
+
+  .bento-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .bento-card-span-2 {
+    grid-column: span 2;
+  }
+
+  .bento-card-span-3 {
+    grid-column: span 2;
+  }
+
+  /* Demo Page Dual Pane */
+  .demo-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .demo-right-panel {
+    position: static;
+    margin-top: var(--space-8);
+  }
+
+  .phone-device-frame {
+    width: 100%;
+    max-width: 340px;
+    height: 600px;
+  }
+}
+
+/* Mobile Screens (≤ 768px) */
+@media (max-width: 768px) {
+  .navbar {
+    width: calc(100% - var(--space-4));
+    padding: 0 var(--space-4);
+  }
+
+  .nav-links {
+    display: none; /* Collapses to mobile sheet / CTA */
+  }
+
+  .section {
+    padding-top: var(--space-12);
+    padding-bottom: var(--space-12);
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stat-item::after {
+    display: none !important;
+  }
+
+  .bento-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .bento-card-span-2,
+  .bento-card-span-3 {
+    grid-column: span 1;
+  }
+
+  .modal-box {
+    padding: var(--space-6);
+  }
+
+  .hud-drawer {
+    width: 100%;
+    right: -100%;
+  }
+}
+
+/* Mobile Small (≤ 480px) */
+@media (max-width: 480px) {
+  .hero-cta-group {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .hero-cta-group .btn {
+    width: 100%;
+  }
+
+  .phone-device-frame {
+    height: 520px;
+  }
+}

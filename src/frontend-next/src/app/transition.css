@@ -1,0 +1,358 @@
+/* transition.css — Page-to-Phone Cinematic Transition */
+
+/*
+ * LANDING MODE: The wrappers must be transparent to scroll.
+ * The body scrolls naturally, the canvas is position:fixed behind everything,
+ * and GSAP ScrollTrigger uses "body" as the trigger.
+ * 
+ * CONSOLE MODE: We freeze scroll, fade out the landing content,
+ * and morph the viewport into a phone frame.
+ */
+
+/* In landing mode, wrapper is just a pass-through — no fixed height, no overflow:hidden */
+.master-app-wrapper {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* In landing mode, viewport is just a flow container */
+.cinematic-viewport {
+  position: relative;
+  width: 100%;
+}
+
+/* Landing layer flows normally so the page has real document height for ScrollTrigger */
+.landing-layer {
+  position: relative;
+  width: 100%;
+  opacity: 1;
+  transition: opacity 0.6s ease-out;
+  pointer-events: auto;
+}
+
+/* Phone app layer is completely hidden in landing mode */
+.phone-app-layer {
+  display: none;
+}
+
+/* When fading out begins, we hide the landing layer immediately to avoid visual jumps */
+.master-app-wrapper.fading-out .landing-layer {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════════════════ */
+/*  CONSOLE MODE — triggered when .in-console is added   */
+/* ═══════════════════════════════════════════════════════ */
+
+.master-app-wrapper.in-console {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: #000;
+  z-index: 9999;
+}
+
+/* Ambient pulsing background in console mode */
+.master-app-wrapper.in-console::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 80vw;
+  height: 80vh;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(76, 141, 255, 0.08) 0%, rgba(93, 58, 155, 0.05) 40%, rgba(0, 0, 0, 0) 70%);
+  filter: blur(100px);
+  animation: pulseAmbient 8s ease-in-out infinite alternate;
+  z-index: 0;
+}
+
+@keyframes pulseAmbient {
+  0% { transform: translate(-50%, -50%) scale(1); opacity: 0.6; }
+  100% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+}
+
+.master-app-wrapper.in-console .cinematic-viewport {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 380px;
+  height: 822px;
+  transform: translate(-50%, -50%);
+  border-radius: 44px; /* Slightly rounder for modern flagship look */
+  border: 6px solid #000; /* True inner black bezel */
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.1), /* inner glass reflection */
+    0 0 0 4px rgba(255, 255, 255, 0.05), /* polished metal edge */
+    0 0 0 5px rgba(255, 255, 255, 0.02), /* subtle falloff */
+    0 40px 100px rgba(0, 0, 0, 0.8), /* deep physical shadow */
+    0 0 120px rgba(76, 141, 255, 0.15), /* ambient engine glow */
+    inset 0 0 40px rgba(0, 0, 0, 0.9);
+  background: #000;
+  overflow: hidden;
+  animation: phoneMorph 2s cubic-bezier(0.77, 0, 0.175, 1) forwards;
+}
+
+@keyframes phoneMorph {
+  0% {
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+    border-color: transparent;
+    box-shadow: none;
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  49.9% {
+    width: 822px;
+    height: 380px;
+    border-radius: 24px;
+    border-color: #000;
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.05), 0 0 0 4px rgba(255,255,255,0.02);
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  50% {
+    width: 380px;
+    height: 822px;
+    border-radius: 24px;
+    border-color: #000;
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.05), 0 0 0 4px rgba(255,255,255,0.02);
+    transform: translate(-50%, -50%) rotate(-90deg);
+  }
+  100% {
+    width: 380px;
+    height: 822px;
+    border-radius: 44px;
+    border-color: #000;
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.1),
+      0 0 0 4px rgba(255, 255, 255, 0.05),
+      0 0 0 5px rgba(255, 255, 255, 0.02),
+      0 40px 100px rgba(0, 0, 0, 0.8),
+      0 0 120px rgba(76, 141, 255, 0.15),
+      inset 0 0 40px rgba(0, 0, 0, 0.9);
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+}
+
+/* Camera punch hole */
+.master-app-wrapper.in-console .cinematic-viewport::before {
+  content: '';
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #1a1a24 0%, #000 60%);
+  box-shadow: 
+    inset 0 -1px 2px rgba(255, 255, 255, 0.15),
+    0 0 0 2px #000;
+  z-index: 100;
+}
+
+.master-app-wrapper.in-console .landing-layer {
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+}
+
+.master-app-wrapper.in-console .phone-app-layer {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  animation: phoneBootUp 0.8s ease-out 1.6s forwards;
+}
+
+@keyframes phoneBootUp {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* ═══════════════════════════════════════════════════════ */
+/*  Demo Guide Floating Card (appears beside the phone)  */
+/* ═══════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════ */
+/*  Demo Guide Floating Card (Glass & Glow)              */
+/* ═══════════════════════════════════════════════════════ */
+.demo-guide-card {
+  position: fixed;
+  top: 50%;
+  right: -400px;
+  transform: translateY(-50%);
+  width: 320px;
+  opacity: 0;
+  pointer-events: none;
+  padding: 32px;
+  border-radius: 24px;
+  
+  /* Glassmorphism */
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  
+  /* Delicate top-lit border */
+  box-shadow: 
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05),
+    0 24px 48px rgba(0, 0, 0, 0.8);
+    
+  color: #e0e0e0;
+  z-index: 10000;
+  transition: all 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.master-app-wrapper.in-console .demo-guide-card.visible,
+.master-app-wrapper.in-console .demo-guide-card { /* fallback if class not applied instantly */
+  right: calc(50% - 560px);
+  opacity: 1;
+  pointer-events: auto;
+  transition-delay: 1.8s;
+}
+
+.demo-guide-header {
+  margin-bottom: 32px;
+}
+
+.demo-guide-header h3 {
+  font-family: 'Geist', 'Playfair Display', serif;
+  font-size: 1.5rem;
+  font-weight: 500;
+  margin: 0 0 8px 0;
+  color: #fff;
+  letter-spacing: -0.02em;
+}
+
+.demo-guide-header p {
+  font-family: 'Geist Mono', monospace;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.guide-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.guide-step {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.step-ring {
+  margin-top: 4px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid rgba(76, 141, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 0 10px rgba(76, 141, 255, 0.2);
+}
+
+.step-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #4c8dff;
+  box-shadow: 0 0 8px #4c8dff;
+}
+
+.step-content h4 {
+  font-family: 'Sora', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 6px 0;
+}
+
+.step-content p {
+  font-family: 'Geist Mono', monospace;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.4);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.step-content em {
+  color: #4c8dff;
+  font-style: normal;
+}
+
+/* ═══════════════════════════════════════════════════════ */
+/*  Back to Landing Button (Ghost CTA Style)               */
+/* ═══════════════════════════════════════════════════════ */
+.back-to-landing-btn {
+  position: fixed;
+  top: 40px;
+  left: -200px;
+  opacity: 0;
+  pointer-events: none;
+  
+  /* Ghost button styling */
+  padding: 14px 28px;
+  border-radius: 100px;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 0;
+  box-shadow: 
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05),
+    0 8px 24px rgba(0, 0, 0, 0.5);
+    
+  color: rgba(255, 255, 255, 0.7);
+  font-family: 'Sora', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  z-index: 10000;
+  cursor: pointer;
+  transition: all 1.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.back-to-landing-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  box-shadow: 
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.15),
+    0 12px 32px rgba(76, 141, 255, 0.15);
+  transform: translateY(-2px);
+}
+
+.master-app-wrapper.in-console .back-to-landing-btn {
+  left: 40px;
+  opacity: 1;
+  pointer-events: auto;
+  transition-delay: 1.8s, 0s, 0s, 0s; /* delay layout transition, but instant hover transitions */
+}
+
+/* ═══════════════════════════════════════════════════════ */
+/*  Skip Transitions (Used on initial mount for cache)     */
+/* ═══════════════════════════════════════════════════════ */
+.master-app-wrapper.skip-transitions .cinematic-viewport {
+  animation: none !important;
+}
+
+.master-app-wrapper.skip-transitions .phone-app-layer {
+  animation: none !important;
+  opacity: 1 !important;
+}
+
+.master-app-wrapper.skip-transitions .demo-guide-card,
+.master-app-wrapper.skip-transitions .back-to-landing-btn {
+  transition: none !important;
+}
