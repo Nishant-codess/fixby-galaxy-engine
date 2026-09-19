@@ -31,12 +31,12 @@
 </head>
 <body style="position: relative; overflow-x: hidden;">
 
-  <!-- Ambient 3D WebGL Background Canvas -->
-  <canvas id="webgl-canvas" style="position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: -1; pointer-events: none; opacity: 0.6;"></canvas>
+  <!-- Ambient 3D WebGL Canvas (Foreground for demo) -->
+  <canvas id="webgl-canvas" style="position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: auto; outline: none;"></canvas>
 
   <!-- Top Navbar -->
   <header>
-    <nav class="navbar card-glass" style="margin: 16px; border-radius: var(--radius-pill); padding: 8px 16px;">
+    <nav class="navbar glass-pane" style="margin: 16px; border-radius: var(--radius-pill); padding: 8px 16px;">
       <div style="display: flex; align-items: center; gap: 16px;">
         <a href="index.html" class="btn btn-secondary" style="padding: 8px 16px; font-size: 0.875rem; border-radius: var(--radius-pill);">
           <svg class="icon" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
@@ -58,14 +58,14 @@
     </nav>
   </header>
 
-  <main class="container demo-layout" style="position: relative; z-index: 1;">
+  <main class="container demo-layout" style="position: relative; z-index: 10; pointer-events: none; padding-top: 120px;">
     <!-- Left Panel: Input + Results + DAG -->
-    <div class="demo-left-panel">
+    <div class="demo-left-panel" style="pointer-events: auto;">
       
       <!-- Query Box -->
-      <div class="query-box-wrapper card-3d-tilt card-glass" style="border: var(--glass-border-accent); padding: 16px;">
-        <input type="text" id="query-input" class="query-input-field" placeholder="Describe issue in English or Hinglish (e.g. battery draining fast)..." style="width: 100%; border: none; background: transparent; color: white; font-family: var(--font-body); font-size: 1rem; outline: none;">
-        <div class="query-actions-right" style="position: absolute; right: 16px; top: 16px; display: flex; gap: 8px;">
+      <div class="query-box-wrapper card-3d-tilt card-glass" style="position: relative; border: var(--glass-border-accent); padding: 16px;">
+        <input type="text" id="query-input" class="query-input-field" placeholder="Describe issue in English or Hinglish (e.g. battery draining fast)..." style="width: calc(100% - 100px); border: none; background: transparent; color: white; font-family: var(--font-body); font-size: 1rem; outline: none; padding-right: 16px;">
+        <div class="query-actions-right" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); display: flex; gap: 8px;">
           <button id="btn-voice-mic" class="btn btn-secondary btn-icon-only" title="Voice Search">
             <svg class="icon" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
           </button>
@@ -105,18 +105,9 @@
 
     </div>
 
-    <!-- Right Panel: One UI 6.1 Simulator Phone -->
-    <div class="demo-right-panel" style="display: flex; justify-content: center; align-items: center; padding: 48px;">
-      <div class="phone-device-frame card-3d-tilt" style="width: 300px; height: 600px; border-radius: 40px; border: 2px solid #24232c; background: #0b0c10; position: relative; box-shadow: 0 24px 80px rgba(0,0,0,0.8);">
-        <div class="phone-notch" style="position: absolute; top: 12px; left: 50%; transform: translateX(-50%); width: 80px; height: 24px; background: #000; border-radius: 12px;"></div>
-        <div id="phone-screen-content" class="phone-screen-content" style="width: 100%; height: 100%; padding: 40px 16px; overflow-y: auto;">
-          <div style="text-align: center; margin-top: 180px; color: #4a4451;">
-            <svg class="icon" style="width: 48px; height: 48px; margin-bottom: 12px; opacity: 0.5;" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-            <div style="font-size: 0.875rem; font-weight: 600; font-family: var(--font-display-modern);">One UI Simulator</div>
-            <div style="font-size: 0.75rem; margin-top: 4px;">Select any query to simulate One UI navigation</div>
-          </div>
-        </div>
-      </div>
+    <!-- Right Panel: Transparent Zone for 3D Model -->
+    <div class="demo-right-panel" id="3d-interactive-zone" style="display: flex; justify-content: center; align-items: center; padding: 48px; pointer-events: none;">
+      <!-- 3D Phone is rendered in the canvas beneath this space -->
     </div>
   </main>
 

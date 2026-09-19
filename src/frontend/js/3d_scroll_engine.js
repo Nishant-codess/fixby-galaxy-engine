@@ -80,6 +80,17 @@ loader.load('assets/models/source/Untitled.glb', function (gltf) {
 
   phoneGroup.add(model);
   console.log("Added model to phoneGroup");
+  
+  // Remove preloader if it exists
+  const preloader = document.getElementById('preloader');
+  if (preloader) {
+    gsap.to(preloader, {
+      opacity: 0,
+      duration: 1.5,
+      ease: "power2.inOut",
+      onComplete: () => preloader.remove()
+    });
+  }
 }, undefined, function (error) {
   console.error('An error happened loading the model:', error);
 });

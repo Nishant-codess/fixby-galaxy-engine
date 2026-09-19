@@ -113,11 +113,11 @@ class AppController {
           <p style="font-size: 0.875rem; color: #94a3b8;">${action.description}</p>
           <div class="step-list">${stepsHtml}</div>
           <div style="display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap;">
-            <button class="btn btn-secondary btn-sim" onclick='window.OneUISimulator.simulateAction(${JSON.stringify(action)})'>
+            <button class="btn btn-secondary btn-sim" onclick='if(window.trigger3DSimulation) window.trigger3DSimulation()'>
               <svg class="icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-              Simulate on Phone
+              Simulate on 3D Phone
             </button>
-            <button class="btn btn-secondary" onclick='window.QRBridge.open("${action.deeplink_target}")'>
+            <button class="btn btn-secondary" onclick='if(window.QRBridge) window.QRBridge.open("${action.deeplink_target}")'>
               <svg class="icon" viewBox="0 0 24 24"><path d="M3 3h8v8H3zm2 2v4h4V5zm8-2h8v8h-8zm2 2v4h4V5zM3 13h8v8H3zm2 2v4h4v-4zm13-2h3v2h-3zm-3 2h2v3h-2zm3 3h3v3h-3zm-3 0h2v2h-2z"/></svg>
               Scan with Galaxy
             </button>

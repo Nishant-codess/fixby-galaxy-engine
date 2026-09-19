@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Diagnostic Console - Device Triage Engine</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts: Bricolage Grotesque, Geist, JetBrains Mono -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;500;600;700&amp;family=Geist:wght@300;400;500;600&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "on-secondary": "#442b00",
+            "on-tertiary-fixed-variant": "#005137",
+            "surface-bright": "#37393e",
+            "surface-dim": "#111318",
+            "secondary-fixed": "#ffddb1",
+            "inverse-on-surface": "#2e3035",
+            "tertiary": "#5bdda7",
+            "surface-container": "#1d2024",
+            "on-secondary-fixed": "#291800",
+            "outline-variant": "#424753",
+            "surface-tint": "#aec6ff",
+            "surface-container-low": "#191c20",
+            "surface-container-lowest": "#0c0e13",
+            "on-error": "#690005",
+            "on-secondary-fixed-variant": "#624000",
+            "tertiary-fixed-dim": "#5bdda7",
+            "primary-container": "#4e8eff",
+            "on-error-container": "#ffdad6",
+            "on-primary-fixed-variant": "#004395",
+            "on-primary-container": "#00275d",
+            "primary-fixed": "#d8e2ff",
+            "on-tertiary": "#003825",
+            "on-secondary-container": "#ffd190",
+            "secondary-container": "#815600",
+            "on-surface-variant": "#c2c6d6",
+            "inverse-primary": "#005ac3",
+            "on-tertiary-container": "#00311f",
+            "on-primary-fixed": "#001a42",
+            "on-primary": "#002e6a",
+            "surface-container-high": "#272a2f",
+            "on-background": "#e1e2e9",
+            "on-tertiary-fixed": "#002114",
+            "outline": "#8c909f",
+            "tertiary-container": "#00a573",
+            "primary-fixed-dim": "#aec6ff",
+            "surface-container-highest": "#32353a",
+            "error": "#ffb4ab",
+            "primary": "#aec6ff",
+            "on-surface": "#e1e2e9",
+            "inverse-surface": "#e1e2e9",
+            "surface-variant": "#32353a",
+            "surface": "#111318",
+            "error-container": "#93000a",
+            "tertiary-fixed": "#7afac1",
+            "secondary-fixed-dim": "#f6bc64",
+            "background": "#111318",
+            "secondary": "#f6bc64"
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          spacing: {
+            "space-md": "1rem",
+            "space-xl": "2rem",
+            "gutter": "1rem",
+            "space-xs": "0.25rem",
+            "space-lg": "1.5rem",
+            "margin": "1.5rem",
+            "space-sm": "0.5rem"
+          },
+          fontFamily: {
+            "body-lg": ["Geist", "sans-serif"],
+            "headline-sm": ["Bricolage Grotesque", "sans-serif"],
+            "label-sm": ["JetBrains Mono", "monospace"],
+            "headline-md": ["Bricolage Grotesque", "sans-serif"],
+            "code-data": ["JetBrains Mono", "monospace"],
+            "label-md": ["JetBrains Mono", "monospace"],
+            "headline-xl": ["Bricolage Grotesque", "sans-serif"],
+            "body-md": ["Geist", "sans-serif"],
+            "headline-lg": ["Bricolage Grotesque", "sans-serif"],
+            "body-sm": ["Geist", "sans-serif"]
+          },
+          fontSize: {
+            "body-lg": ["15px", { "lineHeight": "22px", "fontWeight": "400" }],
+            "headline-sm": ["15px", { "lineHeight": "22px", "fontWeight": "500" }],
+            "label-sm": ["11px", { "lineHeight": "14px", "fontWeight": "400" }],
+            "headline-md": ["18px", { "lineHeight": "26px", "fontWeight": "500" }],
+            "code-data": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+            "label-md": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+            "headline-xl": ["32px", { "lineHeight": "40px", "fontWeight": "600" }],
+            "body-md": ["13px", { "lineHeight": "18px", "fontWeight": "400" }],
+            "headline-lg": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+            "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    body {
+      background-color: #05070B;
+      color: #e1e2e9;
+      font-feature-settings: "tnum" 1, "ss01" 1;
+    }
+    .top-edge-highlight {
+      position: relative;
+    }
+    .top-edge-highlight::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 10%;
+      right: 10%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18) 50%, transparent);
+      pointer-events: none;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 4px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body class="bg-[#05070B] min-h-screen text-on-surface antialiased selection:bg-primary-container selection:text-on-primary-container">
+<!-- TOP APP BAR (Shared Components JSON Anchor: TopNavBar) -->
+<header class="w-full h-14 border-b border-outline-variant bg-surface-container-lowest flex justify-between items-center px-6 sticky top-0 z-50">
+<!-- Left brand cluster -->
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2.5">
+<div class="w-7 h-7 rounded-lg bg-surface-container-high border border-outline-variant/60 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[18px]">terminal</span>
+</div>
+<span class="font-headline-md text-headline-md font-bold text-on-surface tracking-tight">Device Triage Engine</span>
+</div>
+<!-- Navigation links matching JSON TopNavBar -->
+<nav class="hidden md:flex items-center gap-6 ml-4">
+<a class="text-on-surface-variant py-4 font-normal hover:text-on-surface font-body-sm text-body-sm transition-colors" href="#telemetry">Telemetry</a>
+<a class="text-primary border-b-2 border-primary py-4 font-medium font-body-sm text-body-sm" href="#diagnostics">Diagnostics</a>
+<a class="text-on-surface-variant py-4 font-normal hover:text-on-surface font-body-sm text-body-sm transition-colors" href="#pipelines">Pipelines</a>
+<a class="text-on-surface-variant py-4 font-normal hover:text-on-surface font-body-sm text-body-sm transition-colors" href="#logs">Logs</a>
+</nav>
+</div>
+<!-- Center active device badge -->
+<div class="hidden lg:flex items-center gap-3 bg-[rgba(22,29,40,0.7)] border border-[rgba(255,255,255,0.08)] rounded-full px-3.5 py-1">
+<div class="w-2 h-2 rounded-full bg-[#57D9A3] shadow-[0_0_0_2px_rgba(87,217,163,0.25)]"></div>
+<span class="font-body-sm text-body-sm text-on-surface font-medium">Pixel 8 Pro - Android 14 (UDC-2401)</span>
+<span class="text-outline text-[11px] font-label-sm">•</span>
+<span class="font-label-sm text-label-sm text-tertiary">Active session</span>
+</div>
+<!-- Right utility metrics & actions -->
+<div class="flex items-center gap-4">
+<div class="hidden sm:flex items-center gap-4 text-outline font-label-sm text-label-sm pr-2 border-r border-outline-variant/40">
+<span class="flex items-center gap-1.5 text-on-surface-variant">
+<span class="text-[10px] text-outline">LATENCY</span>
+<span class="text-on-surface font-medium">12ms</span>
+</span>
+<span class="flex items-center gap-1.5 text-on-surface-variant">
+<span class="text-[10px] text-outline">BUILD</span>
+<span class="text-on-surface font-medium">v4.18.2-prod</span>
+</span>
+</div>
+<!-- Icon actions from JSON -->
+<div class="flex items-center gap-1">
+<button class="p-1.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg transition-colors" title="Console Terminal">
+<span class="material-symbols-outlined text-[18px]">terminal</span>
+</button>
+<button class="p-1.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg transition-colors" title="Fine Tune">
+<span class="material-symbols-outlined text-[18px]">tune</span>
+</button>
+<button class="p-1.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg transition-colors relative" title="Notifications">
+<span class="material-symbols-outlined text-[18px]">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-[#FF5F52] rounded-full"></span>
+</button>
+</div>
+<!-- Trailing Action Buttons from JSON TopNavBar -->
+<div class="flex items-center gap-2">
+<button class="px-3 py-1.5 rounded-lg border border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.04)] text-on-surface hover:bg-surface-container font-headline-sm text-headline-sm active:scale-[0.98] transition-transform">
+          Run Full Sweep
+        </button>
+<button class="px-3 py-1.5 rounded-lg bg-primary-container text-on-primary-container hover:brightness-110 font-headline-sm text-headline-sm active:scale-[0.98] transition-transform">
+          Export Session
+        </button>
+</div>
+</div>
+</header>
+<!-- MAIN VIEWPORT CONTAINER (1440px target, 8px rhythm) -->
+<div class="max-w-[1440px] mx-auto flex h-[calc(100vh-3.5rem)] overflow-hidden">
+<!-- SUB-NAVIGATION SHELL: Docked left 64px collapsed/compact sidebar for tool sections (Shared Components JSON Anchor: SideNavBar) -->
+<aside class="w-60 h-full border-r border-outline-variant bg-surface-container-lowest flex flex-col justify-between p-3 shrink-0 hidden xl:flex">
+<div class="space-y-4">
+<!-- Target Device Header snippet -->
+<div class="p-2.5 rounded-xl bg-surface-container-low border border-[rgba(255,255,255,0.04)]">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]">stay_current_portrait</span>
+</div>
+<div class="overflow-hidden">
+<div class="font-headline-sm text-headline-sm text-on-surface truncate">Pixel 8 Pro</div>
+<div class="font-label-sm text-label-sm text-outline truncate">v4.18.2-STABLE</div>
+</div>
+</div>
+<button class="w-full mt-2.5 py-1 px-2 rounded-lg bg-[rgba(255,255,255,0.04)] hover:bg-[rgba(255,255,255,0.08)] border border-[rgba(255,255,255,0.07)] text-primary font-headline-sm text-headline-sm text-center transition-colors">
+            Mount Target
+          </button>
+</div>
+<!-- Tab list from JSON -->
+<div class="space-y-1">
+<button class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container font-headline-sm text-headline-sm text-left transition-colors">
+<span class="material-symbols-outlined text-[18px]">dashboard</span>
+<span>Overview</span>
+</button>
+<button class="w-full flex items-center gap-3 px-3 py-2 rounded-lg bg-surface-container-high text-primary font-medium font-headline-sm text-headline-sm text-left">
+<span class="material-symbols-outlined text-[18px]">memory</span>
+<span>Hardware Sweep</span>
+</button>
+<button class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container font-headline-sm text-headline-sm text-left transition-colors">
+<span class="material-symbols-outlined text-[18px]">sensors</span>
+<span>Signal Analysis</span>
+</button>
+<button class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container font-headline-sm text-headline-sm text-left transition-colors">
+<span class="material-symbols-outlined text-[18px]">device_thermostat</span>
+<span>Thermal HUD</span>
+</button>
+<button class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container font-headline-sm text-headline-sm text-left transition-colors">
+<span class="material-symbols-outlined text-[18px]">code</span>
+<span>Deep Logs</span>
+</button>
+</div>
+</div>
+<!-- Footer Tabs from JSON -->
+<div class="space-y-1 pt-3 border-t border-outline-variant/40">
+<button class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container font-headline-sm text-headline-sm text-left transition-colors">
+<span class="material-symbols-outlined text-[18px]">settings</span>
+<span>Settings</span>
+</button>
+<button class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container font-headline-sm text-headline-sm text-left transition-colors">
+<span class="material-symbols-outlined text-[18px]">help_outline</span>
+<span>Documentation</span>
+</button>
+</div>
+</aside>
+<!-- WORKSPACE CANVAS: Exact Two-Column Desktop Layout (58% left, 42% right) -->
+<main class="flex-1 flex overflow-hidden">
+<!-- LEFT COLUMN (Exactly 58% width): Diagnostic search, filters, results feed -->
+<section class="w-full lg:w-[58%] h-full flex flex-col p-6 overflow-y-auto custom-scroll border-r border-outline-variant/40">
+<!-- Header summary meta line -->
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center gap-2">
+<span class="font-headline-sm text-headline-sm font-semibold text-on-surface">Subsystem Diagnostic Feed</span>
+<span class="font-label-sm text-label-sm bg-surface-container-high text-primary px-2 py-0.5 rounded-full border border-[rgba(255,255,255,0.06)]">3 active anomalies</span>
+</div>
+<div class="flex items-center gap-2 text-outline font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px]">sync</span>
+<span>Auto-poll 250ms</span>
+</div>
+</div>
+<!-- 1. Search Input Panel -->
+<!-- Exactly 16px radius (rounded-2xl), bg rgba(22, 29, 40, 0.62), backdrop-blur-md, border: 1px solid rgba(140, 180, 255, 0.20) -->
+<div class="relative w-full rounded-2xl bg-[rgba(22,29,40,0.62)] backdrop-blur-md border border-[rgba(140,180,255,0.20)] shadow-[0_4px_24px_rgba(0,0,0,0.4)] transition-all focus-within:border-primary-container focus-within:shadow-[0_0_0_1px_rgba(78,142,255,0.4),0_8px_32px_rgba(0,0,0,0.6)]">
+<div class="flex items-center px-4 py-3.5 gap-3">
+<span class="material-symbols-outlined text-outline text-[20px] shrink-0">filter_center_focus</span>
+<input class="w-full bg-transparent border-none outline-none p-0 font-body-lg text-body-lg text-on-surface placeholder:text-outline/70 focus:ring-0" placeholder="Query subsystem, error code, intent uri, or crash dump..." type="text" value="sysfs://governor/thermal/mitigation"/>
+<div class="flex items-center gap-1 shrink-0">
+<button class="p-2 rounded-xl text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" title="Search Subsystem">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</button>
+<button class="p-2 rounded-xl text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" title="Voice Input Query">
+<span class="material-symbols-outlined text-[20px]">mic</span>
+</button>
+</div>
+</div>
+</div>
+<!-- 2. Suggestion Chips -->
+<!-- Directly below the search input, 3 small pill chips with exactly 6px border-radius, bg rgba(22, 29, 40, 0.45) -->
+<div class="flex items-center gap-2.5 mt-3 mb-6 overflow-x-auto pb-1">
+<span class="text-outline font-label-sm text-label-sm whitespace-nowrap">Suggested:</span>
+<button class="h-6.5 px-2.5 py-1 rounded-[6px] bg-[rgba(22,29,40,0.45)] border border-[rgba(255,255,255,0.08)] hover:border-primary/50 hover:bg-[rgba(76,141,255,0.12)] text-on-surface-variant hover:text-primary font-body-sm text-body-sm transition-all whitespace-nowrap flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-[#FFAB3F]"></span>
+<span>Thermal throttle trace</span>
+</button>
+<button class="h-6.5 px-2.5 py-1 rounded-[6px] bg-[rgba(22,29,40,0.45)] border border-[rgba(255,255,255,0.08)] hover:border-primary/50 hover:bg-[rgba(76,141,255,0.12)] text-on-surface-variant hover:text-primary font-body-sm text-body-sm transition-all whitespace-nowrap flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-[#FF5F52]"></span>
+<span>RIL modem handover fault</span>
+</button>
+<button class="h-6.5 px-2.5 py-1 rounded-[6px] bg-[rgba(22,29,40,0.45)] border border-[rgba(255,255,255,0.08)] hover:border-primary/50 hover:bg-[rgba(76,141,255,0.12)] text-on-surface-variant hover:text-primary font-body-sm text-body-sm transition-all whitespace-nowrap flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-[#57D9A3]"></span>
+<span>Battery fuel gauge I2C</span>
+</button>
+</div>
+<!-- 3. Stack of Result Cards -->
+<div class="flex flex-col gap-4">
+<!-- CARD 1: Caution / In-Progress (#FFAB3F dot, #4C8DFF badge) -->
+<article class="top-edge-highlight rounded-2xl bg-[rgba(22,29,40,0.62)] border border-[rgba(255,255,255,0.07)] p-5 backdrop-blur-md hover:border-[rgba(255,255,255,0.14)] transition-all">
+<!-- Header row -->
+<div class="flex items-start justify-between gap-3 mb-2.5">
+<div class="flex items-center gap-2.5 min-w-0">
+<!-- Status dot -->
+<span class="w-2.5 h-2.5 rounded-full bg-[#FFAB3F] shadow-[0_0_0_3px_rgba(255,171,63,0.2)] shrink-0"></span>
+<h3 class="font-headline-md text-headline-md font-semibold text-on-surface truncate">Thermal governor mitigation active</h3>
+</div>
+<!-- Optional badge for in progress (#4C8DFF) -->
+<span class="px-2.5 py-0.5 rounded-full bg-[rgba(76,141,255,0.14)] border border-[#4C8DFF]/40 text-[#4C8DFF] font-label-sm text-label-sm shrink-0 flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-[#4C8DFF] animate-ping"></span>
+<span>In Progress</span>
+</span>
+</div>
+<!-- Breadcrumb path -->
+<div class="flex items-center gap-1.5 font-body-sm text-body-sm text-outline mb-3.5">
+<span>kernel</span>
+<span class="text-[10px] text-outline/60">/</span>
+<span>power</span>
+<span class="text-[10px] text-outline/60">/</span>
+<span class="text-on-surface-variant font-medium">thermal-engine</span>
+</div>
+<!-- Monospace URI string in darker inset box (6px radius) -->
+<div class="bg-[rgba(10,14,20,0.85)] border border-[rgba(255,255,255,0.05)] rounded-[6px] p-2.5 px-3 mb-4 flex items-center justify-between group">
+<code class="font-code-data text-code-data text-primary font-medium tracking-tight overflow-x-auto whitespace-nowrap custom-scroll py-0.5">
+                intent://diagnostics.internal/dump/thermal_trace_#08942?pid=1128&amp;temp=48.2C
+              </code>
+<button class="opacity-60 group-hover:opacity-100 hover:text-primary transition-opacity text-outline p-1 shrink-0 ml-2" title="Copy URI string">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+</div>
+<!-- Detail row with QR preview and telemetry excerpt -->
+<div class="flex items-center gap-4 pt-1">
+<!-- QR Code Square preview -->
+<div class="w-12 h-12 bg-white rounded-lg p-1 shrink-0 flex items-center justify-center border border-[rgba(255,255,255,0.2)] shadow-sm">
+<svg class="w-full h-full text-black" fill="currentColor" viewbox="0 0 24 24">
+<path d="M2 2h8v8H2V2zm2 2v4h4V4H4zm10-2h8v8h-8V2zm2 2v4h4V4h-4zM2 14h8v8H2v-8zm2 2v4h4v-4H4zm14 2h4v4h-4v-4zm-4-4h2v2h-2v-2zm4 0h2v2h-2v-2zm-4 4h2v2h-2v-2zm6-2h2v2h-2v-2zm-2 4h2v2h-2v-2z"></path>
+</svg>
+</div>
+<div class="flex-1">
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+                  High junction thermal ceiling exceeded on SoC cluster 2. CPU core frequency throttled by 28% to prevent emergency reset.
+                </p>
+</div>
+<!-- Exactly two tiny tag pills -->
+<div class="flex flex-col sm:flex-row items-end sm:items-center gap-1.5 shrink-0 self-end">
+<span class="px-2 py-0.5 rounded-[4px] bg-surface-container-high border border-[rgba(255,255,255,0.06)] text-outline font-label-sm text-label-sm">
+                  P1-High
+                </span>
+<span class="px-2 py-0.5 rounded-[4px] bg-surface-container-high border border-[rgba(255,255,255,0.06)] text-on-surface-variant font-label-sm text-label-sm">
+                  Kernel 6.1
+                </span>
+</div>
+</div>
+</article>
+<!-- CARD 2: Critical Fault (#FF5F52 dot) -->
+<article class="top-edge-highlight rounded-2xl bg-[rgba(22,29,40,0.62)] border border-[rgba(255,255,255,0.07)] p-5 backdrop-blur-md hover:border-[rgba(255,255,255,0.14)] transition-all">
+<!-- Header row -->
+<div class="flex items-start justify-between gap-3 mb-2.5">
+<div class="flex items-center gap-2.5 min-w-0">
+<!-- Status dot critical -->
+<span class="w-2.5 h-2.5 rounded-full bg-[#FF5F52] shadow-[0_0_0_3px_rgba(255,95,82,0.25)] shrink-0"></span>
+<h3 class="font-headline-md text-headline-md font-semibold text-on-surface truncate">Baseband PCIe handshake drop</h3>
+</div>
+<span class="px-2.5 py-0.5 rounded-full bg-[rgba(255,95,82,0.14)] border border-[#FF5F52]/40 text-[#FF5F52] font-label-sm text-label-sm shrink-0">
+                Critical Fault
+              </span>
+</div>
+<!-- Breadcrumb path -->
+<div class="flex items-center gap-1.5 font-body-sm text-body-sm text-outline mb-3.5">
+<span>radio</span>
+<span class="text-[10px] text-outline/60">/</span>
+<span>ril-daemon</span>
+<span class="text-[10px] text-outline/60">/</span>
+<span class="text-on-surface-variant font-medium">modem-link</span>
+</div>
+<!-- Monospace URI string box -->
+<div class="bg-[rgba(10,14,20,0.85)] border border-[rgba(255,255,255,0.05)] rounded-[6px] p-2.5 px-3 mb-4 flex items-center justify-between group">
+<code class="font-code-data text-code-data text-primary font-medium tracking-tight overflow-x-auto whitespace-nowrap custom-scroll py-0.5">
+                radio://modem.stack/ril/packet-loss-v6?cell_id=310-410-09823
+              </code>
+<button class="opacity-60 group-hover:opacity-100 hover:text-primary transition-opacity text-outline p-1 shrink-0 ml-2" title="Copy URI string">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+</div>
+<!-- Detail row with QR & telemetry -->
+<div class="flex items-center gap-4 pt-1">
+<div class="w-12 h-12 bg-white rounded-lg p-1 shrink-0 flex items-center justify-center border border-[rgba(255,255,255,0.2)] shadow-sm">
+<svg class="w-full h-full text-black" fill="currentColor" viewbox="0 0 24 24">
+<path d="M2 2h8v8H2V2zm2 2v4h4V4H4zm10-2h8v8h-8V2zm2 2v4h4V4h-4zM2 14h8v8H2v-8zm2 2v4h4v-4H4zm10 2h2v4h-2v-4zm4-2h4v2h-4v-2zm-4 4h2v2h-2v-2zm4 0h4v2h-4v-2zm-2-6h2v2h-2v-2zm4 0h2v2h-2v-2z"></path>
+</svg>
+</div>
+<div class="flex-1">
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+                  Modem subsystem reported 4 consecutive PCIe bus link timeouts during NR band transition. Cellular IPC link reset scheduled.
+                </p>
+</div>
+<!-- Exactly two tiny tag pills -->
+<div class="flex flex-col sm:flex-row items-end sm:items-center gap-1.5 shrink-0 self-end">
+<span class="px-2 py-0.5 rounded-[4px] bg-[rgba(255,95,82,0.18)] border border-[#FF5F52]/30 text-[#FF5F52] font-label-sm text-label-sm">
+                  P0-Blocker
+                </span>
+<span class="px-2 py-0.5 rounded-[4px] bg-surface-container-high border border-[rgba(255,255,255,0.06)] text-on-surface-variant font-label-sm text-label-sm">
+                  Kernel 6.1
+                </span>
+</div>
+</div>
+</article>
+<!-- CARD 3: Resolved/Verified (#57D9A3 safe dot, #FFC46B verified badge) -->
+<article class="top-edge-highlight rounded-2xl bg-[rgba(22,29,40,0.62)] border border-[rgba(255,255,255,0.07)] p-5 backdrop-blur-md hover:border-[rgba(255,255,255,0.14)] transition-all">
+<!-- Header row -->
+<div class="flex items-start justify-between gap-3 mb-2.5">
+<div class="flex items-center gap-2.5 min-w-0">
+<!-- Status dot safe -->
+<span class="w-2.5 h-2.5 rounded-full bg-[#57D9A3] shadow-[0_0_0_3px_rgba(87,217,163,0.2)] shrink-0"></span>
+<h3 class="font-headline-md text-headline-md font-semibold text-on-surface truncate">Display touch digitizer debounce normal</h3>
+</div>
+<!-- Optional badge for resolved/verified (#FFC46B) -->
+<span class="px-2.5 py-0.5 rounded-full bg-[rgba(255,196,107,0.14)] border border-[#FFC46B]/40 text-[#FFC46B] font-label-sm text-label-sm shrink-0 flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">verified</span>
+<span>Verified</span>
+</span>
+</div>
+<!-- Breadcrumb path -->
+<div class="flex items-center gap-1.5 font-body-sm text-body-sm text-outline mb-3.5">
+<span>input</span>
+<span class="text-[10px] text-outline/60">/</span>
+<span>touchscreen</span>
+<span class="text-[10px] text-outline/60">/</span>
+<span class="text-on-surface-variant font-medium">goodix-ts</span>
+</div>
+<!-- Monospace URI string box -->
+<div class="bg-[rgba(10,14,20,0.85)] border border-[rgba(255,255,255,0.05)] rounded-[6px] p-2.5 px-3 mb-4 flex items-center justify-between group">
+<code class="font-code-data text-code-data text-primary font-medium tracking-tight overflow-x-auto whitespace-nowrap custom-scroll py-0.5">
+                sysfs://sys/class/power_supply/battery/cycle_count
+              </code>
+<button class="opacity-60 group-hover:opacity-100 hover:text-primary transition-opacity text-outline p-1 shrink-0 ml-2" title="Copy URI string">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+</div>
+<!-- Detail row with QR & telemetry -->
+<div class="flex items-center gap-4 pt-1">
+<div class="w-12 h-12 bg-white rounded-lg p-1 shrink-0 flex items-center justify-center border border-[rgba(255,255,255,0.2)] shadow-sm">
+<svg class="w-full h-full text-black" fill="currentColor" viewbox="0 0 24 24">
+<path d="M2 2h8v8H2V2zm2 2v4h4V4H4zm10-2h8v8h-8V2zm2 2v4h4V4h-4zM2 14h8v8H2v-8zm2 2v4h4v-4H4zm14 2h4v4h-4v-4zm-4-4h2v2h-2v-2zm0 4h2v2h-2v-2zm4-4h2v2h-2v-2zm-4 4h2v2h-2v-2z"></path>
+</svg>
+</div>
+<div class="flex-1">
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+                  Touch controller sampling locked at 240Hz. Jitter index 0.14ms with zero ghost touches recorded across a 30-minute stress sweep.
+                </p>
+</div>
+<!-- Exactly two tiny tag pills -->
+<div class="flex flex-col sm:flex-row items-end sm:items-center gap-1.5 shrink-0 self-end">
+<span class="px-2 py-0.5 rounded-[4px] bg-[rgba(255,196,107,0.14)] border border-[#FFC46B]/30 text-[#FFC46B] font-label-sm text-label-sm">
+                  Hardware Verified
+                </span>
+<span class="px-2 py-0.5 rounded-[4px] bg-surface-container-high border border-[rgba(255,255,255,0.06)] text-on-surface-variant font-label-sm text-label-sm">
+                  Patch-24B
+                </span>
+</div>
+</div>
+</article>
+</div>
+</section>
+<!-- RIGHT COLUMN (Remaining 42% width): Device Simulation & Real-time Telemetry HUD Canvas -->
+<section class="hidden lg:flex lg:w-[42%] h-full flex-col p-6 overflow-y-auto custom-scroll bg-[rgba(12,14,19,0.5)]">
+<!-- Section Header -->
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[18px]">phone_android</span>
+<span class="font-headline-sm text-headline-sm font-semibold text-on-surface">Live Device Mirror</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-[#57D9A3] animate-pulse"></span>
+<span class="font-label-sm text-label-sm text-tertiary">Realtime 60 FPS</span>
+</div>
+</div>
+<!-- High-fidelity mobile device chassis mockup -->
+<div class="relative w-full flex-1 flex flex-col items-center justify-center min-h-[440px] my-1">
+<!-- Outer Chassis Border with sleek bezels -->
+<div class="w-[280px] h-[480px] rounded-[36px] bg-[#0c0f14] p-3 border-2 border-[rgba(255,255,255,0.12)] shadow-[0_20px_50px_rgba(0,0,0,0.8),0_0_0_1px_rgba(255,255,255,0.05)] relative flex flex-col justify-between overflow-hidden">
+<!-- Screen area inside device -->
+<div class="w-full h-full rounded-[26px] bg-[#07090E] border border-[rgba(255,255,255,0.06)] overflow-hidden flex flex-col relative">
+<!-- Punch hole camera -->
+<div class="absolute top-2 left-1/2 -translate-x-1/2 w-3.5 h-3.5 rounded-full bg-black border border-[rgba(255,255,255,0.1)] z-30"></div>
+<!-- Device Status Bar -->
+<div class="pt-2 px-4 flex justify-between items-center text-[10px] font-label-sm text-outline z-20">
+<span>09:41</span>
+<div class="flex items-center gap-1.5">
+<span class="text-[9px]">5G+</span>
+<span class="material-symbols-outlined text-[12px]">wifi</span>
+<span class="material-symbols-outlined text-[12px] text-[#FFAB3F]">battery_4_bar</span>
+</div>
+</div>
+<!-- SysTriage Mobile Agent screen content -->
+<div class="flex-1 p-3 flex flex-col justify-between overflow-hidden mt-2">
+<!-- App Bar inside Agent -->
+<div>
+<div class="flex items-center justify-between pb-2 border-b border-[rgba(255,255,255,0.06)]">
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-primary animate-ping"></span>
+<span class="font-headline-sm text-[12px] font-semibold text-on-surface">SysTriage Mobile Agent</span>
+</div>
+<span class="font-label-sm text-[9px] text-primary">v4.1-live</span>
+</div>
+<!-- Running Visual Thermal Map -->
+<div class="mt-2.5 p-2 rounded-xl bg-[rgba(22,29,40,0.7)] border border-[rgba(255,255,255,0.06)]">
+<div class="flex justify-between items-center text-[10px] font-label-sm text-outline mb-1.5">
+<span>SoC Thermal Topology</span>
+<span class="text-[#FFAB3F] font-semibold">48.2°C Hotspot</span>
+</div>
+<!-- Heat map grid simulation -->
+<div class="grid grid-cols-6 gap-1 h-12 p-1 bg-black/40 rounded-lg">
+<div class="rounded bg-[#57D9A3]/40"></div>
+<div class="rounded bg-[#57D9A3]/60"></div>
+<div class="rounded bg-[#FFAB3F]/70"></div>
+<div class="rounded bg-[#FF5F52]/90 animate-pulse"></div>
+<div class="rounded bg-[#FFAB3F]/80"></div>
+<div class="rounded bg-[#57D9A3]/30"></div>
+<div class="rounded bg-[#57D9A3]/20"></div>
+<div class="rounded bg-[#FFAB3F]/60"></div>
+<div class="rounded bg-[#FF5F52]/80"></div>
+<div class="rounded bg-[#FFAB3F]/70"></div>
+<div class="rounded bg-[#57D9A3]/40"></div>
+<div class="rounded bg-[#57D9A3]/30"></div>
+</div>
+</div>
+<!-- CPU Core Frequency Bars (Tabular Figures) -->
+<div class="mt-2.5 p-2 rounded-xl bg-[rgba(22,29,40,0.7)] border border-[rgba(255,255,255,0.06)]">
+<div class="flex justify-between items-center text-[10px] font-label-sm text-outline mb-1">
+<span>CPU Core Frequency Clocks</span>
+<span class="text-primary font-label-sm">8 Cores Active</span>
+</div>
+<div class="space-y-1 mt-1 font-label-sm text-[9px]">
+<div>
+<div class="flex justify-between text-on-surface-variant mb-0.5">
+<span>Cluster 0 (Cortex-X3)</span>
+<span class="font-code-data text-on-surface">2.91 GHz</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full w-[88%]"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between text-on-surface-variant mb-0.5">
+<span>Cluster 1 (Cortex-A715)</span>
+<span class="font-code-data text-on-surface">2.14 GHz</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-[#57D9A3] rounded-full w-[64%]"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Memory Pressure Gauge -->
+<div class="mt-2.5 p-2 rounded-xl bg-[rgba(22,29,40,0.7)] border border-[rgba(255,255,255,0.06)]">
+<div class="flex justify-between items-center text-[10px] font-label-sm text-outline mb-1">
+<span>ZRAM &amp; Memory Pressure</span>
+<span class="text-[#FFAB3F] font-semibold">70.1%</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-[#FFAB3F] rounded-full w-[70%]"></div>
+</div>
+</div>
+</div>
+<!-- Active Intent Listener indicator inside device -->
+<div class="p-2 rounded-lg bg-[rgba(10,14,20,0.9)] border border-[rgba(255,255,255,0.05)] flex items-center justify-between">
+<div class="flex items-center gap-1.5 overflow-hidden">
+<span class="material-symbols-outlined text-[13px] text-primary shrink-0">radio_button_checked</span>
+<span class="font-label-sm text-[9px] text-on-surface-variant truncate">Intent: thermal_governor_dump</span>
+</div>
+<span class="font-label-sm text-[9px] text-tertiary shrink-0">LISTENING</span>
+</div>
+</div>
+<!-- Device home indicator bar -->
+<div class="pb-1.5 flex justify-center">
+<div class="w-20 h-1 rounded-full bg-[rgba(255,255,255,0.3)]"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Floating Telemetry HUD Tags below / around device -->
+<div class="grid grid-cols-3 gap-2.5 mt-2 mb-4">
+<!-- Battery State -->
+<div class="p-3 rounded-xl bg-[rgba(22,29,40,0.62)] border border-[rgba(255,255,255,0.07)] backdrop-blur-md">
+<div class="text-outline font-label-sm text-label-sm mb-1 flex items-center justify-between">
+<span>Battery</span>
+<span class="w-1.5 h-1.5 rounded-full bg-[#FFAB3F]"></span>
+</div>
+<div class="font-code-data text-code-data text-[#FFAB3F] font-medium">48.4°C</div>
+<div class="text-on-surface-variant font-label-sm text-[11px] mt-0.5">91% Health</div>
+</div>
+<!-- Modem Rx/Tx -->
+<div class="p-3 rounded-xl bg-[rgba(22,29,40,0.62)] border border-[rgba(255,255,255,0.07)] backdrop-blur-md">
+<div class="text-outline font-label-sm text-label-sm mb-1 flex items-center justify-between">
+<span>Modem Signal</span>
+<span class="w-1.5 h-1.5 rounded-full bg-[#FF5F52]"></span>
+</div>
+<div class="font-code-data text-code-data text-on-surface font-medium">-98 dBm</div>
+<div class="text-on-surface-variant font-label-sm text-[11px] mt-0.5">Rx/Tx Degraded</div>
+</div>
+<!-- Memory Usage -->
+<div class="p-3 rounded-xl bg-[rgba(22,29,40,0.62)] border border-[rgba(255,255,255,0.07)] backdrop-blur-md">
+<div class="text-outline font-label-sm text-label-sm mb-1 flex items-center justify-between">
+<span>Memory</span>
+<span class="w-1.5 h-1.5 rounded-full bg-[#57D9A3]"></span>
+</div>
+<div class="font-code-data text-code-data text-on-surface font-medium">11.2 / 16 GB</div>
+<div class="text-on-surface-variant font-label-sm text-[11px] mt-0.5">ZRAM 1.8 GB</div>
+</div>
+</div>
+<!-- Quick Action Control Panel Below Device Frame -->
+<!-- Constraint: strictly NO arrow glyphs (no ->, >, →) in buttons -->
+<div class="p-3.5 rounded-2xl bg-[rgba(22,29,40,0.62)] border border-[rgba(255,255,255,0.07)] backdrop-blur-md mt-auto">
+<div class="text-outline font-label-sm text-label-sm mb-2.5 flex items-center justify-between">
+<span>Hardware Target Controls</span>
+<span class="font-code-data text-[11px] text-on-surface-variant">USB-OTG High-Speed</span>
+</div>
+<div class="grid grid-cols-3 gap-2">
+<button class="px-2.5 py-2 rounded-lg bg-[rgba(255,255,255,0.04)] hover:bg-[rgba(255,255,255,0.08)] border border-[rgba(255,255,255,0.09)] text-on-surface font-body-sm text-body-sm text-center active:scale-[0.98] transition-all">
+              Capture Bugreport
+            </button>
+<button class="px-2.5 py-2 rounded-lg bg-[rgba(255,255,255,0.04)] hover:bg-[rgba(255,255,255,0.08)] border border-[rgba(255,255,255,0.09)] text-on-surface font-body-sm text-body-sm text-center active:scale-[0.98] transition-all">
+              Simulate Thermal Load
+            </button>
+<button class="px-2.5 py-2 rounded-lg bg-primary-container hover:brightness-110 text-on-primary-container font-headline-sm text-headline-sm text-center active:scale-[0.98] transition-all">
+              Inject Intent Payload
+            </button>
+</div>
+</div>
+</section>
+</main>
+</div>
+</body></html>
