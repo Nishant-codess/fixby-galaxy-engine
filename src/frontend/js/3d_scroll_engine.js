@@ -27,16 +27,16 @@ const bloomPass = new THREE.UnrealBloomPass(
   0.4, // radius
   0.85 // threshold
 );
-bloomPass.strength = 1.2;
+bloomPass.strength = 1.0;
 bloomPass.radius = 0.5;
-bloomPass.threshold = 0.1;
+bloomPass.threshold = 0.85; // Increased threshold so only very bright things bloom
 
 const composer = new THREE.EffectComposer(renderer);
 composer.addPass(renderScene);
 composer.addPass(bloomPass);
 
 // 3. Lighting
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
 scene.add(ambientLight);
 
 const blueLight = new THREE.PointLight(0x4cd7f6, 2, 20);
@@ -47,43 +47,42 @@ const purpleLight = new THREE.PointLight(0x5d3a9b, 2, 20);
 purpleLight.position.set(5, -5, 5);
 scene.add(purpleLight);
 
-// 4. Create Abstract Phone Object
+// 4. Load 3D Phone Model
 const phoneGroup = new THREE.Group();
-
-// Phone Chassis (Dark glossy)
-const chassisGeometry = new THREE.BoxGeometry(3.5, 7, 0.4);
-const chassisMaterial = new THREE.MeshPhysicalMaterial({
-  color: 0x111318,
-  metalness: 0.9,
-  roughness: 0.1,
-  clearcoat: 1.0,
-  clearcoatRoughness: 0.1,
-  envMapIntensity: 1.0
-});
-const chassis = new THREE.Mesh(chassisGeometry, chassisMaterial);
-phoneGroup.add(chassis);
-
-// Phone Screen (Glowing)
-const screenGeometry = new THREE.PlaneGeometry(3.2, 6.7);
-const screenMaterial = new THREE.MeshBasicMaterial({
-  color: 0x050507, // Very dark
-});
-const screen = new THREE.Mesh(screenGeometry, screenMaterial);
-screen.position.z = 0.21;
-phoneGroup.add(screen);
-
-// Screen Edge Glow
-const edgesGeometry = new THREE.EdgesGeometry(chassisGeometry);
-const edgesMaterial = new THREE.LineBasicMaterial({
-  color: 0x5d3a9b,
-  linewidth: 2,
-  transparent: true,
-  opacity: 0.8
-});
-const edges = new THREE.LineSegments(edgesGeometry, edgesMaterial);
-phoneGroup.add(edges);
-
 scene.add(phoneGroup);
+
+const loader = new THREE.GLTFLoader();
+console.log("Starting model load: assets/models/source/Untitled.glb");
+loader.load('assets/models/source/Untitled.glb', function (gltf) {
+  console.log("Model loaded successfully!", gltf);
+  const model = gltf.scene;
+  
+  // Scale first
+  const box = new THREE.Box3().setFromObject(model);
+  const size = box.getSize(new THREE.Vector3());
+  const maxDim = Math.max(size.x, size.y, size.z);
+  
+  if (maxDim > 0) {
+    const scale = 7 / maxDim;
+    model.scale.setScalar(scale);
+    console.log(`Scaled model by factor: ${scale}`);
+  }
+  
+  // Recompute box after scaling and center it
+  const scaledBox = new THREE.Box3().setFromObject(model);
+  const center = scaledBox.getCenter(new THREE.Vector3());
+  model.position.sub(center);
+  console.log("Centered model at offset:", center);
+
+  // Add gentle extra light to ensure it's visible but not overblown
+  const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.9);
+  model.add(hemiLight);
+
+  phoneGroup.add(model);
+  console.log("Added model to phoneGroup");
+}, undefined, function (error) {
+  console.error('An error happened loading the model:', error);
+});
 
 // 5. Create Data Particles
 const particleGeometry = new THREE.BufferGeometry();
@@ -156,12 +155,6 @@ tl.to(phoneGroup.position, {
   g: colorCritical.g,
   b: colorCritical.b,
   ease: "power1.inOut"
-}, 0.1)
-.to(edgesMaterial.color, {
-  r: colorCritical.r,
-  g: colorCritical.g,
-  b: colorCritical.b,
-  ease: "power1.inOut"
 }, 0.1);
 
 // Problem -> Pipeline Section (Phone recedes, returns to blue/purple, moves to right)
@@ -179,12 +172,6 @@ tl.to(phoneGroup.position, {
 }, 0.4)
 .to(particleMaterial.color, {
   r: 1, g: 1, b: 1, // Reset to vertex colors multiplier
-  ease: "power1.inOut"
-}, 0.4)
-.to(edgesMaterial.color, {
-  r: colorPrimary.r,
-  g: colorPrimary.g,
-  b: colorPrimary.b,
   ease: "power1.inOut"
 }, 0.4);
 
