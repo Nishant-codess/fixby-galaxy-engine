@@ -147,7 +147,7 @@ def run_troubleshoot_pipeline(query: str, siis_response: Optional[str] = None) -
 
     # Stage 4: Candidate Deeplink Retrieval (CALLED BEFORE EXTRACTION)
     if AI_MODULES_AVAILABLE:
-        candidate_ids = live_get_candidate_ids(query, top_k=5)
+        candidate_ids = live_get_candidate_ids(query, top_k=35)
     else:
         candidate_ids = _stub_get_candidate_ids(query, top_k=5)
 

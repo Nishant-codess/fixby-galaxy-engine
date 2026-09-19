@@ -15,11 +15,12 @@ SYSTEM_PROMPT = """You are Samsung Galaxy Troubleshooting Engine's AI Extractor.
 Generate structured troubleshooting plans in JSON format matching the schema below.
 
 CRITICAL RULES:
-1. `goal` string MUST be EXACTLY formatted: "Follow these steps to perform this <Topic> Troubleshooting" (e.g. "Follow these steps to perform this Battery Troubleshooting").
-2. `title` MUST be 2-3 words in sentence case (e.g. "Battery drain", "Display stutter").
-3. Action `description` MUST be 5-7 words starting with "It will " (e.g. "It will limit unused background apps").
+1. `goal` string MUST be EXACTLY formatted: "Follow these steps to perform this <Topic> Troubleshooting".
+2. `title` MUST be 2-3 words in sentence case (e.g. "Do not disturb", "Edge lighting", "Battery drain").
+3. Action `description` MUST be 5-7 words starting with "It will " (e.g. "It will block all night notifications").
 4. Action `category` MUST be one of: "auto" (standard config with deeplink), "manual" (physical fix), "critical" (disruptive/reset, listed last).
-5. Only use deeplinks from the provided candidate list.
+5. ONLY use deeplinks from the provided candidate list — do NOT invent deeplinks.
+6. CAREFULLY READ THE USER COMPLAINT and select the most specific and relevant settings path. Do NOT default to battery unless the complaint is explicitly about battery life.
 
 Return JSON in this format:
 {
@@ -166,30 +167,95 @@ class PlanExtractor:
 
     def _create_fallback_goal(self, query: str) -> List[Goal]:
         slots = extract_slots(query)
-        domain = slots.get("domain", "battery")
-        topic = domain.capitalize()
+        domain = slots.get("domain", "general")
+        symptom = slots.get("symptom", "unknown")
+        topic = domain.replace("_", " ").capitalize()
+
+        DOMAIN_FALLBACKS = {
+            "notifications": (
+                "Do Not Disturb",
+                "It will silence all alerts at night",
+                "bixby://settings/sound/do_not_disturb",
+                "Settings>Notifications>Do not disturb",
+                ["Open Settings", "Tap Notifications", "Tap Do not disturb", "Turn on Do not disturb", "Tap Add schedule > Sleep to set hours"]
+            ),
+            "sound": (
+                "Sound Mode",
+                "It will mute vibration and alerts",
+                "bixby://settings/sound/sound_mode",
+                "Settings>Sounds and vibration>Sound mode",
+                ["Open Settings", "Tap Sounds and vibration", "Tap Sound mode", "Select Mute or Vibrate as needed"]
+            ),
+            "digital_wellbeing": (
+                "Bedtime Mode",
+                "It will silence and grey out phone at bedtime",
+                "bixby://settings/digital_wellbeing/bedtime_mode",
+                "Settings>Digital Wellbeing and parental controls>Bedtime mode",
+                ["Open Settings", "Tap Digital Wellbeing and parental controls", "Tap Bedtime mode", "Set your bedtime schedule"]
+            ),
+            "display": (
+                "Motion Smoothness",
+                "It will fix screen stutter and refresh rate",
+                "bixby://settings/display/motion_smoothness",
+                "Settings>Display>Motion smoothness",
+                ["Open Settings", "Tap Display", "Tap Motion smoothness", "Select Adaptive"]
+            ),
+            "connectivity": (
+                "Intelligent Wi-Fi",
+                "It will switch to mobile data when Wi-Fi drops",
+                "bixby://settings/connections/wifi/intelligent",
+                "Settings>Connections>Wi-Fi>Intelligent Wi-Fi",
+                ["Open Settings", "Tap Connections", "Tap Wi-Fi", "Tap the three-dot menu", "Tap Intelligent Wi-Fi", "Enable Switch to mobile data"]
+            ),
+            "performance": (
+                "Device Care Optimization",
+                "It will clean RAM and optimize device speed",
+                "bixby://settings/device_care/memory",
+                "Settings>Device care>Memory",
+                ["Open Settings", "Tap Device care", "Tap Memory", "Tap Clean now"]
+            ),
+            "security": (
+                "Biometrics Settings",
+                "It will reset biometric unlock credentials",
+                "bixby://settings/security/fingerprint",
+                "Settings>Security and privacy>Biometrics>Fingerprints",
+                ["Open Settings", "Tap Security and privacy", "Tap Biometrics", "Tap Fingerprints", "Re-register your fingerprint"]
+            ),
+            "camera": (
+                "Reset Camera Settings",
+                "It will restore camera to default configuration",
+                "bixby://settings/camera/reset",
+                "Settings>Apps>Camera>Camera settings>Reset settings",
+                ["Open Settings", "Tap Apps", "Tap Camera", "Tap Camera settings", "Tap Reset settings"]
+            ),
+            "battery": (
+                "Background Usage Limits",
+                "It will limit unused background apps",
+                "bixby://settings/device_care/battery/background_limits",
+                "Settings>Battery>Background usage limits",
+                ["Open Settings on your Galaxy device", "Tap Battery", "Tap Background usage limits", "Turn on Put unused apps to sleep"]
+            ),
+        }
+
+        fb = DOMAIN_FALLBACKS.get(domain, DOMAIN_FALLBACKS["battery"])
+        action_name, description, deeplink_url, path, steps = fb
 
         return [
             Goal(
                 goal=f"Follow these steps to perform this {topic} Troubleshooting",
-                title=f"{topic} drain" if domain == "battery" else f"{topic} issue",
+                title=action_name,
                 actions=[
                     Action(
-                        actionName="Background Usage Limits" if domain == "battery" else "Device Care",
-                        description="It will limit unused background apps",
+                        actionName=action_name,
+                        description=description,
                         category=ActionCategory.auto,
                         stepGroups=[
                             StepGroup(
-                                steps=[
-                                    "Open Settings on your Galaxy device",
-                                    "Tap Battery",
-                                    "Tap Background usage limits",
-                                    "Turn on Put unused apps to sleep"
-                                ],
+                                steps=steps,
                                 actionableDeeplink=Deeplink(
-                                    deeplink="bixby://settings/device_care/battery/background_limits",
-                                    description="Direct link to Background usage limits",
-                                    classes={"path": "Settings>Battery>Background usage limits"}
+                                    deeplink=deeplink_url,
+                                    description=f"Direct link to {action_name}",
+                                    classes={"path": path}
                                 )
                             )
                         ]
