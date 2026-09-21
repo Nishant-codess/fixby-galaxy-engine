@@ -89,7 +89,71 @@ class PlanExtractor:
             f"Candidate Deeplinks:\n{candidates_str}"
         )
         if siis_response:
-            prompt += f"\n\nSamsung Intelligence (SIIS) Technical Data:\n{siis_response}"
+            try:
+                import json
+                siis_data = json.loads(siis_response)
+
+                bat = siis_data.get("batteryLevel", 100)
+                storage = siis_data.get("storageUsed", 0)
+                temp = siis_data.get("temperature", 30)
+                signal = siis_data.get("signalStrength", "Excellent")
+
+                # Build an authoritative override block
+                override_lines = []
+                if bat <= 15:
+                    override_lines.append(
+                        f"⚠️ CRITICAL BATTERY ({bat}%): You MUST select Power Saving Mode deeplink. "
+                        "Override the no-battery rule — the device is about to die."
+                    )
+                elif bat <= 30:
+                    override_lines.append(
+                        f"⚠️ LOW BATTERY ({bat}%): Prioritize battery power saving or background limits deeplink."
+                    )
+
+                if storage >= 95:
+                    override_lines.append(
+                        f"⚠️ STORAGE CRITICAL ({storage}% full): You MUST select Storage cleanup deeplink "
+                        "(Device Care > Storage). Override domain rules — full storage causes ALL symptoms."
+                    )
+                elif storage >= 80:
+                    override_lines.append(
+                        f"⚠️ STORAGE HIGH ({storage}% full): Strongly prefer Storage cleanup deeplink."
+                    )
+
+                if temp >= 55:
+                    override_lines.append(
+                        f"⚠️ OVERHEATING ({temp}°C): You MUST recommend Device Care > Performance Profile "
+                        "or App Power Management to reduce thermal load. This overrides other domain rules."
+                    )
+                elif temp >= 45:
+                    override_lines.append(
+                        f"⚠️ HIGH TEMP ({temp}°C): Prefer thermal management settings."
+                    )
+
+                if signal in ("None", "Weak"):
+                    override_lines.append(
+                        f"⚠️ SIGNAL {signal}: Prioritize Connections > Mobile Networks or Wi-Fi deeplinks. "
+                        "The hardware signal is the root cause — override software domain rules."
+                    )
+
+                status_summary = (
+                    f"Battery {bat}%, Storage {storage}%, CPU Temp {temp}°C, Signal {signal}"
+                )
+
+                if override_lines:
+                    prompt += (
+                        f"\n\n🚨 LIVE SAMSUNG SIIS DEVICE STATE — MANDATORY OVERRIDES:\n"
+                        f"Device readings: {status_summary}\n"
+                        + "\n".join(override_lines)
+                        + "\nYou MUST factor these hardware readings above all other instructions."
+                    )
+                else:
+                    prompt += (
+                        f"\n\nLIVE SIIS DEVICE STATE: {status_summary} — "
+                        "Device is healthy. Use domain and symptom as primary selection criteria."
+                    )
+            except Exception:
+                prompt += f"\n\nSamsung Intelligence (SIIS) Technical Data:\n{siis_response}"
 
         return prompt
 
