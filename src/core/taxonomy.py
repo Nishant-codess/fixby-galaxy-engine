@@ -110,7 +110,7 @@ SYMPTOM_TAXONOMY: Dict[str, Dict[str, Set[str]]] = {
     },
     "camera": {
         "crash_or_slow": {
-            "camera", "cam", "camera crash", "camera lag", "camera slow", "camera band", "photos blurry",
+            "camera", "cam", "camera crash", "camera crashing", "camera crashes", "camera lag", "camera slow", "camera band", "photos blurry",
             "camera freeze", "camera open nahi", "camera error", "camera not working",
             "카메라 튕김", "카메라 멈춤", "사진 흐림", "카메라 오류",
             "camera app crashed", "can't open camera", "camera stopped working",
@@ -134,15 +134,10 @@ SYMPTOM_TAXONOMY: Dict[str, Dict[str, Set[str]]] = {
             "앱 튕김", "강제종료", "앱 오류", "앱 꺼짐",
             "app keeps crashing", "app closes itself", "keeps force closing",
         },
-        "storage_pressure": {
-            "storage full", "memory full", "space low",
-            "storage saaf", "memory space",
-            "저장공간", "용량 부족", "메모리 부족", "용량 정리",
-            "no space", "storage almost full", "free up space",
-        },
         "ram": {
             "ram", "memory", "multitasking", "apps close in background",
             "apps keep closing", "background apps", "switching apps slow",
+            "clean ram", "free up ram", "memory clean",
             "램", "메모리", "멀티태스킹",
         },
     },
@@ -263,25 +258,38 @@ def classify_complaint_taxonomy(query: str) -> List[str]:
     """
     Classifies a query against the symptom taxonomy.
     Returns list of matched strings in format 'domain.symptom', or ['general.unknown'].
+    Prioritizes longer, more specific multi-word matches over short generic phrases.
     """
     q = query.lower()
     q = re.sub(r"\bnotworking\b", "not working", q)
     q = re.sub(r"\bnotcharging\b", "not charging", q)
     q = re.sub(r"\boverheating\b", "over heating", q)
-    matches = []
+    scored_matches = []
+    seen_cats = set()
+
     for domain, symptoms in SYMPTOM_TAXONOMY.items():
         for symptom, keywords in symptoms.items():
+            best_kw_len = 0
             for kw in keywords:
                 # Use word boundaries for English alphanumeric words to prevent 'hot' matching 'photos'
                 if re.match(r"^[a-z0-9\s]+$", kw):
                     if re.search(rf"\b{re.escape(kw)}\b", q):
-                        matches.append(f"{domain}.{symptom}")
-                        break
+                        if len(kw) > best_kw_len:
+                            best_kw_len = len(kw)
                 else:
                     if kw in q:
-                        matches.append(f"{domain}.{symptom}")
-                        break
-    return matches if matches else ["general.unknown"]
+                        if len(kw) > best_kw_len:
+                            best_kw_len = len(kw)
+            if best_kw_len > 0:
+                cat = f"{domain}.{symptom}"
+                scored_matches.append((best_kw_len, cat))
+
+    if not scored_matches:
+        return ["general.unknown"]
+
+    # Sort descending by keyword length so more specific matches win (e.g. 'screen timeout' > 'turns off')
+    scored_matches.sort(key=lambda x: x[0], reverse=True)
+    return [m[1] for m in scored_matches]
 
 
 def extract_slots(query: str) -> Dict[str, Optional[str]]:
