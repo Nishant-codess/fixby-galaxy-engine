@@ -6,81 +6,99 @@
     "classes": { "path": "Settings>Battery" }
   },
   {
+    "id": "DL_BATTERY_USAGE",
+    "deeplink": "bixby://settings/device_care/battery/usage",
+    "description": "View which apps are consuming the most battery power and audit drain sources",
+    "classes": { "path": "Settings>Battery>Battery usage" }
+  },
+  {
     "id": "DL_BG_LIMITS",
     "deeplink": "bixby://settings/device_care/battery/background_limits",
     "description": "Put unused apps to deep sleep to prevent background battery drain",
     "classes": { "path": "Settings>Battery>Background usage limits" }
   },
   {
+    "id": "DL_BG_LIMITS_DEEP_SLEEP",
+    "deeplink": "bixby://settings/device_care/battery/deep_sleeping_apps",
+    "description": "Add apps to deep sleeping list to stop them draining battery in background",
+    "classes": { "path": "Settings>Battery>Background usage limits>Deep sleeping apps" }
+  },
+  {
     "id": "DL_BATTERY_PROTECT",
     "deeplink": "bixby://settings/device_care/battery/protection",
-    "description": "Adaptive battery protection mode to extend battery lifespan",
+    "description": "Adaptive battery protection mode to extend battery lifespan by limiting charge to 85%",
     "classes": { "path": "Settings>Battery>Battery protection" }
   },
   {
     "id": "DL_POWER_SAVING",
     "deeplink": "bixby://settings/device_care/battery/power_saving",
-    "description": "Enable power saving mode to restrict background network and CPU",
+    "description": "Enable power saving mode to restrict background network and CPU usage to save battery",
     "classes": { "path": "Settings>Battery>Power saving" }
+  },
+  {
+    "id": "DL_POWER_SAVING_MAXIMUM",
+    "deeplink": "bixby://settings/device_care/battery/power_saving/maximum",
+    "description": "Enable Maximum power saving mode for critically low battery emergencies",
+    "classes": { "path": "Settings>Battery>Power saving>Maximum power saving" }
   },
   {
     "id": "DL_CHARGING_SETTINGS",
     "deeplink": "bixby://settings/device_care/battery/charging",
-    "description": "Toggle fast charging, super fast charging, and fast wireless charging",
+    "description": "Toggle fast charging, super fast charging, and fast wireless charging options",
     "classes": { "path": "Settings>Battery>Charging settings" }
   },
   {
     "id": "DL_WIRELESS_POWER_SHARING",
     "deeplink": "bixby://settings/device_care/battery/wireless_sharing",
-    "description": "Share battery power wirelessly with Galaxy Buds or Watch",
+    "description": "Share battery power wirelessly with Galaxy Buds or Watch reverse wireless charging",
     "classes": { "path": "Settings>Battery>Wireless power sharing" }
   },
   {
     "id": "DL_DISPLAY_MOTION",
     "deeplink": "bixby://settings/display/motion_smoothness",
-    "description": "Adjust screen refresh rate between 60Hz and 120Hz adaptive smoothness",
+    "description": "Adjust screen refresh rate between 60Hz and 120Hz adaptive smoothness to reduce stutter and lag",
     "classes": { "path": "Settings>Display>Motion smoothness" }
   },
   {
     "id": "DL_DISPLAY_TOUCH",
     "deeplink": "bixby://settings/display/touch_sensitivity",
-    "description": "Increase touch screen sensitivity for use with screen protectors",
+    "description": "Increase touch screen sensitivity for use with screen protectors, fix unresponsive touch",
     "classes": { "path": "Settings>Display>Touch sensitivity" }
   },
   {
     "id": "DL_NAVIGATION_BAR",
     "deeplink": "bixby://settings/display/navigation_bar",
-    "description": "Configure swipe gesture navigation or buttons on navigation bar",
+    "description": "Configure swipe gesture navigation or three-button navigation bar at bottom",
     "classes": { "path": "Settings>Display>Navigation bar" }
   },
   {
     "id": "DL_EYE_COMFORT",
     "deeplink": "bixby://settings/display/eye_comfort",
-    "description": "Reduce blue light to prevent eye fatigue",
+    "description": "Reduce blue light emission to prevent eye fatigue and strain during night use",
     "classes": { "path": "Settings>Display>Eye comfort shield" }
   },
   {
     "id": "DL_ADAPTIVE_BRIGHTNESS",
     "deeplink": "bixby://settings/display/brightness",
-    "description": "Automatically adjust screen brightness to surrounding light conditions",
+    "description": "Automatically adjust screen brightness to surrounding light conditions, fix dim or too bright screen",
     "classes": { "path": "Settings>Display>Adaptive brightness" }
   },
   {
     "id": "DL_DARK_MODE",
     "deeplink": "bixby://settings/display/dark_mode",
-    "description": "Enable AMOLED dark mode to reduce power consumption and glare",
+    "description": "Enable AMOLED dark mode to reduce power consumption, glare, and battery drain from screen",
     "classes": { "path": "Settings>Display>Dark mode settings" }
   },
   {
     "id": "DL_SCREEN_TIMEOUT",
     "deeplink": "bixby://settings/display/screen_timeout",
-    "description": "Set screen turn-off timeout duration",
+    "description": "Set screen turn-off timeout duration to save battery when not in use",
     "classes": { "path": "Settings>Display>Screen timeout" }
   },
   {
     "id": "DL_EDGE_PANELS",
     "deeplink": "bixby://settings/display/edge_panels",
-    "description": "Configure quick access side edge panels and shortcuts",
+    "description": "Configure quick access side edge panels and application shortcuts",
     "classes": { "path": "Settings>Display>Edge panels" }
   },
   {
@@ -92,61 +110,103 @@
   {
     "id": "DL_ALWAYS_ON_DISPLAY",
     "deeplink": "bixby://settings/lock_screen/aod",
-    "description": "Configure clock, notifications, and AOD schedule on lock screen",
+    "description": "Configure clock, notifications, and AOD schedule on lock screen Always On Display",
     "classes": { "path": "Settings>Lock screen and AOD>Always On Display" }
   },
   {
     "id": "DL_FONT_SIZE",
     "deeplink": "bixby://settings/display/font_size",
-    "description": "Increase or decrease font size and display zoom",
+    "description": "Increase or decrease font size and display zoom for accessibility",
     "classes": { "path": "Settings>Display>Font size and style" }
+  },
+  {
+    "id": "DL_SCREEN_ZOOM",
+    "deeplink": "bixby://settings/display/screen_zoom",
+    "description": "Adjust display zoom to make items on screen appear larger or smaller",
+    "classes": { "path": "Settings>Display>Screen zoom" }
   },
   {
     "id": "DL_CAMERA_SETTINGS",
     "deeplink": "bixby://settings/apps/camera",
-    "description": "Camera application settings, permissions, and reset options",
+    "description": "Camera application settings, permissions, storage, and reset options",
     "classes": { "path": "Settings>Apps>Camera" }
   },
   {
     "id": "DL_CAMERA_SCENE_OPTIMIZER",
     "deeplink": "bixby://settings/camera/scene_optimizer",
-    "description": "Use AI scene recognition to enhance photo contrast and tone",
+    "description": "Use AI scene recognition to enhance photo contrast and tone automatically",
     "classes": { "path": "Settings>Apps>Camera>Camera settings>Scene optimizer" }
   },
   {
     "id": "DL_CAMERA_RESET",
     "deeplink": "bixby://settings/camera/reset",
-    "description": "Restore camera app settings to default configuration",
+    "description": "Restore camera app settings to default configuration to fix camera issues",
     "classes": { "path": "Settings>Apps>Camera>Camera settings>Reset settings" }
   },
   {
     "id": "DL_APPS_MANAGEMENT",
     "deeplink": "bixby://settings/apps",
-    "description": "Manage all installed applications, storage, and clear app cache",
+    "description": "Manage all installed applications, storage allocation, permissions, and clear app cache",
     "classes": { "path": "Settings>Apps" }
+  },
+  {
+    "id": "DL_APP_FORCE_STOP",
+    "deeplink": "bixby://settings/apps/force_stop",
+    "description": "Force stop misbehaving apps that keep crashing or freezing repeatedly",
+    "classes": { "path": "Settings>Apps>[App Name]>Force stop" }
+  },
+  {
+    "id": "DL_APP_CLEAR_CACHE",
+    "deeplink": "bixby://settings/apps/clear_cache",
+    "description": "Clear app cache and temporary data to fix app crashing and storage issues",
+    "classes": { "path": "Settings>Apps>[App Name]>Storage>Clear cache" }
+  },
+  {
+    "id": "DL_APP_CLEAR_DATA",
+    "deeplink": "bixby://settings/apps/clear_data",
+    "description": "Clear all app data to reset app to fresh installed state when app keeps crashing",
+    "classes": { "path": "Settings>Apps>[App Name]>Storage>Clear data" }
+  },
+  {
+    "id": "DL_APP_PERMISSIONS",
+    "deeplink": "bixby://settings/apps/permissions",
+    "description": "Manage app permissions for camera, location, microphone, storage, contacts access",
+    "classes": { "path": "Settings>Apps>Permission manager" }
+  },
+  {
+    "id": "DL_DEFAULT_APPS",
+    "deeplink": "bixby://settings/apps/default_apps",
+    "description": "Set default apps for browser, dialer, messages, email, and home screen launcher",
+    "classes": { "path": "Settings>Apps>Default apps" }
   },
   {
     "id": "DL_DEVICE_CARE_STORAGE",
     "deeplink": "bixby://settings/device_care/storage",
-    "description": "Clean temporary files, cached data, and unused apps to free storage",
+    "description": "Clean temporary files, cached data, trash, and unused apps to free storage space",
     "classes": { "path": "Settings>Device care>Storage" }
+  },
+  {
+    "id": "DL_DEVICE_CARE_STORAGE_TRASH",
+    "deeplink": "bixby://settings/device_care/storage/trash",
+    "description": "Empty trash bin and recycle bin to immediately free storage space",
+    "classes": { "path": "Settings>Device care>Storage>Trash" }
   },
   {
     "id": "DL_DEVICE_CARE_MEMORY",
     "deeplink": "bixby://settings/device_care/memory",
-    "description": "Clean RAM memory and configure RAM Plus virtual memory",
+    "description": "Clean RAM memory to fix lag, slowdowns, and apps closing in background",
     "classes": { "path": "Settings>Device care>Memory" }
   },
   {
     "id": "DL_RAM_PLUS",
     "deeplink": "bixby://settings/device_care/memory/ram_plus",
-    "description": "Allocate virtual memory from storage to keep more apps open in background",
+    "description": "Allocate virtual memory from storage to keep more apps open in background and prevent crashes",
     "classes": { "path": "Settings>Device care>Memory>RAM Plus" }
   },
   {
     "id": "DL_AUTO_OPTIMIZATION",
     "deeplink": "bixby://settings/device_care/auto_restart",
-    "description": "Automatically restart Galaxy device when needed to maintain performance",
+    "description": "Automatically restart Galaxy device when needed to maintain optimal performance",
     "classes": { "path": "Settings>Device care>Auto optimization>Restart when needed" }
   },
   {
@@ -158,37 +218,109 @@
   {
     "id": "DL_PERFORMANCE_PROFILE",
     "deeplink": "bixby://settings/device_care/performance_profile",
-    "description": "Switch between Standard and Light performance profile to save battery and heat",
+    "description": "Switch between Standard and Light performance profile to reduce battery drain and overheating",
     "classes": { "path": "Settings>Device care>Performance profile" }
+  },
+  {
+    "id": "DL_DEVICE_CARE_OPTIMIZE",
+    "deeplink": "bixby://settings/device_care",
+    "description": "Run full device optimization scan to improve battery, storage, RAM, and security at once",
+    "classes": { "path": "Settings>Device care>Optimize now" }
+  },
+  {
+    "id": "DL_GAME_BOOSTER",
+    "deeplink": "bixby://settings/advanced_features/game_booster",
+    "description": "Game Booster optimizes CPU and GPU performance for gaming, reduces thermal throttling and lag during games",
+    "classes": { "path": "Settings>Advanced features>Game Booster" }
+  },
+  {
+    "id": "DL_GAME_BOOSTER_PERFORMANCE",
+    "deeplink": "bixby://settings/advanced_features/game_booster/performance_mode",
+    "description": "Set Game Booster performance mode to High Performance for intense games like Genshin Impact, BGMI",
+    "classes": { "path": "Settings>Advanced features>Game Booster>Game Booster Labs>Game performance" }
+  },
+  {
+    "id": "DL_GAME_BOOSTER_THERMAL",
+    "deeplink": "bixby://settings/advanced_features/game_booster/thermal",
+    "description": "Enable Game Booster thermal protection to prevent phone from overheating during long gaming sessions",
+    "classes": { "path": "Settings>Advanced features>Game Booster>Thermal management" }
   },
   {
     "id": "DL_WIFI_SETTINGS",
     "deeplink": "bixby://settings/connections/wifi",
-    "description": "Wi-Fi connections, advanced intelligent Wi-Fi, and network reset",
+    "description": "Wi-Fi connections, network list, advanced settings, and intelligent Wi-Fi options",
     "classes": { "path": "Settings>Connections>Wi-Fi" }
   },
   {
     "id": "DL_INTELLIGENT_WIFI",
     "deeplink": "bixby://settings/connections/wifi/intelligent",
-    "description": "Switch to mobile data automatically when Wi-Fi signal is unstable",
+    "description": "Auto-switch to mobile data when Wi-Fi signal is weak, unstable, or disconnected",
     "classes": { "path": "Settings>Connections>Wi-Fi>Intelligent Wi-Fi" }
+  },
+  {
+    "id": "DL_WIFI_CALLING",
+    "deeplink": "bixby://settings/connections/wifi_calling",
+    "description": "Enable Wi-Fi Calling to make calls over Wi-Fi when cellular signal is weak or no signal",
+    "classes": { "path": "Settings>Connections>Wi-Fi calling" }
+  },
+  {
+    "id": "DL_MOBILE_NETWORKS",
+    "deeplink": "bixby://settings/connections/mobile_networks",
+    "description": "Configure mobile network, 4G/5G mode, network operators, and carrier settings for better signal",
+    "classes": { "path": "Settings>Connections>Mobile networks" }
+  },
+  {
+    "id": "DL_MOBILE_NETWORKS_OPERATOR",
+    "deeplink": "bixby://settings/connections/mobile_networks/operators",
+    "description": "Manually search and reselect network operator to fix weak signal, no service, or dead zone",
+    "classes": { "path": "Settings>Connections>Mobile networks>Network operators>Search now" }
+  },
+  {
+    "id": "DL_NETWORK_MODE",
+    "deeplink": "bixby://settings/connections/mobile_networks/network_mode",
+    "description": "Switch between 5G, LTE/4G, 3G network mode to improve connectivity and signal strength",
+    "classes": { "path": "Settings>Connections>Mobile networks>Network mode" }
+  },
+  {
+    "id": "DL_DATA_USAGE",
+    "deeplink": "bixby://settings/connections/data_usage",
+    "description": "Monitor mobile data usage by app, set data warning and data limit to avoid overages",
+    "classes": { "path": "Settings>Connections>Data usage" }
   },
   {
     "id": "DL_BLUETOOTH",
     "deeplink": "bixby://settings/connections/bluetooth",
-    "description": "Manage paired Bluetooth devices, audio sync, and scanning settings",
+    "description": "Manage paired Bluetooth devices, audio sync, and scanning settings for earphones and watches",
     "classes": { "path": "Settings>Connections>Bluetooth" }
+  },
+  {
+    "id": "DL_NFC",
+    "deeplink": "bixby://settings/connections/nfc",
+    "description": "Enable NFC for contactless payments, Samsung Pay, and file sharing between devices",
+    "classes": { "path": "Settings>Connections>NFC and contactless payments" }
+  },
+  {
+    "id": "DL_HOTSPOT",
+    "deeplink": "bixby://settings/connections/hotspot",
+    "description": "Share mobile data as Wi-Fi hotspot with other devices",
+    "classes": { "path": "Settings>Connections>Mobile Hotspot and Tethering>Mobile Hotspot" }
   },
   {
     "id": "DL_AIRPLANE_MODE",
     "deeplink": "bixby://settings/connections/airplane_mode",
-    "description": "Toggle airplane mode to reset all cellular and radio transceivers",
+    "description": "Toggle airplane mode to reset all cellular, Wi-Fi, and Bluetooth radio transceivers",
     "classes": { "path": "Settings>Connections>Airplane mode" }
+  },
+  {
+    "id": "DL_QUICK_SHARE",
+    "deeplink": "bixby://settings/connections/quick_share",
+    "description": "Share files with nearby Galaxy devices using Quick Share without internet",
+    "classes": { "path": "Settings>Connections>Quick Share" }
   },
   {
     "id": "DL_DO_NOT_DISTURB",
     "deeplink": "bixby://settings/sound/do_not_disturb",
-    "description": "Block calls and notifications during sleeping hours or focus time",
+    "description": "Block calls and notifications during sleeping hours or focus time with Do Not Disturb",
     "classes": { "path": "Settings>Notifications>Do not disturb" }
   },
   {
@@ -200,19 +332,19 @@
   {
     "id": "DL_DND_EXCEPTIONS",
     "deeplink": "bixby://settings/sound/do_not_disturb/exceptions",
-    "description": "Allow calls from specific contacts even during Do Not Disturb mode",
+    "description": "Allow calls from specific contacts and apps even during Do Not Disturb mode",
     "classes": { "path": "Settings>Notifications>Do not disturb>Allow exceptions" }
   },
   {
     "id": "DL_NOTIFICATIONS_APPS",
     "deeplink": "bixby://settings/notifications/app_notifications",
-    "description": "Manage per-app notification permissions, sound, and vibration patterns",
+    "description": "Manage per-app notification permissions, sound, vibration, and alert patterns",
     "classes": { "path": "Settings>Notifications>App notifications" }
   },
   {
     "id": "DL_NOTIFICATION_STYLE",
     "deeplink": "bixby://settings/notifications/notification_style",
-    "description": "Change notification popup style between Brief and Detailed",
+    "description": "Change notification popup style between Brief and Detailed banner style",
     "classes": { "path": "Settings>Notifications>Notification pop-up style" }
   },
   {
@@ -230,109 +362,313 @@
   {
     "id": "DL_BRIEF_POPUP",
     "deeplink": "bixby://settings/notifications/brief_popup",
-    "description": "Configure brief notification pop-ups and edge lighting on notification arrival",
+    "description": "Configure brief notification pop-ups and edge lighting style on notification arrival",
     "classes": { "path": "Settings>Notifications>Brief pop-up settings" }
   },
   {
     "id": "DL_APP_NOTIFICATION_BADGES",
     "deeplink": "bixby://settings/notifications/badges",
-    "description": "Show or hide notification badges and app icon counters",
+    "description": "Show or hide notification badges and app icon counters on home screen",
     "classes": { "path": "Settings>Notifications>App icon badges" }
   },
   {
     "id": "DL_SOUND_VOLUME",
     "deeplink": "bixby://settings/sound/volume",
-    "description": "Adjust ringtone, media, system, and notification volume levels",
+    "description": "Adjust ringtone, media, system, notification, and call volume levels",
     "classes": { "path": "Settings>Sounds and vibration>Volume" }
   },
   {
     "id": "DL_VIBRATION_INTENSITY",
     "deeplink": "bixby://settings/sound/vibration_intensity",
-    "description": "Adjust vibration intensity for calls, notifications, and touch feedback",
+    "description": "Adjust vibration intensity for calls, notifications, and touch feedback haptics",
     "classes": { "path": "Settings>Sounds and vibration>Vibration intensity" }
   },
   {
     "id": "DL_SOUND_MODE",
     "deeplink": "bixby://settings/sound/sound_mode",
-    "description": "Switch between Sound, Vibrate, and Mute modes globally",
+    "description": "Switch between Sound, Vibrate only, and Mute modes globally on Galaxy device",
     "classes": { "path": "Settings>Sounds and vibration>Sound mode" }
   },
   {
     "id": "DL_VIBRATION_PATTERN",
     "deeplink": "bixby://settings/sound/vibration_pattern",
-    "description": "Change vibration pattern for incoming calls and notifications",
+    "description": "Change vibration pattern for incoming calls and message notifications",
     "classes": { "path": "Settings>Sounds and vibration>Vibration pattern" }
   },
   {
     "id": "DL_DOLBY_ATMOS",
     "deeplink": "bixby://settings/sound/dolby_atmos",
-    "description": "Enhance spatial surround sound for media, gaming, and voice",
+    "description": "Enhance spatial surround sound for media playback, gaming, and voice calls with Dolby Atmos",
     "classes": { "path": "Settings>Sounds and vibration>Sound quality and effects>Dolby Atmos" }
   },
   {
     "id": "DL_SOUND_QUALITY",
     "deeplink": "bixby://settings/sound/quality_effects",
-    "description": "Equalizer, UHQ upscaler, and Adapt Sound personal audio profile",
+    "description": "Equalizer, UHQ upscaler, and Adapt Sound personal audio profile for headphones",
     "classes": { "path": "Settings>Sounds and vibration>Sound quality and effects" }
   },
   {
     "id": "DL_SEPARATE_APP_SOUND",
     "deeplink": "bixby://settings/sound/separate_app_sound",
-    "description": "Play media sound from specific app on separate Bluetooth audio device",
+    "description": "Play media sound from specific app on separate Bluetooth speaker or headphones",
     "classes": { "path": "Settings>Sounds and vibration>Separate app sound" }
+  },
+  {
+    "id": "DL_RINGTONE",
+    "deeplink": "bixby://settings/sound/ringtone",
+    "description": "Change call ringtone and notification sound on Samsung Galaxy",
+    "classes": { "path": "Settings>Sounds and vibration>Ringtone" }
   },
   {
     "id": "DL_FINGERPRINT",
     "deeplink": "bixby://settings/security/fingerprint",
-    "description": "Add, remove, or rename fingerprints for biometric unlocking",
+    "description": "Add, remove, rename, or re-register fingerprints for biometric unlocking on Galaxy",
     "classes": { "path": "Settings>Security and privacy>Biometrics>Fingerprints" }
   },
   {
     "id": "DL_FACE_RECOGNITION",
     "deeplink": "bixby://settings/security/face_recognition",
-    "description": "Register face data and configure face recognition unlock speed",
+    "description": "Register face data and configure face recognition unlock speed and security level",
     "classes": { "path": "Settings>Security and privacy>Biometrics>Face recognition" }
   },
   {
     "id": "DL_SCREEN_LOCK_TYPE",
     "deeplink": "bixby://settings/security/screen_lock",
-    "description": "Change screen lock type between swipe, PIN, password, or pattern",
+    "description": "Change screen lock type between swipe, PIN, password, or pattern for security",
     "classes": { "path": "Settings>Security and privacy>Lock screen>Screen lock type" }
+  },
+  {
+    "id": "DL_SECURE_FOLDER",
+    "deeplink": "bixby://settings/security/secure_folder",
+    "description": "Create encrypted private space to hide sensitive apps, photos, and files",
+    "classes": { "path": "Settings>Security and privacy>Secure Folder" }
+  },
+  {
+    "id": "DL_PRIVATE_MODE",
+    "deeplink": "bixby://settings/privacy/private_mode",
+    "description": "Hide private content from gallery, contacts and files using Private mode",
+    "classes": { "path": "Settings>Security and privacy>Privacy>Private Share" }
+  },
+  {
+    "id": "DL_PERMISSION_MANAGER",
+    "deeplink": "bixby://settings/privacy/permission_manager",
+    "description": "View and control which apps have access to camera, microphone, location, contacts",
+    "classes": { "path": "Settings>Security and privacy>Privacy>Permission manager" }
   },
   {
     "id": "DL_DIGITAL_WELLBEING",
     "deeplink": "bixby://settings/digital_wellbeing",
-    "description": "View daily screen time, app usage stats, and configure focus mode",
+    "description": "View daily screen time usage stats, app timers, and configure focus and bedtime modes",
     "classes": { "path": "Settings>Digital Wellbeing and parental controls" }
   },
   {
     "id": "DL_FOCUS_MODE",
     "deeplink": "bixby://settings/digital_wellbeing/focus_mode",
-    "description": "Pause distracting apps with Focus mode and schedule wind-down routine",
+    "description": "Pause distracting apps with Focus mode and schedule productivity wind-down routine",
     "classes": { "path": "Settings>Digital Wellbeing and parental controls>Focus mode" }
   },
   {
     "id": "DL_BEDTIME_MODE",
     "deeplink": "bixby://settings/digital_wellbeing/bedtime_mode",
-    "description": "Enable greyscale and mute notifications on a scheduled bedtime",
+    "description": "Enable greyscale screen and mute notifications on a scheduled bedtime to improve sleep",
     "classes": { "path": "Settings>Digital Wellbeing and parental controls>Bedtime mode" }
   },
   {
     "id": "DL_APP_TIMERS",
     "deeplink": "bixby://settings/digital_wellbeing/app_timers",
-    "description": "Set daily time limits for specific apps to reduce usage",
+    "description": "Set daily time limits for specific apps like Instagram, TikTok, YouTube to reduce screen time",
     "classes": { "path": "Settings>Digital Wellbeing and parental controls>App timers" }
+  },
+  {
+    "id": "DL_GENERAL_MANAGEMENT",
+    "deeplink": "bixby://settings/general_management",
+    "description": "Language, date time, keyboard, Samsung account, software update, and reset settings",
+    "classes": { "path": "Settings>General management" }
+  },
+  {
+    "id": "DL_LANGUAGE_INPUT",
+    "deeplink": "bixby://settings/general_management/language",
+    "description": "Change device language, region, and keyboard input language settings",
+    "classes": { "path": "Settings>General management>Language" }
+  },
+  {
+    "id": "DL_DATE_TIME",
+    "deeplink": "bixby://settings/general_management/date_time",
+    "description": "Configure automatic date and time, timezone, and 24-hour clock format",
+    "classes": { "path": "Settings>General management>Date and time" }
+  },
+  {
+    "id": "DL_KEYBOARD_SETTINGS",
+    "deeplink": "bixby://settings/general_management/keyboard",
+    "description": "Configure Samsung Keyboard autocorrect, swipe typing, predictive text, and language settings",
+    "classes": { "path": "Settings>General management>Samsung Keyboard settings" }
   },
   {
     "id": "DL_RESET_NETWORK",
     "deeplink": "bixby://settings/general/reset/network",
-    "description": "Reset Wi-Fi, Bluetooth, and mobile network settings to default",
+    "description": "Reset Wi-Fi, Bluetooth, and mobile network settings to default to fix connectivity issues",
     "classes": { "path": "Settings>General management>Reset>Reset network settings" }
+  },
+  {
+    "id": "DL_RESET_ALL_SETTINGS",
+    "deeplink": "bixby://settings/general/reset/all_settings",
+    "description": "Reset all phone settings to default without deleting personal data or apps",
+    "classes": { "path": "Settings>General management>Reset>Reset all settings" }
   },
   {
     "id": "DL_FACTORY_RESET",
     "deeplink": "bixby://settings/general/reset/factory",
-    "description": "Reset device completely to factory default settings",
+    "description": "Full factory data reset to completely wipe device and restore to out-of-box state",
     "classes": { "path": "Settings>General management>Reset>Factory data reset" }
+  },
+  {
+    "id": "DL_SOFTWARE_UPDATE",
+    "deeplink": "bixby://settings/software_update",
+    "description": "Check for and install One UI software updates and security patches",
+    "classes": { "path": "Settings>Software update>Download and install" }
+  },
+  {
+    "id": "DL_SAFE_MODE",
+    "deeplink": "bixby://settings/general_management/safe_mode",
+    "description": "Restart in Safe Mode to diagnose third-party app crashes and freezing issues",
+    "classes": { "path": "Settings>General management>Reset>Restart in Safe mode" }
+  },
+  {
+    "id": "DL_ACCESSIBILITY_MAIN",
+    "deeplink": "bixby://settings/accessibility",
+    "description": "All accessibility settings including TalkBack, vision, hearing, and interaction controls",
+    "classes": { "path": "Settings>Accessibility" }
+  },
+  {
+    "id": "DL_TALKBACK",
+    "deeplink": "bixby://settings/accessibility/talkback",
+    "description": "Enable TalkBack screen reader to navigate device by touch and voice feedback",
+    "classes": { "path": "Settings>Accessibility>TalkBack" }
+  },
+  {
+    "id": "DL_MAGNIFICATION",
+    "deeplink": "bixby://settings/accessibility/magnification",
+    "description": "Enable screen magnification to triple-tap and zoom into any part of the display",
+    "classes": { "path": "Settings>Accessibility>Visibility enhancements>Magnification" }
+  },
+  {
+    "id": "DL_COLOR_CORRECTION",
+    "deeplink": "bixby://settings/accessibility/color_correction",
+    "description": "Apply color filter for color blindness including deuteranopia, protanopia adjustments",
+    "classes": { "path": "Settings>Accessibility>Visibility enhancements>Color correction" }
+  },
+  {
+    "id": "DL_DEXTERITY",
+    "deeplink": "bixby://settings/accessibility/interaction",
+    "description": "Configure touch input, press duration, and interaction controls for motor accessibility",
+    "classes": { "path": "Settings>Accessibility>Interaction and dexterity" }
+  },
+  {
+    "id": "DL_BIXBY_VOICE",
+    "deeplink": "bixby://settings/bixby",
+    "description": "Configure Bixby voice assistant settings, wake word, and language preferences",
+    "classes": { "path": "Settings>Bixby" }
+  },
+  {
+    "id": "DL_SAMSUNG_PAY",
+    "deeplink": "bixby://settings/samsung_pay",
+    "description": "Samsung Pay wallet settings for contactless payments and card management",
+    "classes": { "path": "Settings>Samsung Pay" }
+  },
+  {
+    "id": "DL_SAMSUNG_ACCOUNT",
+    "deeplink": "bixby://settings/accounts/samsung_account",
+    "description": "Manage Samsung Account, Galaxy Store, and Samsung Cloud backup settings",
+    "classes": { "path": "Settings>Samsung account" }
+  },
+  {
+    "id": "DL_GOOGLE_ACCOUNT",
+    "deeplink": "bixby://settings/accounts/google",
+    "description": "Manage Google account sync, Google Backup, and Google services settings",
+    "classes": { "path": "Settings>Accounts and backup>Manage accounts>Google" }
+  },
+  {
+    "id": "DL_CLOUD_BACKUP",
+    "deeplink": "bixby://settings/accounts/backup",
+    "description": "Configure Samsung Cloud and Google One backup settings for photos, contacts, and data",
+    "classes": { "path": "Settings>Accounts and backup>Back up data" }
+  },
+  {
+    "id": "DL_LOCATION",
+    "deeplink": "bixby://settings/privacy/location",
+    "description": "Manage app location permissions, GPS accuracy, Google location history settings",
+    "classes": { "path": "Settings>Location" }
+  },
+  {
+    "id": "DL_EMERGENCY_SOS",
+    "deeplink": "bixby://settings/safety/emergency_sos",
+    "description": "Configure Emergency SOS to call emergency services by pressing side button rapidly",
+    "classes": { "path": "Settings>Safety and emergency>Emergency SOS" }
+  },
+  {
+    "id": "DL_ADVANCED_FEATURES",
+    "deeplink": "bixby://settings/advanced_features",
+    "description": "Samsung One UI advanced features including DeX, Labs, Multi window, and Gestures",
+    "classes": { "path": "Settings>Advanced features" }
+  },
+  {
+    "id": "DL_DEX_MODE",
+    "deeplink": "bixby://settings/advanced_features/dex",
+    "description": "Configure Samsung DeX for desktop-like computing experience with external monitor",
+    "classes": { "path": "Settings>Advanced features>Samsung DeX" }
+  },
+  {
+    "id": "DL_MULTIWINDOW",
+    "deeplink": "bixby://settings/advanced_features/multiwindow",
+    "description": "Enable Multi window and pop-up view to run two apps on screen simultaneously",
+    "classes": { "path": "Settings>Advanced features>Multi window" }
+  },
+  {
+    "id": "DL_LABS",
+    "deeplink": "bixby://settings/advanced_features/labs",
+    "description": "Experimental One UI Labs features preview including taskbar and other beta functions",
+    "classes": { "path": "Settings>Advanced features>Labs" }
+  },
+  {
+    "id": "DL_DEVELOPER_OPTIONS",
+    "deeplink": "bixby://settings/developer_options",
+    "description": "Enable developer options, USB debugging, and advanced system diagnostic tools",
+    "classes": { "path": "Settings>General management>Software update>Developer options" }
+  },
+  {
+    "id": "DL_STORAGE_SUMMARY",
+    "deeplink": "bixby://settings/device_care/storage/summary",
+    "description": "View detailed storage usage breakdown by apps, images, videos, documents and system",
+    "classes": { "path": "Settings>Device care>Storage>Storage categories" }
+  },
+  {
+    "id": "DL_LARGE_FILES",
+    "deeplink": "bixby://settings/device_care/storage/large_files",
+    "description": "Find and delete large files, unused downloads, and duplicate photos to free storage",
+    "classes": { "path": "Settings>Device care>Storage>Large files" }
+  },
+  {
+    "id": "DL_DEVICE_CARE_BATTERY_STATUS",
+    "deeplink": "bixby://settings/device_care/battery_status",
+    "description": "View current battery charge status, temperature, capacity, and health report",
+    "classes": { "path": "Settings>Battery>More battery settings" }
+  },
+  {
+    "id": "DL_LOCK_SCREEN_SETTINGS",
+    "deeplink": "bixby://settings/lock_screen",
+    "description": "Customize lock screen wallpaper, shortcuts, clock style, and AOD settings",
+    "classes": { "path": "Settings>Lock screen and AOD" }
+  },
+  {
+    "id": "DL_HOME_SCREEN_SETTINGS",
+    "deeplink": "bixby://settings/home_screen",
+    "description": "Configure home screen layout, grid size, swipe actions, and lock home screen arrangement",
+    "classes": { "path": "Settings>Home screen" }
+  },
+  {
+    "id": "DL_WALLPAPER",
+    "deeplink": "bixby://settings/wallpaper",
+    "description": "Change home screen and lock screen wallpaper, themes, and icons",
+    "classes": { "path": "Settings>Wallpaper and style" }
   }
 ]
