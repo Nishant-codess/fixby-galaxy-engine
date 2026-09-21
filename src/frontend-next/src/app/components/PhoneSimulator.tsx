@@ -492,7 +492,8 @@ function NavigatingScreen({ path, activeIdx, theme }: { path: SettingsNode[]; ac
 function ResolvedScreen({ path, query, telemetry, onReset, theme }: {
   path: SettingsNode[]; query: string; telemetry: any; onReset: () => void; theme: Theme;
 }) {
-  const leaf = path[path.length - 1];
+  const leaf = path && path.length > 0 ? path[path.length - 1] : { label: "Target Setting", icon: <ISettings />, depth: 0 };
+  const parentLabel = path && path.length > 1 ? path[path.length - 2]?.label : "Settings";
   const c = getColors(theme);
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column", background: c.bg, overflowY: "auto", animation: "slideUpFade 0.4s cubic-bezier(0.2,0.8,0.2,1)", backgroundImage: c.wallpaper }}>
@@ -500,20 +501,20 @@ function ResolvedScreen({ path, query, telemetry, onReset, theme }: {
         <Ripple onClick={onReset} style={{ color: "#3E91FF", display: "flex" }}>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3E91FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
         </Ripple>
-        <div style={{ fontSize: "28px", fontWeight: 400, color: c.text, letterSpacing: "-0.02em" }}>{path[path.length - 2]?.label || "Settings"}</div>
+        <div style={{ fontSize: "28px", fontWeight: 400, color: c.text, letterSpacing: "-0.02em" }}>{parentLabel}</div>
       </div>
 
       <div style={{ margin: "8px 16px 20px", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
         <div style={{ width: "60px", height: "60px", borderRadius: "16px", background: "#3E91FF", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "14px" }}>
-          <div style={{ transform: "scale(1.4)" }}>{leaf.icon}</div>
+          <div style={{ transform: "scale(1.4)" }}>{leaf?.icon || <ISettings />}</div>
         </div>
-        <div style={{ fontSize: "20px", color: c.text, marginBottom: "4px" }}>{leaf.label}</div>
+        <div style={{ fontSize: "20px", color: c.text, marginBottom: "4px" }}>{leaf?.label || "Target Setting"}</div>
         <div style={{ fontSize: "13px", color: c.textSub }}>Target setting reached by Fixby AI</div>
       </div>
 
       <div style={{ background: c.surface, borderRadius: "22px", margin: "0 16px 14px", overflow: "hidden" }}>
         <Ripple style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "15px 18px" }}>
-          <div style={{ fontSize: "16px", color: c.text }}>{leaf.label}</div>
+          <div style={{ fontSize: "16px", color: c.text }}>{leaf?.label || "Target Setting"}</div>
           <div style={{ width: "51px", height: "31px", borderRadius: "31px", background: c.success, position: "relative", flexShrink: 0 }}>
             <div style={{ width: "27px", height: "27px", borderRadius: "50%", background: "#fff", position: "absolute", top: "2px", right: "2px", boxShadow: "0 2px 4px rgba(0,0,0,0.2)" }} />
           </div>
@@ -591,7 +592,7 @@ export default function PhoneSimulator({ isActive }: { isActive: boolean }) {
     
     try {
       const res = await fetch("http://localhost:8000/v1/troubleshoot", {
-        method: "POST", headers: { "Content-Type": "application/json" },
+        method: "POST", headers: { "Content-Type": "application/json", "X-API-Key": "test-api-key-123" },
         body: JSON.stringify({ query: q, context: {}, siis_response: "" }),
       });
       const d = await res.json();
