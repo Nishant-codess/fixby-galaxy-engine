@@ -69,8 +69,8 @@ class CascadingSemanticCache:
         if k1 in self.tier1_exact:
             return self.tier1_exact[k1], "tier1_hash"
 
-        # Tier 2: Semantic Slot Hash (<2ms)
-        if slots:
+        # Tier 2: Semantic Slot Hash (<20ms)
+        if slots and slots.get("domain") != "general":
             k2 = self._hash_slots(slots)
             if k2 in self.tier2_slots:
                 return self.tier2_slots[k2], "tier2_slot_hash"
@@ -103,8 +103,7 @@ class CascadingSemanticCache:
         k1 = self._hash_exact(query)
         self.tier1_exact[k1] = value
 
-        domain = slots.get("domain") if slots else None
-        if slots:
+        if slots and slots.get("domain") != "general":
             k2 = self._hash_slots(slots)
             self.tier2_slots[k2] = value
 

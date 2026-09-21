@@ -1,0 +1,105 @@
+/* css/glass.css */
+
+/* Tier 1 — Vapor (chrome) */
+.glass-vapor {
+  background: var(--glass-vapor-bg);
+  backdrop-filter: var(--glass-vapor-blur);
+  -webkit-backdrop-filter: var(--glass-vapor-blur);
+  border: var(--glass-edge);
+  box-shadow: var(--glass-inner-glow), var(--shadow-mid);
+}
+
+/* Tier 2 — Pane (content) */
+.glass-pane {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.055) 0%, rgba(255,255,255,0) 40%),
+    var(--glass-pane-bg);
+  backdrop-filter: var(--glass-pane-blur);
+  -webkit-backdrop-filter: var(--glass-pane-blur);
+  border: var(--glass-edge);
+  border-radius: var(--r-panel);
+  box-shadow: var(--glass-inner-glow), var(--shadow-mid);
+}
+
+/* Tier 3 — Lens (exactly one element on the site) */
+.glass-lens {
+  background: var(--glass-pane-bg);
+  backdrop-filter: blur(10px) saturate(1.4);
+  -webkit-backdrop-filter: blur(10px) saturate(1.4);
+  border: var(--glass-edge-lit);
+  border-radius: var(--r-panel);
+  isolation: isolate;
+  contain: strict;
+  will-change: transform;
+}
+
+@supports (backdrop-filter: url(#lens-refract)) {
+  .glass-lens { 
+    backdrop-filter: url(#lens-refract) blur(8px) saturate(1.4); 
+    -webkit-backdrop-filter: url(#lens-refract) blur(8px) saturate(1.4); 
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-lens {
+    backdrop-filter: blur(10px) saturate(1.4);
+    -webkit-backdrop-filter: blur(10px) saturate(1.4);
+  }
+}
+
+/* Tier 4 — Solid (data density) */
+.glass-solid {
+  background: var(--glass-solid-bg);
+  border: var(--glass-edge);
+  border-radius: var(--r-tight);
+}
+
+/* Progressive blur edges */
+.progressive-blur-top, .progressive-blur-bottom {
+  position: fixed; left: 0; right: 0; height: 140px;
+  pointer-events: none; z-index: 40;
+}
+
+.progressive-blur-top { top: 0; }
+.progressive-blur-bottom { bottom: 0; transform: scaleY(-1); }
+
+.progressive-blur-top > span, .progressive-blur-bottom > span {
+  position: absolute; inset: 0;
+  backdrop-filter: blur(var(--b));
+  -webkit-backdrop-filter: blur(var(--b));
+  mask-image: linear-gradient(to bottom,
+              rgba(0,0,0,1) var(--from), rgba(0,0,0,0) var(--to));
+  -webkit-mask-image: linear-gradient(to bottom,
+              rgba(0,0,0,1) var(--from), rgba(0,0,0,0) var(--to));
+}
+
+.progressive-blur-top > span:nth-child(1), .progressive-blur-bottom > span:nth-child(1) { --b: 1px;  --from: 0%;   --to: 25%; }
+.progressive-blur-top > span:nth-child(2), .progressive-blur-bottom > span:nth-child(2) { --b: 2px;  --from: 12%;  --to: 40%; }
+.progressive-blur-top > span:nth-child(3), .progressive-blur-bottom > span:nth-child(3) { --b: 4px;  --from: 25%;  --to: 55%; }
+.progressive-blur-top > span:nth-child(4), .progressive-blur-bottom > span:nth-child(4) { --b: 8px;  --from: 40%;  --to: 70%; }
+.progressive-blur-top > span:nth-child(5), .progressive-blur-bottom > span:nth-child(5) { --b: 16px; --from: 55%;  --to: 85%; }
+.progressive-blur-top > span:nth-child(6), .progressive-blur-bottom > span:nth-child(6) { --b: 28px; --from: 70%;  --to: 100%; }
+
+/* Noise Overlay */
+.glass-noise,
+.glass-vapor,
+.glass-pane,
+.glass-lens,
+.glass-solid {
+  position: relative;
+}
+
+.glass-noise::after,
+.glass-vapor::after,
+.glass-pane::after,
+.glass-lens::after,
+.glass-solid::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.025;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  border-radius: inherit;
+  z-index: 1;
+}

@@ -86,6 +86,18 @@ class LLMClient:
                 from groq import Groq
                 self.groq_client = Groq(api_key=self.groq_api_key)
                 logger.info("Groq client initialized successfully.")
+            except TypeError as e:
+                # Newer groq SDK removed 'proxies' — try with explicit http_client
+                try:
+                    import httpx
+                    from groq import Groq
+                    self.groq_client = Groq(
+                        api_key=self.groq_api_key,
+                        http_client=httpx.Client()
+                    )
+                    logger.info("Groq client initialized with explicit http_client.")
+                except Exception as e2:
+                    logger.warning(f"Failed to initialize Groq client (fallback): {e2}")
             except Exception as e:
                 logger.warning(f"Failed to initialize Groq client: {e}")
 
@@ -115,8 +127,8 @@ class LLMClient:
             messages.append({"role": "system", "content": system_prompt})
         messages.append({"role": "user", "content": prompt})
 
-        # Try Llama-3.3-70b or Llama-3.1-8b-instant
-        models_to_try = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"]
+        # Try models in order of preference — verified active on this account
+        models_to_try = ["qwen/qwen3.8-27b", "openai/gpt-oss-120b", "openai/gpt-oss-20b"]
         last_exc = None
         for model in models_to_try:
             try:

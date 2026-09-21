@@ -1,0 +1,27 @@
+@import "../styles/tokens.css";
+@import "../styles/reset.css";
+@import "../styles/type.css";
+@import "../styles/base.css";
+@import "../styles/animations.css";
+@import "../styles/glass.css";
+@import "../styles/layout.css";
+@import "../styles/components.css";
+@import "../styles/beats.css";
+@import "../styles/responsive.css";
+
+/*
+ * FOUC Prevention — Critical CSS
+ * This class is stamped on <html> by an inline script BEFORE React loads.
+ * It instantly hides the landing layer so the user never sees the landing
+ * page flash when reloading from console mode.
+ */
+html.fixby-console-mode body {
+  background: #000 !important;
+  overflow: hidden !important;
+}
+
+html.fixby-console-mode .landing-layer {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}

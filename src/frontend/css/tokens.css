@@ -1,0 +1,175 @@
+/* css/tokens.css — Unified Design System Tokens */
+/* Contains BOTH new semantic names (index.html) and legacy aliases (demo.html) */
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Sora:wght@400;600;700;800&family=Geist:wght@400;500;600&family=Hanken+Grotesk:wght@400;500;600&display=swap');
+
+:root {
+  /* ═══════════════════════════════════════════════════════════ */
+  /*  NEW SEMANTIC TOKENS (used by index.html + glass.css etc.) */
+  /* ═══════════════════════════════════════════════════════════ */
+
+  /* Depth scale */
+  --void:        #05070B;
+  --abyss:       #090D14;
+  --sub:         #0F141D;
+  --surface:     #161D28;
+  --edge:        #232C3A;
+  --edge-lit:    #35425A;
+
+  /* Type colours */
+  --text-hi:     #E9EEF7;
+  --text-mid:    #A9B4C6;
+  --text-lo:     #6B7789;
+  --text-ghost:  #3C4657;
+
+  /* Semantic accents */
+  --trace:       #4C8DFF;
+  --trace-dim:   #1E3A6B;
+  --trace-glow:  #8FB8FF;
+  --filament:    #FFC46B;
+  --filament-dim:#6B4E22;
+  --filament-hot:#FFE0AE;
+
+  /* Safety tiers */
+  --safe:        #57D9A3;
+  --caution:     #FFAB3F;
+  --critical:    #FF5F52;
+
+  /* Glass system (new) */
+  --glass-vapor-bg:    rgba(14, 20, 30, 0.42);
+  --glass-vapor-blur:  blur(28px) saturate(1.5);
+  --glass-pane-bg:     rgba(22, 29, 40, 0.62);
+  --glass-pane-blur:   blur(14px) saturate(1.3);
+  --glass-solid-bg:    rgba(15, 20, 29, 0.94);
+  --glass-edge:        1px solid rgba(255, 255, 255, 0.07);
+  --glass-edge-lit:    1px solid rgba(140, 180, 255, 0.20);
+  --glass-inner-glow:  inset 0 1px 0 rgba(255, 255, 255, 0.08);
+
+  /* Elevation */
+  --shadow-near:  0 2px 8px rgba(0, 0, 0, 0.5);
+  --shadow-mid:   0 12px 32px rgba(0, 0, 0, 0.55);
+  --shadow-far:   0 32px 90px rgba(0, 0, 0, 0.7);
+  --glow-trace:   0 0 40px rgba(76, 141, 255, 0.28);
+  --glow-filament:0 0 48px rgba(255, 196, 107, 0.34);
+
+  /* Radius */
+  --r-tight:  6px;
+  --r-panel:  16px;
+  --r-device: 42px;
+
+  /* Spacing */
+  --s-1: 4px;   --s-2: 8px;   --s-3: 12px;  --s-4: 16px;
+  --s-6: 24px;  --s-8: 32px;  --s-12: 48px; --s-16: 64px;
+  --s-24: 96px; --s-32: 128px; --s-48: 192px;
+
+  /* Motion */
+  --ease-descend: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-snap:    cubic-bezier(0.34, 1.4, 0.64, 1);
+  --ease-linear:  linear;
+  --dur-fast: 180ms; --dur-mid: 420ms; --dur-slow: 900ms;
+
+  /* ═══════════════════════════════════════════════════════════ */
+  /*  LEGACY ALIASES (used by demo.html CSS: base/layout/       */
+  /*  components/animations/responsive.css)                      */
+  /* ═══════════════════════════════════════════════════════════ */
+
+  /* Color Palette — Legacy */
+  --color-bg-0: #050507;
+  --color-bg-1: #0b0c10;
+  --color-bg-2: #111318;
+  --color-bg-card: #1a1921;
+  --color-bg-hover: #24232c;
+  --color-bg-subtle: #0d0e12;
+
+  /* Legacy Accents */
+  --color-accent-primary: #5d3a9b;
+  --color-accent-secondary: #4cd7f6;
+  --color-accent-tertiary: #9c7a58;
+  --color-accent-electric: #4cd7f6;
+  --color-accent-cyan: #4cd7f6;
+  --color-accent-glow: rgba(76, 215, 246, 0.9);
+  --color-accent-glow-primary: rgba(93, 58, 155, 0.4);
+  --color-accent-glow-secondary: rgba(76, 215, 246, 0.3);
+
+  /* Legacy Semantic Status */
+  --color-safe: #10b981;
+  --color-safe-bg: rgba(16, 185, 129, 0.1);
+  --color-safe-border: rgba(16, 185, 129, 0.25);
+  --color-caution: #f59e0b;
+  --color-caution-bg: rgba(245, 158, 11, 0.1);
+  --color-caution-border: rgba(245, 158, 11, 0.25);
+  --color-critical: #ffb4ab;
+  --color-critical-bg: rgba(255, 180, 171, 0.1);
+  --color-critical-border: rgba(255, 180, 171, 0.3);
+
+  /* Legacy Text */
+  --color-text-primary: #e5e1ec;
+  --color-text-secondary: #ccc3d3;
+  --color-text-muted: #958e9c;
+  --color-text-dim: #4a4451;
+
+  /* Legacy Borders */
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-border-subtle: rgba(255, 255, 255, 0.03);
+  --color-border-hover: rgba(93, 58, 155, 0.5);
+  --color-border-glow: rgba(76, 215, 246, 0.4);
+
+  /* Legacy Glass */
+  --glass-bg: rgba(17, 19, 24, 0.5);
+  --glass-bg-card: rgba(26, 25, 33, 0.4);
+  --glass-blur: blur(20px) saturate(160%);
+  --glass-border: 1px solid rgba(255, 255, 255, 0.06);
+  --glass-border-top: 1px solid rgba(255, 255, 255, 0.12);
+  --glass-border-accent: 1px solid rgba(93, 58, 155, 0.4);
+
+  /* Legacy Typography */
+  --font-display-elegant: 'Playfair Display', serif;
+  --font-display-modern: 'Sora', sans-serif;
+  --font-body: 'Geist', 'Hanken Grotesk', -apple-system, sans-serif;
+  --font-mono: 'Geist', monospace;
+
+  /* Legacy Font Sizes */
+  --text-hero: clamp(4rem, 8vw, 8rem);
+  --text-display: clamp(2.5rem, 5vw, 5rem);
+  --text-title: clamp(1.75rem, 3vw, 2.5rem);
+  --text-subtitle: clamp(1.25rem, 2vw, 1.5rem);
+  --text-lg: 1.125rem;
+  --text-base: 1rem;
+  --text-sm: 0.875rem;
+  --text-xs: 0.75rem;
+  --text-micro: 0.65rem;
+
+  /* Legacy Spacing */
+  --space-1: 0.25rem;  --space-2: 0.5rem;  --space-3: 0.75rem;
+  --space-4: 1rem;     --space-6: 1.5rem;  --space-8: 2rem;
+  --space-10: 2.5rem;  --space-12: 3rem;   --space-16: 4rem;
+  --space-20: 5rem;    --space-24: 6rem;
+
+  /* Legacy Radii */
+  --radius-xs: 4px;   --radius-sm: 8px;  --radius-md: 12px;
+  --radius-lg: 16px;  --radius-xl: 24px; --radius-pill: 9999px;
+
+  /* Legacy Shadows */
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3);
+  --shadow-float: 0 24px 80px rgba(0, 0, 0, 0.6), 0 8px 24px rgba(0, 0, 0, 0.4);
+  --shadow-glow-primary: 0 0 40px rgba(93, 58, 155, 0.2), 0 0 120px rgba(93, 58, 155, 0.1);
+  --shadow-glow-secondary: 0 0 60px rgba(76, 215, 246, 0.15);
+
+  /* Legacy Aurora */
+  --aurora-primary: radial-gradient(circle at 0% 0%, rgba(93, 58, 155, 0.15), transparent 60%);
+
+  /* Legacy Animation */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-smooth: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-sharp: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
+  --duration-fast: 150ms;
+  --duration-base: 300ms;
+  --duration-slow: 500ms;
+  --duration-reveal: 800ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --dur-fast: 0ms; --dur-mid: 0ms; --dur-slow: 0ms; }
+}
