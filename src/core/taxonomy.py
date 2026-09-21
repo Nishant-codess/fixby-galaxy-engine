@@ -118,7 +118,7 @@ SYMPTOM_TAXONOMY: Dict[str, Dict[str, Set[str]]] = {
             "app keeps crashing", "app closes itself", "keeps force closing",
         },
         "storage_pressure": {
-            "storage full", "memory full", "space low", "storage",
+            "storage full", "memory full", "space low",
             "storage saaf", "memory space",
             "저장공간", "용량 부족", "메모리 부족", "용량 정리",
             "no space", "storage almost full", "free up space",
@@ -157,12 +157,40 @@ SYMPTOM_TAXONOMY: Dict[str, Dict[str, Set[str]]] = {
             "phone vibrating", "silent mode", "mute", "no sound",
             "sound not working", "speaker not working",
         },
+        "speaker_distortion": {
+            "speaker", "sound crackling", "distorted audio", "sound muffled",
+            "awaz nahi aa rahi", "speaker kharab", "speaker buzzing",
+            "스피커", "소리 안들림", "소리 찢어짐", "음질 이상"
+        },
+        "low_volume": {
+            "volume low", "call volume", "sound low", "earpiece", "kam awaz",
+            "awaz bohot kam", "volume badhana",
+            "볼륨 작음", "통화 볼륨", "소리 작음", "음량"
+        },
+        "spatial_effects": {
+            "dolby", "dolby atmos", "sound quality", "adapt sound", "equalizer",
+            "atmos", "surround sound",
+            "돌비", "돌비 애트모스", "음질 최적화", "사운드"
+        },
+    },
+    "storage": {
+        "cleanup_trash": {
+            "storage full", "space low", "storage cleanup", "clean storage",
+            "trash empty", "delete other files", "storage saaf", "memory space",
+            "storage khatam", "clear cache",
+            "저장공간", "용량 부족", "메모리 부족", "용량 정리", "휴지통 비우기"
+        },
     },
     "security": {
         "biometrics": {
             "fingerprint", "face unlock", "face recognition", "biometric",
             "지문", "얼굴 인식", "생체 인식",
             "fingerprint not working", "face id not working", "can't unlock",
+        },
+        "biometrics_fingerprint": {
+            "fingerprint", "fingerprint not working", "biometrics", "finger print fail",
+            "fingerprint reader", "ungli ka nishan", "finger sensor",
+            "지문", "지문인식 안됨", "생체인식", "지문 센서"
         },
         "screen_lock": {
             "screen lock", "pin", "password", "pattern", "lock screen",
