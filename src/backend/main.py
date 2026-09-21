@@ -13,6 +13,9 @@ from contracts.schema import (
 )
 from src.backend.telemetry import telemetry
 
+# Eagerly initialize the AI matcher so HF weights load on app startup, eliminating first-request latency
+from src.ai.matcher import matcher
+
 app = FastAPI(
     title="Fixby — Samsung Galaxy Troubleshooting API",
     description="Engine for Samsung PRISM GenAI Hackathon 3rd Edition",

@@ -116,7 +116,7 @@ SYMPTOM_TAXONOMY: Dict[str, Dict[str, Set[str]]] = {
             "hang", "lag", "phone slow", "slow response", "ruk ruk ke",
             "phone atak raha", "hang kar raha", "response slow",
             "폰 느려", "버벅임", "렉", "반응 느림", "시스템 지연",
-            "sluggish", "freezing", "slow", "not responding",
+            "sluggish", "freezing", "not responding",
         },
         "app_crash": {
             "app crash", "crashing", "apps closing", "force close",
@@ -137,6 +137,11 @@ SYMPTOM_TAXONOMY: Dict[str, Dict[str, Set[str]]] = {
         },
     },
     "connectivity": {
+        "quick_share": {
+            "send file", "large file", "video file", "quick share", "nearby share",
+            "send to friend", "share to galaxy", "massive video", "send to phone",
+            "퀵쉐어", "파일 전송", "대용량 파일",
+        },
         "wifi_drop": {
             "wifi", "disconnect", "no internet", "wifi drop", "network issue",
             "wifi band", "network nahi aa raha", "wifi reconnect",
