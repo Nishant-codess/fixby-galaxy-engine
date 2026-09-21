@@ -196,7 +196,7 @@ def run_troubleshoot_pipeline(query: str, siis_response: Optional[str] = None) -
     lang = detect_query_language(query)
 
     # Domain Boundary Guard: Reject out-of-scope queries (e.g. smart fridge, gibberish) to prevent hallucination
-    if not siis_response:
+    if not siis_response or siis_response.strip() == "" or siis_response.strip() == "{}":
         from src.core.taxonomy import SYMPTOM_TAXONOMY
         lower = query.lower()
         all_keywords = set()
@@ -238,7 +238,13 @@ def run_troubleshoot_pipeline(query: str, siis_response: Optional[str] = None) -
             )
 
     # Stages 1-3: 3-Tier Cascading Cache Check (<20ms)
-    cached_val, tier = cache.get(query, slots)
+    # IMPORTANT: If a SIIS payload is present, incorporate it into the cache key so
+    # telemetry-influenced results are never served from a non-SIIS cached response.
+    cache_query = query if not siis_response else f"{query}__siis__{siis_response}"
+    if siis_response:
+        slots["__siis_response"] = siis_response
+
+    cached_val, tier = cache.get(cache_query, slots)
     if cached_val is not None:
         latency = round((time.time() - start_time) * 1000, 2)
         # Deep copy to prevent mutating cached state
@@ -250,7 +256,642 @@ def run_troubleshoot_pipeline(query: str, siis_response: Optional[str] = None) -
         resp_copy.meta.language_detected = lang
         return resp_copy
 
-    # Stage 4: Candidate Deeplink Retrieval (CALLED BEFORE EXTRACTION)
+    # ── SIIS Deterministic Decision Matrix ────────────────────────────────────────
+    # Multi-winner 2D lookup: Query Domain × Live Device State → ranked deeplink list.
+    # Priority order:
+    #   0. Named-App query (hardest signal — overrides everything when hardware is fine)
+    #   1. Compound emergency (2+ critical thresholds simultaneously)
+    #   2. Single Tier-1 emergency (one critical threshold)
+    #   3. Domain × device-state matrix
+    siis_override_goals: List[Goal] = []
+    hardware_escalation: Optional[str] = None
+
+    # ── KNOWN NAMED APPS LIST for query extraction ──────────────────────────────
+    _KNOWN_APPS = [
+        ("instagram", "Instagram"), ("tiktok", "TikTok"), ("snapchat", "Snapchat"),
+        ("whatsapp", "WhatsApp"), ("facebook", "Facebook"), ("youtube", "YouTube"),
+        ("spotify", "Spotify"), ("netflix", "Netflix"), ("twitter", "Twitter"),
+        ("x app", "X"), ("chrome", "Chrome"), ("google maps", "Google Maps"),
+        ("maps", "Maps"), ("zoom", "Zoom"), ("teams", "Microsoft Teams"),
+        ("gmail", "Gmail"), ("google", "Google"), ("play store", "Play Store"),
+        ("camera", "Camera"), ("gallery", "Gallery"), ("samsung notes", "Samsung Notes"),
+        ("genshin", "Genshin Impact"), ("pubg", "PUBG Mobile"), ("free fire", "Free Fire"),
+        ("messenger", "Messenger"), ("telegram", "Telegram"), ("amazon", "Amazon"),
+        ("uber", "Uber"), ("swiggy", "Swiggy"), ("zomato", "Zomato"),
+        ("phonpe", "PhonePe"), ("paytm", "Paytm"), ("gpay", "Google Pay"),
+    ]
+
+    def _extract_named_app(q_lower: str):
+        """Returns the display name of a known app found in the query, else None."""
+        for trigger, display in _KNOWN_APPS:
+            if trigger in q_lower:
+                return display
+        return None
+
+    if siis_response and siis_response.strip() not in ("", "{}"):
+        try:
+            import json as _json
+            _sd = _json.loads(siis_response)
+            _bat = _sd.get("batteryLevel", 100)
+            _sto = _sd.get("storageUsed", 0)
+            _tmp = _sd.get("temperature", 30)
+            _sig = _sd.get("signalStrength", "Excellent")
+            _dom = slots.get("domain", "general")
+            _sym = slots.get("symptom", "unknown")
+            _q_lower = query.lower()
+
+            # \u2500\u2500 SIIS-Native Domain Inference \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+            # The taxonomy classifier can miss colloquial queries (e.g. "dropping so fast").
+            # We run a secondary keyword scan directly on the raw query to enrich the domain.
+            # This enriched domain is used ONLY within the SIIS block.
+            _SIIS_DOMAIN_KEYWORDS = {
+                "battery": {
+                    "battery", "batt", "charge", "charging", "drain", "draining", "power",
+                    "percentage", "battery life", "running out", "dying", "discharge",
+                    "dropping", "drops", "battery drop", "battery low", "backup",
+                    "plugged", "mah", "fast charge", "power saver",
+                },
+                "performance": {
+                    "slow", "lag", "lagging", "hang", "freeze", "freezing", "stutter",
+                    "crash", "crashing", "sluggish", "unresponsive", "not responding",
+                    "loading", "app closes", "force close", "home screen", "reboot",
+                },
+                "storage": {
+                    "storage", "no space", "not enough space", "storage full",
+                    "junk files", "trash", "clear cache", "disk full",
+                    "space left", "files taking", "photos taking", "storage is",
+                    "delete files", "free up space", "internal storage", "download",
+                },
+                "connectivity": {
+                    "wifi", "internet", "network", "signal", "data", "mobile data",
+                    "buffering", "loading", "connection", "connected", "offline",
+                    "bluetooth", "5g", "4g", "lte", "dead zone",
+                },
+                "display": {
+                    "screen", "display", "touch", "brightness", "flicker", "dark",
+                    "dim", "refresh rate", "stutter", "gesture", "swipe",
+                },
+                "camera": {
+                    "camera", "photo", "picture", "video", "selfie", "front camera",
+                    "rear camera", "blurry", "flash", "lens",
+                },
+                "sound": {
+                    "sound", "speaker", "audio", "volume", "ringtone", "vibrate",
+                    "earphone", "headphone", "music", "call quality",
+                },
+            }
+            # Score every domain - count how many keywords appear in the raw query
+            _domain_scores = {}
+            for _cdom, _kws in _SIIS_DOMAIN_KEYWORDS.items():
+                _sc = sum(1 for kw in _kws if kw in _q_lower)
+                if _sc > 0:
+                    _domain_scores[_cdom] = _sc
+            # Taxonomy is 'suspect' when it says battery but the word battery isn't in query
+            # (classic false-positive: "storage is 85% full" -> battery.battery_protect)
+            _suspect_taxonomy = (
+                _dom == "battery"
+                and "battery" not in _q_lower
+                and "batt" not in _q_lower
+                and "charge" not in _q_lower
+                and "charging" not in _q_lower
+            )
+            if _domain_scores:
+                _best_siis_dom = max(_domain_scores, key=_domain_scores.get)
+                _best_siis_score = _domain_scores[_best_siis_dom]
+                # Override if: strong SIIS signal, suspect taxonomy, or taxonomy was vague
+                if _best_siis_score >= 2 or _suspect_taxonomy or _dom in ("general", "unknown", None):
+                    _dom = _best_siis_dom
+
+            def _make_goal(goal_str, title, action_name, desc, steps, deeplink, path, score=0.97, category=ActionCategory.auto):
+                return Goal(
+                    goal=f"Follow these steps to perform this {goal_str} Troubleshooting",
+                    title=title, score=score,
+                    actions=[Action(
+                        actionName=action_name, description=desc,
+                        category=category,
+                        stepGroups=[StepGroup(
+                            steps=steps,
+                            actionableDeeplink=Deeplink(
+                                deeplink=deeplink,
+                                description=f"Direct link to {action_name}",
+                                classes={"path": path}
+                            )
+                        )]
+                    )]
+                )
+
+            # Count how many Tier-1 thresholds are simultaneously breached
+            _tier1_breaches = sum([
+                _sto >= 95,
+                _bat <= 15,
+                _tmp >= 55,
+                _sig in ("None", "Weak"),
+            ])
+
+            # Hardware is calm: no single threshold is in a danger zone
+            _hardware_calm = (_sto < 80 and _bat > 30 and _tmp < 40 and _sig not in ("None", "Weak"))
+
+            # ── PRIORITY 0: Named-App Pre-Pass ──────────────────────────────────────
+            # If user mentions a specific app by name and hardware is not in emergency,
+            # ALWAYS route directly to Apps > [AppName] > Clear cache.
+            # This overrides the domain-matrix completely for app-specific issues.
+            _named_app = _extract_named_app(_q_lower)
+            _is_app_query = _named_app is not None and (
+                any(w in _q_lower for w in [
+                    "crash", "crashing", "crashed", "freeze", "freezing", "frozen",
+                    "slow", "lag", "lagging", "not working", "stopped", "keeps closing",
+                    "closes", "error", "not opening", "won't open", "stopped working",
+                    "force close", "keeps crashing", "glitch", "not loading",
+                    "loading slow", "stuck", "not responding", "hangs", "hanging",
+                    "not sending", "not receiving", "keeps stopping", "black screen",
+                    "won't load", "buffering", "not playing", "skipping", "disconnecting",
+                ])
+            )
+
+            if _is_app_query and _tier1_breaches == 0:
+                # Route to App-specific clear cache — the most precise fix
+                siis_override_goals.append(_make_goal(
+                    "App Issue", f"Clear {_named_app} cache", f"{_named_app} — Clear Cache",
+                    f"It will clear {_named_app}'s corrupted cache and fix crashes",
+                    ["Open Settings", "Tap Apps", f"Find and tap {_named_app}",
+                     "Tap Storage", "Tap Clear cache", "Reopen the app"],
+                    f"bixby://settings/apps/{_named_app.lower().replace(' ', '_')}",
+                    f"Settings>Apps>{_named_app}>Storage>Clear cache", score=0.99
+                ))
+                siis_override_goals.append(_make_goal(
+                    "App Issue", f"Force stop {_named_app}", f"{_named_app} — Force Stop",
+                    f"It will fully kill {_named_app} and clear its active state",
+                    ["Open Settings", "Tap Apps", f"Find and tap {_named_app}",
+                     "Tap Force stop", "Confirm force stop", "Reopen the app"],
+                    f"bixby://settings/apps/{_named_app.lower().replace(' ', '_')}",
+                    f"Settings>Apps>{_named_app}>Force stop", score=0.96
+                ))
+
+            # ── COMPOUND EMERGENCY: 2+ critical states simultaneously ──
+            # e.g. Q5: battery 5%, storage 99%, temp 72°C — phone is on the brink
+            elif _tier1_breaches >= 2:
+                hardware_escalation = "CRITICAL"
+                
+                siis_override_goals.append(_make_goal(
+                    "Hardware Overload", "Auto optimization", "Critical Hardware Overload",
+                    "It will optimize the phone which is on the brink of shutting down",
+                    ["Open Settings", "Tap Device care", "Tap Auto optimization", "Restart when needed"],
+                    "bixby://settings/device_care/auto_optimization",
+                    "Settings>Device care>Auto optimization", score=0.99
+                ))
+                
+                # Always include storage cleanup first if storage is critical
+                if _sto >= 90:
+                    siis_override_goals.append(_make_goal(
+                        "Storage Emergency", "Free critical storage", "Storage Space Cleanup",
+                        "It will free dangerously full storage immediately",
+                        ["Open Settings", "Tap Device care", "Tap Storage",
+                         "Tap Clean now", "Empty Trash", "Delete large files and unused apps"],
+                        "bixby://settings/device_care/storage",
+                        "Settings>Device care>Storage", score=0.98
+                    ))
+                # Always include thermal throttle if device is overheating
+                if _tmp >= 55:
+                    siis_override_goals.append(_make_goal(
+                        "Thermal Emergency", "Cool device now", "Performance Profile — Light",
+                        "It will reduce CPU load and cool device down",
+                        ["Open Settings", "Tap Device care", "Tap Performance profile",
+                         "Select Light profile", "Close all background apps immediately"],
+                        "bixby://settings/device_care/performance_profile",
+                        "Settings>Device care>Performance profile", score=0.99
+                    ))
+                # Always include power saving if battery is critically low
+                if _bat <= 15:
+                    siis_override_goals.append(_make_goal(
+                        "Battery Emergency", "Save critical battery", "Maximum Power Saving",
+                        "It will extend critically low battery life immediately",
+                        ["Open Settings", "Tap Battery", "Tap Power saving",
+                         "Enable Maximum power saving", "Disable Wi-Fi and Bluetooth"],
+                        "bixby://settings/device_care/battery/power_saving/maximum",
+                        "Settings>Battery>Power saving>Maximum power saving", score=0.99
+                    ))
+                # Add Device Care full optimization as final step
+                siis_override_goals.append(_make_goal(
+                    "Device", "Full device care", "Device Care Optimize Now",
+                    "It will run full diagnostic and optimize all systems",
+                    ["Open Settings", "Tap Device care", "Tap Optimize now",
+                     "Wait for full scan to complete"],
+                    "bixby://settings/device_care",
+                    "Settings>Device care>Optimize now", score=0.97
+                ))
+
+            # ── SINGLE TIER-1: Only one emergency threshold ──
+            elif _sto >= 95:
+                hardware_escalation = "WARNING"
+                siis_override_goals.append(_make_goal(
+                    "Storage", "Storage cleanup", "Storage Space Cleanup",
+                    "It will clean unnecessary device storage",
+                    ["Open Settings", "Tap Device care", "Tap Storage",
+                     "Tap Clean now", "Empty Trash and delete large files"],
+                    "bixby://settings/device_care/storage",
+                    "Settings>Device care>Storage", score=0.99
+                ))
+                siis_override_goals.append(_make_goal(
+                    "Storage", "Large files audit", "Find Large Files",
+                    "It will identify the largest files draining storage",
+                    ["Open Settings", "Tap Device care", "Tap Storage",
+                     "Tap Large files", "Delete files you no longer need"],
+                    "bixby://settings/device_care/storage/large_files",
+                    "Settings>Device care>Storage>Large files", score=0.96
+                ))
+
+            elif _tmp >= 55 and _bat <= 25:
+                # Gaming thermal + low battery combo (Q2: Genshin 65°C, 15%)
+                hardware_escalation = "WARNING"
+                siis_override_goals.append(_make_goal(
+                    "Thermal", "Game Booster thermal", "Game Booster Thermal Management",
+                    "It will reduce thermal throttling during gaming",
+                    ["Open Settings", "Tap Advanced features", "Tap Game Booster",
+                     "Tap the gear icon", "Enable Thermal management protection",
+                     "Set Game performance to Optimized"],
+                    "bixby://settings/advanced_features/game_booster/thermal",
+                    "Settings>Advanced features>Game Booster>Thermal management", score=0.99
+                ))
+                siis_override_goals.append(_make_goal(
+                    "Performance", "Performance profile", "Performance Profile — Light",
+                    "It will reduce CPU heat and save battery",
+                    ["Open Settings", "Tap Device care", "Tap Performance profile",
+                     "Select Light profile to reduce thermal output"],
+                    "bixby://settings/device_care/performance_profile",
+                    "Settings>Device care>Performance profile", score=0.98
+                ))
+                siis_override_goals.append(_make_goal(
+                    "Battery", "Background usage limits", "Background Usage Limits",
+                    "It will stop background apps draining power during gaming",
+                    ["Open Settings", "Tap Battery", "Tap Background usage limits",
+                     "Add game and heavy apps to Deep sleeping apps"],
+                    "bixby://settings/device_care/battery/background_limits",
+                    "Settings>Battery>Background usage limits", score=0.96
+                ))
+
+            elif _tmp >= 55:
+                hardware_escalation = "WARNING"
+                siis_override_goals.append(_make_goal(
+                    "Thermal", "Performance profile", "Performance Profile — Light",
+                    "It will reduce thermal load and heat",
+                    ["Open Settings", "Tap Device care", "Tap Performance profile",
+                     "Select Light profile", "Close all background apps"],
+                    "bixby://settings/device_care/performance_profile",
+                    "Settings>Device care>Performance profile", score=0.99
+                ))
+                siis_override_goals.append(_make_goal(
+                    "Thermal", "Game Booster", "Game Booster Thermal Management",
+                    "It will protect device from overheating during intensive tasks",
+                    ["Open Settings", "Tap Advanced features", "Tap Game Booster",
+                     "Enable Thermal management protection"],
+                    "bixby://settings/advanced_features/game_booster/thermal",
+                    "Settings>Advanced features>Game Booster>Thermal management", score=0.97
+                ))
+
+            elif _bat <= 15:
+                hardware_escalation = "WARNING"
+                siis_override_goals.append(_make_goal(
+                    "Battery", "Power saving mode", "Power Saving Mode",
+                    "It will extend critically low battery life",
+                    ["Open Settings", "Tap Battery", "Tap Power saving",
+                     "Turn on Power saving", "Enable Maximum savings if needed"],
+                    "bixby://settings/device_care/battery/power_saving",
+                    "Settings>Battery>Power saving", score=0.99
+                ))
+                siis_override_goals.append(_make_goal(
+                    "Battery", "Background usage limits", "Background Usage Limits",
+                    "It will stop background apps draining the last of your battery",
+                    ["Open Settings", "Tap Battery", "Tap Background usage limits",
+                     "Add high-drain apps to Deep sleeping apps list"],
+                    "bixby://settings/device_care/battery/background_limits",
+                    "Settings>Battery>Background usage limits", score=0.96
+                ))
+
+            elif _sig in ("None", "Weak") and _dom not in ("display", "sound", "storage", "security"):
+                # Q3: TikTok buffering with weak signal — network issue
+                hardware_escalation = "WARNING"
+                siis_override_goals.append(_make_goal(
+                    "Connectivity", "Mobile networks", "Mobile Network Settings",
+                    "It will fix weak signal by reselecting carrier network",
+                    ["Open Settings", "Tap Connections", "Tap Mobile networks",
+                     "Tap Network operators", "Tap Search now",
+                     "Reselect your carrier from the list"],
+                    "bixby://settings/connections/mobile_networks",
+                    "Settings>Connections>Mobile networks", score=0.99
+                ))
+                siis_override_goals.append(_make_goal(
+                    "Connectivity", "Wi-Fi Calling", "Enable Wi-Fi Calling",
+                    "It will route calls and data over Wi-Fi when signal is weak",
+                    ["Open Settings", "Tap Connections",
+                     "Tap Wi-Fi calling", "Turn on Wi-Fi calling"],
+                    "bixby://settings/connections/wifi_calling",
+                    "Settings>Connections>Wi-Fi calling", score=0.95
+                ))
+                siis_override_goals.append(_make_goal(
+                    "Connectivity", "Reset network settings", "Reset Network Settings",
+                    "It will reset all network configurations to factory default",
+                    ["Open Settings", "Tap General management", "Tap Reset",
+                     "Tap Reset network settings", "Confirm reset"],
+                    "bixby://settings/general/reset/network",
+                    "Settings>General management>Reset>Reset network settings",
+                    score=0.90, category=ActionCategory.critical
+                ))
+
+            # ── Tier 2: Domain × device-state matrix (no single-winner hardware emergency) ──
+            else:
+                # ── DOMAIN × DEVICE-STATE MATRIX: no Tier-1 emergency ──
+                # ›› Named-app queries were already handled above (Priority 0). Skip here.
+                if not siis_override_goals and _dom == "battery":
+                    # SYMPTOM-AWARE: if symptom is rapid_drain AND battery is healthy,
+                    # user wants a USAGE AUDIT, not emergency power saving
+                    if _bat <= 20:
+                        # Critically low — power saving mode is the right answer
+                        siis_override_goals.append(_make_goal(
+                            "Battery", "Power saving mode", "Power Saving Mode",
+                            "It will extend critically low battery life immediately",
+                            ["Open Settings", "Tap Battery", "Tap Power saving",
+                             "Turn on Power saving"],
+                            "bixby://settings/device_care/battery/power_saving",
+                            "Settings>Battery>Power saving"
+                        ))
+                    elif _bat <= 30:
+                        siis_override_goals.append(_make_goal(
+                            "Battery", "Background usage limits", "Background Usage Limits",
+                            "It will limit unused background app drain",
+                            ["Open Settings", "Tap Battery",
+                             "Tap Background usage limits",
+                             "Turn on Put unused apps to sleep",
+                             "Add heavy apps to Deep sleeping apps"],
+                            "bixby://settings/device_care/battery/background_limits",
+                            "Settings>Battery>Background usage limits"
+                        ))
+                    else:
+                        # Battery is healthy (>30%) — user is curious why it drains during the day
+                        # Always give them the audit tools, NOT the emergency tools
+                        siis_override_goals.append(_make_goal(
+                            "Battery", "Battery usage details", "Battery Usage Details",
+                            "It will show exactly which apps are draining your battery most",
+                            ["Open Settings", "Tap Battery",
+                             "Tap Battery usage",
+                             "Review apps consuming most power",
+                             "Tap any app to restrict its background activity"],
+                            "bixby://settings/device_care/battery/usage",
+                            "Settings>Battery>Battery usage"
+                        ))
+                        siis_override_goals.append(_make_goal(
+                            "Battery", "Background usage limits", "Background Usage Limits",
+                            "It will put identified drain apps to deep sleep",
+                            ["Open Settings", "Tap Battery",
+                             "Tap Background usage limits",
+                             "Add identified drain apps to Deep sleeping apps"],
+                            "bixby://settings/device_care/battery/background_limits",
+                            "Settings>Battery>Background usage limits"
+                        ))
+
+                elif not siis_override_goals and _dom in ("performance", "general"):
+                    if _sto >= 80:
+                        siis_override_goals.append(_make_goal(
+                            "Performance", "Storage cleanup", "Storage Space Cleanup",
+                            "It will free storage to speed up device",
+                            ["Open Settings", "Tap Device care", "Tap Storage",
+                             "Tap Clean now", "Delete large files"],
+                            "bixby://settings/device_care/storage",
+                            "Settings>Device care>Storage"
+                        ))
+                        siis_override_goals.append(_make_goal(
+                            "Performance", "Memory cleanup", "Device Care RAM Cleanup",
+                            "It will free RAM after clearing storage",
+                            ["Open Settings", "Tap Device care", "Tap Memory",
+                             "Tap Clean now"],
+                            "bixby://settings/device_care/memory",
+                            "Settings>Device care>Memory"
+                        ))
+                    if _bat <= 30:
+                        siis_override_goals.append(_make_goal(
+                            "Performance", "Power saving mode", "Power Saving Mode",
+                            "It will reduce lag from low battery throttling",
+                            ["Open Settings", "Tap Battery", "Tap Power saving",
+                             "Turn off Power saving after charging"],
+                            "bixby://settings/device_care/battery/power_saving",
+                            "Settings>Battery>Power saving"
+                        ))
+                    if _tmp >= 40:
+                        siis_override_goals.append(_make_goal(
+                            "Performance", "Performance profile", "Performance Profile",
+                            "It will optimize thermal and speed balance",
+                            ["Open Settings", "Tap Device care", "Tap Performance profile",
+                             "Select Optimized for best balance"],
+                            "bixby://settings/device_care/performance_profile",
+                            "Settings>Device care>Performance profile"
+                        ))
+                    if not siis_override_goals:
+                        siis_override_goals.append(_make_goal(
+                            "Performance", "Memory cleanup", "Device Care Optimization",
+                            "It will clean RAM and optimize device speed",
+                            ["Open Settings", "Tap Device care", "Tap Memory",
+                             "Tap Clean now to free RAM"],
+                            "bixby://settings/device_care/memory",
+                            "Settings>Device care>Memory"
+                        ))
+                        siis_override_goals.append(_make_goal(
+                            "Performance", "RAM Plus", "RAM Plus Virtual Memory",
+                            "It will expand available RAM to prevent app crashes",
+                            ["Open Settings", "Tap Device care", "Tap Memory",
+                             "Tap RAM Plus", "Increase virtual RAM allocation"],
+                            "bixby://settings/device_care/memory/ram_plus",
+                            "Settings>Device care>Memory>RAM Plus"
+                        ))
+
+                elif not siis_override_goals and _dom == "connectivity":
+                    if _sig in ("None", "Weak"):
+                        siis_override_goals.append(_make_goal(
+                            "Connectivity", "Mobile networks", "Mobile Network Settings",
+                            "It will fix weak signal connectivity issue",
+                            ["Open Settings", "Tap Connections", "Tap Mobile networks",
+                             "Tap Network operators", "Tap Search now and reselect carrier"],
+                            "bixby://settings/connections/mobile_networks",
+                            "Settings>Connections>Mobile networks"
+                        ))
+                        siis_override_goals.append(_make_goal(
+                            "Connectivity", "Intelligent Wi-Fi", "Intelligent Wi-Fi",
+                            "It will switch to mobile data on weak Wi-Fi",
+                            ["Open Settings", "Tap Connections", "Tap Wi-Fi",
+                             "Tap Intelligent Wi-Fi", "Enable Switch to mobile data"],
+                            "bixby://settings/connections/wifi/intelligent",
+                            "Settings>Connections>Wi-Fi>Intelligent Wi-Fi"
+                        ))
+                    elif _bat <= 30:
+                        siis_override_goals.append(_make_goal(
+                            "Connectivity", "Intelligent Wi-Fi", "Intelligent Wi-Fi",
+                            "It will switch to mobile data on weak Wi-Fi",
+                            ["Open Settings", "Tap Connections", "Tap Wi-Fi",
+                             "Tap the three-dot menu", "Tap Intelligent Wi-Fi",
+                             "Enable Switch to mobile data"],
+                            "bixby://settings/connections/wifi/intelligent",
+                            "Settings>Connections>Wi-Fi>Intelligent Wi-Fi"
+                        ))
+                    else:
+                        siis_override_goals.append(_make_goal(
+                            "Connectivity", "Reset network settings", "Reset Network Settings",
+                            "It will reset Wi-Fi and mobile network configs",
+                            ["Open Settings", "Tap General management", "Tap Reset",
+                             "Tap Reset network settings"],
+                            "bixby://settings/general/reset/network",
+                            "Settings>General management>Reset>Reset network settings"
+                        ))
+
+                elif not siis_override_goals and _dom == "display":
+                    if any(w in _q_lower for w in ["dark", "dim", "brightness", "sunlight", "see it"]):
+                        siis_override_goals.append(_make_goal(
+                            "Display", "Adaptive brightness", "Adaptive Brightness",
+                            "It will optimize your screen brightness",
+                            ["Open Settings", "Tap Display",
+                             "Enable Adaptive brightness", "Adjust manual brightness slider"],
+                            "bixby://settings/display/brightness",
+                            "Settings>Display>Adaptive brightness"
+                        ))
+                    elif _bat <= 30:
+                        siis_override_goals.append(_make_goal(
+                            "Display", "Screen timeout", "Screen Timeout",
+                            "It will save power by reducing screen-on time",
+                            ["Open Settings", "Tap Display",
+                             "Tap Screen timeout", "Select 15 seconds or 30 seconds"],
+                            "bixby://settings/display/screen_timeout",
+                            "Settings>Display>Screen timeout"
+                        ))
+                    elif _tmp >= 40:
+                        siis_override_goals.append(_make_goal(
+                            "Display", "Adaptive brightness", "Adaptive Brightness",
+                            "It will reduce screen heat and power draw",
+                            ["Open Settings", "Tap Display",
+                             "Enable Adaptive brightness", "Lower manual brightness slider"],
+                            "bixby://settings/display/brightness",
+                            "Settings>Display>Adaptive brightness"
+                        ))
+                    else:
+                        siis_override_goals.append(_make_goal(
+                            "Display", "Motion smoothness", "Motion Smoothness 120Hz",
+                            "It will fix screen stutter and refresh rate",
+                            ["Open Settings", "Tap Display",
+                             "Tap Motion smoothness", "Select Adaptive 120Hz"],
+                            "bixby://settings/display/motion_smoothness",
+                            "Settings>Display>Motion smoothness"
+                        ))
+
+                elif not siis_override_goals and _dom == "camera":
+                    # Camera-specific: always route to Camera app settings
+                    _app = _named_app if _named_app else "Camera"
+                    siis_override_goals.append(_make_goal(
+                        "Camera", f"Clear {_app} cache", f"{_app} — Clear Cache",
+                        f"It will clear {_app}'s corrupted data and fix crashes",
+                        ["Open Settings", "Tap Apps", f"Find and tap {_app}",
+                         "Tap Storage", "Tap Clear cache", "Reopen Camera"],
+                        f"bixby://settings/apps/{_app.lower()}",
+                        f"Settings>Apps>{_app}>Storage>Clear cache", score=0.99
+                    ))
+                    siis_override_goals.append(_make_goal(
+                        "Camera", "Clear camera data", f"{_app} — Clear Data",
+                        f"It will fully reset {_app} app settings",
+                        ["Open Settings", "Tap Apps", f"Find and tap {_app}",
+                         "Tap Storage", "Tap Clear data", "Confirm"],
+                        f"bixby://settings/apps/{_app.lower()}",
+                        f"Settings>Apps>{_app}>Storage>Clear data", score=0.95
+                    ))
+
+                elif not siis_override_goals and _dom == "sound":
+                    siis_override_goals.append(_make_goal(
+                        "Sound", "Sound quality", "Sound Quality and Effects",
+                        "It will optimize speaker and audio quality",
+                        ["Open Settings", "Tap Sounds and vibration",
+                         "Tap Sound quality and effects", "Enable Dolby Atmos"],
+                        "bixby://settings/sound/dolby_atmos",
+                        "Settings>Sounds and vibration>Sound quality and effects"
+                    ))
+
+                elif not siis_override_goals and _dom == "security":
+                    siis_override_goals.append(_make_goal(
+                        "Security", "Biometrics", "Biometric Fingerprint Calibration",
+                        "It will calibrate your biometric fingerprint",
+                        ["Open Settings", "Tap Security and privacy",
+                         "Tap Biometrics", "Tap Fingerprints",
+                         "Re-register your fingerprint"],
+                        "bixby://settings/security/fingerprint",
+                        "Settings>Security and privacy>Biometrics>Fingerprints"
+                    ))
+
+                elif not siis_override_goals and _dom == "storage":
+                    if _sto >= 80:
+                        siis_override_goals.append(_make_goal(
+                            "Storage", "Storage cleanup", "Storage Space Cleanup",
+                            "It will clean unnecessary device storage",
+                            ["Open Settings", "Tap Device care", "Tap Storage",
+                             "Tap Clean now", "Empty Trash and delete large files"],
+                            "bixby://settings/device_care/storage",
+                            "Settings>Device care>Storage", score=0.99
+                        ))
+                    else:
+                        siis_override_goals.append(_make_goal(
+                            "Storage", "Storage summary", "Storage Categories Breakdown",
+                            "It will show storage breakdown by category",
+                            ["Open Settings", "Tap Device care", "Tap Storage",
+                             "Review storage breakdown by category"],
+                            "bixby://settings/device_care/storage/summary",
+                            "Settings>Device care>Storage>Storage categories"
+                        ))
+
+                elif not siis_override_goals and _dom == "notifications":
+                    siis_override_goals.append(_make_goal(
+                        "Notifications", "Do not disturb", "Do Not Disturb",
+                        "It will silence all alerts and notifications",
+                        ["Open Settings", "Tap Notifications",
+                         "Tap Do not disturb", "Turn on Do not disturb",
+                         "Tap Add schedule to set hours"],
+                        "bixby://settings/sound/do_not_disturb",
+                        "Settings>Notifications>Do not disturb"
+                    ))
+
+                elif not siis_override_goals and _dom == "digital_wellbeing":
+                    siis_override_goals.append(_make_goal(
+                        "Digital Wellbeing", "Focus mode", "Focus Mode",
+                        "It will block distracting apps temporarily",
+                        ["Open Settings", "Tap Digital Wellbeing and parental controls",
+                         "Tap Focus mode", "Select apps to pause",
+                         "Tap Turn on now"],
+                        "bixby://settings/digital_wellbeing/focus_mode",
+                        "Settings>Digital Wellbeing and parental controls>Focus mode"
+                    ))
+
+                elif not siis_override_goals:
+                    # Catch-all: any unclassified domain still gets a sensible SIIS-aware answer
+                    if _sto >= 80:
+                        siis_override_goals.append(_make_goal(
+                            "Device", "Storage cleanup", "Storage Space Cleanup",
+                            "It will clean unnecessary device storage",
+                            ["Open Settings", "Tap Device care", "Tap Storage", "Tap Clean now"],
+                            "bixby://settings/device_care/storage",
+                            "Settings>Device care>Storage"
+                        ))
+                    elif _bat <= 30:
+                        siis_override_goals.append(_make_goal(
+                            "Device", "Power saving", "Power Saving Mode",
+                            "It will reduce battery drain immediately",
+                            ["Open Settings", "Tap Battery", "Tap Power saving",
+                             "Turn on Power saving"],
+                            "bixby://settings/device_care/battery/power_saving",
+                            "Settings>Battery>Power saving"
+                        ))
+                    else:
+                        siis_override_goals.append(_make_goal(
+                            "Device", "Device care", "Device Care Optimization",
+                            "It will optimize device system performance",
+                            ["Open Settings", "Tap Device care", "Tap Optimize now"],
+                            "bixby://settings/device_care",
+                            "Settings>Device care>Optimize now"
+                        ))
+        except Exception:
+            pass
+
+
     if AI_MODULES_AVAILABLE:
         candidate_ids = live_get_candidate_ids(query, top_k=10)
     else:
@@ -269,8 +910,34 @@ def run_troubleshoot_pipeline(query: str, siis_response: Optional[str] = None) -
         if sg.actionableDeeplink and leaf_id and leaf_id in settings_graph.catalog_map:
             resolved_item = settings_graph.catalog_map[leaf_id]
             sg.actionableDeeplink.deeplink = resolved_item.get("deeplink", sg.actionableDeeplink.deeplink)
-            if "classes" in resolved_item:
-                sg.actionableDeeplink.classes = resolved_item["classes"]
+            classes = resolved_item.get("classes", {})
+            if isinstance(classes, str):
+                path_str = classes
+                classes_dict = {"path": path_str}
+            elif isinstance(classes, dict):
+                classes_dict = dict(classes)
+                path_str = classes_dict.get("path", "")
+            else:
+                classes_dict = {}
+                path_str = ""
+
+            # Extract App Name for substitution
+            if "[App Name]" in path_str:
+                app_name = "Camera"  # Default
+                q_lower = query.lower()
+                known_apps = ["tiktok", "genshin impact", "snapchat", "instagram", "camera", "whatsapp", "facebook"]
+                for app in known_apps:
+                    if app in q_lower:
+                        app_name = app.title()
+                        break
+                path_str = path_str.replace("[App Name]", app_name)
+                classes_dict["path"] = path_str
+
+            sg.actionableDeeplink.classes = classes_dict
+
+    # Inject SIIS deterministic override goals (multi-winner) as first goals
+    if siis_override_goals:
+        raw_goals = siis_override_goals + raw_goals
 
     # Stage 7: Auto-Repair Validation & Compositional Scoring
     topic = slots.get("domain", "Device")
@@ -306,7 +973,8 @@ def run_troubleshoot_pipeline(query: str, siis_response: Optional[str] = None) -
         confidence_breakdown={"retrieval": sim_val, "consistency": cons_val, "coverage": cov_val},
         hallucination_check_passed=True,
         screen_resolution="leaf_screen",
-        pipeline_source="live"
+        pipeline_source="live",
+        hardware_escalation=hardware_escalation
     )
 
     resp = TroubleshootResponse(
@@ -318,7 +986,10 @@ def run_troubleshoot_pipeline(query: str, siis_response: Optional[str] = None) -
     )
 
     # Warm cache with query variations (write-through)
-    cache.put(query, resp, slots=slots, variations=variations)
+    cache_vars = variations
+    if siis_response and variations:
+        cache_vars = [f"{v}__siis__{siis_response}" for v in variations]
+    cache.put(cache_query, resp, slots=slots, variations=cache_vars)
     return resp
 
 

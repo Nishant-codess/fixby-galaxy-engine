@@ -21,7 +21,7 @@ except Exception:
 
 
 class CascadingSemanticCache:
-    def __init__(self, similarity_threshold: float = 0.52, max_tier3_size: int = 500):
+    def __init__(self, similarity_threshold: float = 0.99, max_tier3_size: int = 500):
         self.tier1_exact: Dict[str, Any] = {}
         self.tier2_slots: Dict[str, Any] = {}
         # List of tuples: (vector, value, query_str, domain)

@@ -1,6 +1,12 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Settings, Battery, Wifi, Shield, Thermometer, Activity, Search, Bell,
+  Monitor, Lock, LayoutGrid, User, Phone, Info, Sparkles, Sun, Moon,
+  ChevronRight, Check, Camera, Bluetooth, Plane, Volume2, ArrowLeft, RotateCcw
+} from "lucide-react";
 
 // ─── Theme System ─────────────────────────────────────────────────────────────
 type Theme = "dark" | "light";
@@ -28,7 +34,7 @@ function getColors(theme: Theme) {
 }
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-type Phase = "input" | "processing" | "navigating" | "resolved";
+type Phase = "input" | "processing" | "navigating" | "resolved" | "escalation";
 
 interface SettingsNode {
   label: string;
@@ -44,46 +50,32 @@ interface PipelineStage {
   ms?: number;
 }
 
-// ─── SVG Icon Library ─────────────────────────────────────────────────────────
-const S = ({ d, children, vb = "0 0 24 24", ...p }: any) => (
-  <svg width="20" height="20" viewBox={vb} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}>
-    {d ? <path d={d} /> : children}
-  </svg>
-);
-
-const ISettings  = () => <S><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></S>;
-const IBattery   = () => <S><rect x="1" y="6" width="18" height="12" rx="2"/><line x1="23" y1="13" x2="23" y2="11"/></S>;
-const IWifi      = () => <S><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></S>;
-const IShield    = () => <S d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />;
-const IThermo    = () => <S d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z" />;
-const IChart     = () => <S><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></S>;
-const ISearch    = () => <S><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></S>;
-const IBell      = () => <S><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></S>;
-const IDisplay   = () => <S><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></S>;
-const ILock      = () => <S><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></S>;
-const IApps      = () => <S><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></S>;
-const IUser      = () => <S><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></S>;
-const IPhone     = () => <S d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.5 1.32h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.81a16 16 0 0 0 5.68 5.68l.86-.86a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7a2 2 0 0 1 1.72 2.04z" />;
-const IInfo      = () => <S><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></S>;
-const IGalaxyAI  = () => <S><path d="M12 2v20M17 5l-10 14M7 5l10 14"/><circle cx="12" cy="12" r="2" fill="currentColor"/></S>;
-const ISun       = () => <S width="16" height="16"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></S>;
-const IMoon      = () => <S width="16" height="16" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />;
-const IChevron   = ({ color }: { color?: string }) => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color || "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="9 18 15 12 9 6" />
-  </svg>
-);
-const ICheck     = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="20 6 9 17 4 12" />
-  </svg>
-);
-const ICamera    = () => <S><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></S>;
-const IBluetooth = () => <S><polyline points="6.5 6.5 17.5 17.5 12 23 12 1 17.5 6.5 6.5 17.5"/></S>;
-const IPlane     = () => <S><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.3c.4-.2.6-.6.5-1.1z"/></S>;
-const IVolume    = () => <S><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></S>;
-const IArrowLeft = () => <S><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></S>;
-const IRefresh   = () => <S><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></S>;
+// ─── Icon Library ─────────────────────────────────────────────────────────────
+const ISettings  = () => <Settings size={20} />;
+const IBattery   = () => <Battery size={20} />;
+const IWifi      = () => <Wifi size={20} />;
+const IShield    = () => <Shield size={20} />;
+const IThermo    = () => <Thermometer size={20} />;
+const IChart     = () => <Activity size={20} />;
+const ISearch    = () => <Search size={20} />;
+const IBell      = () => <Bell size={20} />;
+const IDisplay   = () => <Monitor size={20} />;
+const ILock      = () => <Lock size={20} />;
+const IApps      = () => <LayoutGrid size={20} />;
+const IUser      = () => <User size={20} />;
+const IPhone     = () => <Phone size={20} />;
+const IInfo      = () => <Info size={20} />;
+const IGalaxyAI  = () => <Sparkles size={20} />;
+const ISun       = () => <Sun size={16} />;
+const IMoon      = () => <Moon size={16} />;
+const IChevron   = ({ color }: { color?: string }) => <ChevronRight size={18} color={color || "currentColor"} />;
+const ICheck     = () => <Check size={18} strokeWidth={3} />;
+const ICamera    = () => <Camera size={20} />;
+const IBluetooth = () => <Bluetooth size={20} />;
+const IPlane     = () => <Plane size={20} />;
+const IVolume    = () => <Volume2 size={20} />;
+const IArrowLeft = () => <ArrowLeft size={20} />;
+const IRefresh   = () => <RotateCcw size={20} />;
 
 // ─── Samsung One UI Switch ───────────────────────────────────────────────────
 function OneUIToggle({ checked, onChange }: { checked: boolean; onChange: () => void }) {
@@ -145,15 +137,17 @@ function useRipple() {
   return { ripples, createRipple };
 }
 
-function Ripple({ onClick, style, children }: {
+function Ripple({ onClick, style, className, children }: {
   onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
   style?: React.CSSProperties;
+  className?: string;
   children: React.ReactNode;
 }) {
   const { ripples, createRipple } = useRipple();
   return (
     <div
       onClick={e => { createRipple(e); onClick?.(e); }}
+      className={className}
       style={{ position: "relative", overflow: "hidden", cursor: "pointer", ...style }}
     >
       {ripples.map(r => (
@@ -950,7 +944,7 @@ function SubScreenView({ screen, onBack, onNavigate, theme, onSetTheme, onDiagno
 function InputScreen({ theme, onSetTheme, onDiagnose, initialQuery, recentItems }: {
   theme: Theme;
   onSetTheme?: (t: Theme) => void;
-  onDiagnose: (q: string, path: SettingsNode[]) => void;
+  onDiagnose: (q: string, path: SettingsNode[], siisStr?: string) => void;
   initialQuery: string;
   recentItems: string[];
 }) {
@@ -962,6 +956,40 @@ function InputScreen({ theme, onSetTheme, onDiagnose, initialQuery, recentItems 
   const c = getColors(theme);
 
   const currentScreen = screenStack[screenStack.length - 1];
+
+  // ── SIIS State ──
+  const [showSiis, setShowSiis] = useState(false);
+  const [siisBat, setSiisBat] = useState(78);
+  const [siisStorage, setSiisStorage] = useState(45);
+  const [siisTemp, setSiisTemp] = useState(32);
+  const [siisSignal, setSiisSignal] = useState("Excellent");
+
+  // ── Voice State ──
+  const [isListening, setIsListening] = useState(false);
+
+  const toggleListening = () => {
+    if (isListening) return;
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) return alert("Speech recognition not supported in this browser.");
+    
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = 'en-US';
+
+    recognition.onstart = () => setIsListening(true);
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      setQuery(transcript);
+      const matched = PRESETS.find(p => transcript.toLowerCase().includes(p.label.split(" ")[0]));
+      const siisPayload = showSiis ? JSON.stringify({ batteryLevel: siisBat, storageUsed: siisStorage, temperature: siisTemp, signalStrength: siisSignal }) : "";
+      onDiagnose(transcript, matched?.path || PRESETS[0].path, siisPayload);
+    };
+    recognition.onerror = () => setIsListening(false);
+    recognition.onend = () => setIsListening(false);
+    
+    recognition.start();
+  };
 
   const change = (val: string) => {
     setQuery(val);
@@ -982,7 +1010,8 @@ function InputScreen({ theme, onSetTheme, onDiagnose, initialQuery, recentItems 
       ];
     }
     setShowKb(false); setFocused(false);
-    onDiagnose(q, matched?.path || fallback);
+    const siisPayload = showSiis ? JSON.stringify({ batteryLevel: siisBat, storageUsed: siisStorage, temperature: siisTemp, signalStrength: siisSignal }) : "";
+    onDiagnose(q, matched?.path || fallback, siisPayload);
   };
 
   // If inside a sub-screen, render SubScreenView
@@ -1000,7 +1029,7 @@ function InputScreen({ theme, onSetTheme, onDiagnose, initialQuery, recentItems 
   }
 
   return (
-    <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", background: c.bg, backgroundImage: c.wallpaper, animation: "fadeIn 0.3s ease-out" }}>
+    <div className="mesh-bg" style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", background: c.bg, backgroundImage: c.wallpaper }}>
       <div style={{ flex: 1, overflowY: "auto", overflowX: "hidden", padding: "0 16px 16px", WebkitOverflowScrolling: "touch" }}>
 
         {/* Header */}
@@ -1009,31 +1038,106 @@ function InputScreen({ theme, onSetTheme, onDiagnose, initialQuery, recentItems 
         </div>
 
         {/* Search */}
-        <div style={{ position: "relative", marginBottom: "16px" }}>
-          <div style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", color: c.textSub, display: "flex", pointerEvents: "none" }}>
-            <ISearch />
+        <div style={{ position: "relative", marginBottom: "16px", display: "flex", gap: "8px" }}>
+          <div style={{ position: "relative", flex: 1 }}>
+            <div style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", color: c.textSub, display: "flex", pointerEvents: "none", zIndex: 2 }}>
+              <ISearch />
+            </div>
+            <input
+              type="text"
+              placeholder="Search settings or ask Fixby"
+              value={query}
+              className="glass-pane"
+              onFocus={() => { setFocused(true); setShowKb(true); }}
+              onBlur={() => { setFocused(false); }}
+              onChange={e => change(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === "Enter") { e.preventDefault(); setShowKb(false); if (query) submit(); }
+                if (e.key === "Escape") { setShowKb(false); setFocused(false); }
+              }}
+              style={{ width: "100%", padding: "13px 36px 13px 42px", borderRadius: "22px", color: c.text, fontSize: "16px", outline: "none", boxSizing: "border-box", boxShadow: focused ? "0 0 0 2px #3E91FF" : "none", transition: "box-shadow 0.2s" }}
+            />
+            {query && (
+              <button onClick={() => { change(""); setSuggestions([]); }} style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", background: c.textFaint, border: "none", borderRadius: "50%", width: "18px", height: "18px", color: c.bg, fontSize: "11px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2 }}>✕</button>
+            )}
           </div>
-          <input
-            type="text"
-            placeholder="Search settings or ask Fixby"
-            value={query}
-            onFocus={() => { setFocused(true); setShowKb(true); }}
-            onBlur={() => { setFocused(false); }}
-            onChange={e => change(e.target.value)}
-            onKeyDown={e => {
-              if (e.key === "Enter") { e.preventDefault(); setShowKb(false); if (query) submit(); }
-              if (e.key === "Escape") { setShowKb(false); setFocused(false); }
+          <button 
+            className="glass-pane"
+            onClick={toggleListening}
+            style={{ 
+              width: "44px", height: "44px", borderRadius: "22px", 
+              color: isListening ? "#FF2D55" : c.text, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+              boxShadow: isListening ? "0 0 0 4px rgba(255,45,85,0.3)" : "none", transition: "all 0.2s"
             }}
-            style={{ width: "100%", padding: "13px 36px 13px 42px", borderRadius: "22px", background: c.surface, border: "none", color: c.text, fontSize: "16px", outline: "none", boxSizing: "border-box", boxShadow: focused ? "0 0 0 2px #3E91FF" : "none", transition: "box-shadow 0.2s" }}
-          />
-          {query && (
-            <button onClick={() => { change(""); setSuggestions([]); }} style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", background: c.textFaint, border: "none", borderRadius: "50%", width: "18px", height: "18px", color: c.bg, fontSize: "11px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
-          )}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
+          </button>
         </div>
+
+        {/* SIIS Toggle */}
+        <div className="glass-pane" style={{ marginBottom: "16px", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", borderRadius: "16px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <div style={{ color: "#3E91FF" }}><IChart /></div>
+            <div style={{ fontSize: "14px", fontWeight: 500, color: c.text }}>Simulate SIIS Telemetry</div>
+          </div>
+          <label style={{ position: "relative", display: "inline-block", width: "42px", height: "24px" }}>
+            <input type="checkbox" checked={showSiis} onChange={e => setShowSiis(e.target.checked)} style={{ opacity: 0, width: 0, height: 0 }} />
+            <span style={{ position: "absolute", cursor: "pointer", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: showSiis ? "#34C759" : c.textFaint, transition: ".3s", borderRadius: "24px" }} />
+            <span style={{ position: "absolute", content: '""', height: "18px", width: "18px", left: showSiis ? "21px" : "3px", bottom: "3px", backgroundColor: "white", transition: ".3s", borderRadius: "50%", boxShadow: "0 2px 4px rgba(0,0,0,0.2)" }} />
+          </label>
+        </div>
+
+        {/* SIIS Sliders */}
+        <AnimatePresence>
+        {showSiis && (
+          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="glass-pane" style={{ borderRadius: "16px", padding: "16px", marginBottom: "16px", display: "flex", flexDirection: "column", gap: "16px", overflow: "hidden" }}>
+            <div>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: c.textSub, marginBottom: "4px" }}>
+                <span style={{ display: "flex", alignItems: "center", gap: "6px" }}><IBattery /> Battery Level</span> 
+                <span style={{ fontWeight: 600, color: siisBat <= 20 ? "#FF3B30" : siisBat <= 40 ? "#FF9500" : "#34C759" }}>{siisBat}%</span>
+              </div>
+              <input type="range" min="1" max="100" value={siisBat} onChange={e => setSiisBat(parseInt(e.target.value))} 
+                className={`premium-slider ${siisBat <= 20 ? 'color-red' : siisBat <= 40 ? 'color-orange' : 'color-green'}`}
+                style={{ "--val": `${siisBat}%` } as React.CSSProperties} />
+            </div>
+            <div>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: c.textSub, marginBottom: "4px" }}>
+                <span style={{ display: "flex", alignItems: "center", gap: "6px" }}><IShield /> Storage Used</span> 
+                <span style={{ fontWeight: 600, color: siisStorage >= 90 ? "#FF3B30" : siisStorage >= 70 ? "#FF9500" : "#34C759" }}>{siisStorage}%</span>
+              </div>
+              <input type="range" min="1" max="100" value={siisStorage} onChange={e => setSiisStorage(parseInt(e.target.value))} 
+                className={`premium-slider ${siisStorage >= 90 ? 'color-red' : siisStorage >= 70 ? 'color-orange' : 'color-green'}`}
+                style={{ "--val": `${siisStorage}%` } as React.CSSProperties} />
+            </div>
+            <div>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: c.textSub, marginBottom: "4px" }}>
+                <span style={{ display: "flex", alignItems: "center", gap: "6px" }}><IThermo /> CPU Temp</span> 
+                <span style={{ fontWeight: 600, color: siisTemp >= 50 ? "#FF3B30" : siisTemp >= 35 ? "#FF9500" : "#3E91FF" }}>{siisTemp}°C</span>
+              </div>
+              <input type="range" min="20" max="80" value={siisTemp} onChange={e => setSiisTemp(parseInt(e.target.value))} 
+                className={`premium-slider ${siisTemp >= 50 ? 'color-red' : siisTemp >= 35 ? 'color-orange' : 'color-blue'}`}
+                style={{ "--val": `${((siisTemp - 20) / 60) * 100}%` } as React.CSSProperties} />
+            </div>
+            <div>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: c.textSub, marginBottom: "4px" }}>
+                <span style={{ display: "flex", alignItems: "center", gap: "6px" }}><IWifi /> Signal Strength</span>
+              </div>
+              <div className="premium-select-wrapper">
+                <select value={siisSignal} onChange={e => setSiisSignal(e.target.value)} className="premium-select">
+                  <option value="Excellent">Excellent (5G)</option>
+                  <option value="Good">Good (LTE)</option>
+                  <option value="Weak">Weak (1 bar)</option>
+                  <option value="None">No Signal</option>
+                </select>
+              </div>
+            </div>
+          </motion.div>
+        )}
+        </AnimatePresence>
 
         {/* Autocomplete */}
         {suggestions.length > 0 && (
-          <div style={{ background: c.surface, borderRadius: "16px", marginBottom: "12px", overflow: "hidden" }}>
+          <div className="glass-pane" style={{ borderRadius: "16px", marginBottom: "12px", overflow: "hidden" }}>
             {suggestions.map((s, i) => (
               <Ripple key={s.label} onClick={() => submit(s.label)} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px 16px", borderBottom: i < suggestions.length - 1 ? `1px solid ${c.sep}` : "none" }}>
                 <div style={{ color: c.accent }}><ISearch /></div>
@@ -1047,7 +1151,7 @@ function InputScreen({ theme, onSetTheme, onDiagnose, initialQuery, recentItems 
         {!showKb && (
           <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "20px" }}>
             {PRESETS.map(p => (
-              <Ripple key={p.label} onClick={() => submit(p.label)} style={{ padding: "7px 15px", borderRadius: "20px", background: query === p.label ? "rgba(62,145,255,0.12)" : c.surface, border: `1px solid ${query === p.label ? "#3E91FF" : c.sep}`, color: query === p.label ? "#3E91FF" : c.text, fontSize: "14px" }}>
+              <Ripple key={p.label} onClick={() => submit(p.label)} className="glass-pane" style={{ padding: "7px 15px", borderRadius: "20px", color: query === p.label ? "#3E91FF" : c.text, fontSize: "14px" }}>
                 {p.label}
               </Ripple>
             ))}
@@ -1113,7 +1217,7 @@ function InputScreen({ theme, onSetTheme, onDiagnose, initialQuery, recentItems 
 function ProcessingScreen({ query, stages, theme }: { query: string; stages: PipelineStage[]; theme: Theme }) {
   const c = getColors(theme);
   return (
-    <div style={{ flex: 1, display: "flex", flexDirection: "column", background: c.bg, position: "relative", backgroundImage: c.wallpaper }}>
+    <div className="mesh-bg" style={{ flex: 1, display: "flex", flexDirection: "column", background: c.bg, position: "relative", backgroundImage: c.wallpaper }}>
       <div style={{ flex: 1, padding: "20px", opacity: 0.25, filter: "blur(4px)", pointerEvents: "none" }}>
         <div style={{ height: "50px", background: c.surface, borderRadius: "22px", marginBottom: "16px" }} />
         <div style={{ height: "220px", background: c.surface, borderRadius: "22px" }} />
@@ -1150,7 +1254,7 @@ function NavigatingScreen({ path, activeIdx, theme }: { path: SettingsNode[]; ac
   const header = activeIdx > 0 ? path[activeIdx - 1]?.label : "Settings";
   const current = path[activeIdx];
   return (
-    <div style={{ flex: 1, display: "flex", flexDirection: "column", background: c.bg, overflow: "hidden", animation: "slideLeft 0.3s cubic-bezier(0.2,0.8,0.2,1)", backgroundImage: c.wallpaper }}>
+    <div className="mesh-bg" style={{ flex: 1, display: "flex", flexDirection: "column", background: c.bg, overflow: "hidden", backgroundImage: c.wallpaper }}>
       <div style={{ padding: "12px 16px", display: "flex", alignItems: "center", gap: "12px" }}>
         {activeIdx > 0 && <div style={{ color: "#3E91FF", display: "flex", animation: "fadeIn 0.2s ease" }}><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3E91FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg></div>}
         <div style={{ fontSize: "28px", fontWeight: 400, color: c.text, letterSpacing: "-0.02em" }}>{header}</div>
@@ -1194,9 +1298,11 @@ function NavigatingScreen({ path, activeIdx, theme }: { path: SettingsNode[]; ac
 }
 
 // ─── Resolved Screen ──────────────────────────────────────────────────────────
-function ResolvedScreen({ path, query, telemetry, onReset, theme }: {
+function ResolvedScreen({ path, query, telemetry, onReset, theme, onFollowup, onFeedback }: {
   path: SettingsNode[]; query: string; telemetry: any; onReset: () => void; theme: Theme;
+  onFollowup: () => void; onFeedback: (rating: 1 | -1, actionName: string) => void;
 }) {
+  const [feedbackState, setFeedbackState] = useState<number>(0);
   const leaf = path && path.length > 0 ? path[path.length - 1] : null;
   const parentLabel = path && path.length > 1 ? path[path.length - 2]?.label : "Settings";
   const c = getColors(theme);
@@ -1216,7 +1322,7 @@ function ResolvedScreen({ path, query, telemetry, onReset, theme }: {
   }
 
   return (
-    <div style={{ flex: 1, display: "flex", flexDirection: "column", background: c.bg, overflowY: "auto", animation: "slideUpFade 0.4s cubic-bezier(0.2,0.8,0.2,1)", backgroundImage: c.wallpaper }}>
+    <div className="mesh-bg" style={{ flex: 1, display: "flex", flexDirection: "column", background: c.bg, overflowY: "auto", backgroundImage: c.wallpaper }}>
       <div style={{ padding: "12px 16px", display: "flex", alignItems: "center", gap: "12px" }}>
         <Ripple onClick={onReset} style={{ color: "#3E91FF", display: "flex" }}>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3E91FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
@@ -1253,10 +1359,84 @@ function ResolvedScreen({ path, query, telemetry, onReset, theme }: {
         </div>
       )}
 
+      {/* Feedback Section */}
+      <div style={{ margin: "0 16px 14px", display: "flex", gap: "10px", alignItems: "center" }}>
+        {feedbackState === 0 ? (
+          <>
+            <Ripple onClick={() => { setFeedbackState(1); onFeedback(1, leaf.label); }} style={{ flex: 1, padding: "12px", borderRadius: "16px", background: c.surface, display: "flex", justifyContent: "center", alignItems: "center", gap: "8px", border: `1px solid ${c.sep}` }}>
+              <span>👍</span> <span style={{ fontSize: "14px", color: c.text }}>Helpful</span>
+            </Ripple>
+            <Ripple onClick={() => { setFeedbackState(-1); onFeedback(-1, leaf.label); }} style={{ flex: 1, padding: "12px", borderRadius: "16px", background: c.surface, display: "flex", justifyContent: "center", alignItems: "center", gap: "8px", border: `1px solid ${c.sep}` }}>
+              <span>👎</span> <span style={{ fontSize: "14px", color: c.text }}>Not Helpful</span>
+            </Ripple>
+          </>
+        ) : (
+          <div style={{ flex: 1, padding: "12px", borderRadius: "16px", background: "rgba(52,199,89,0.1)", color: "#34C759", display: "flex", justifyContent: "center", alignItems: "center", gap: "8px", fontSize: "14px", fontWeight: 500, animation: "popIn 0.3s ease" }}>
+            <ICheck /> Thanks! Teaching Fixby AI...
+          </div>
+        )}
+      </div>
+
       <div style={{ flex: 1 }} />
-      <div style={{ padding: "12px 16px 16px" }}>
+      <div style={{ padding: "0 16px 16px", display: "flex", flexDirection: "column", gap: "10px" }}>
+        <Ripple onClick={onFollowup} style={{ padding: "16px", borderRadius: "22px", background: "rgba(255,45,85,0.1)", display: "flex", justifyContent: "center", color: "#FF2D55", fontSize: "16px", fontWeight: 600 }}>
+          Still not working?
+        </Ripple>
         <Ripple onClick={onReset} style={{ padding: "16px", borderRadius: "22px", background: c.surface, display: "flex", justifyContent: "center", color: c.text, fontSize: "16px", fontWeight: 500 }}>
           Try another query
+        </Ripple>
+      </div>
+    </div>
+  );
+}
+
+// ─── Escalation Screen ────────────────────────────────────────────────────────
+function EscalationScreen({ path, query, escalationLevel, onReset, theme }: {
+  path: SettingsNode[]; query: string; escalationLevel: string; onReset: () => void; theme: Theme;
+}) {
+  const leaf = path.length > 0 ? path[path.length - 1] : null;
+  const c = getColors(theme);
+  const isCritical = escalationLevel === "CRITICAL";
+
+  return (
+    <div className="mesh-bg" style={{ flex: 1, display: "flex", flexDirection: "column", background: c.bg, overflowY: "auto", backgroundImage: c.wallpaper }}>
+      <div style={{ padding: "12px 16px", display: "flex", alignItems: "center", gap: "12px" }}>
+        <Ripple onClick={onReset} style={{ color: "#3E91FF", display: "flex" }}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3E91FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
+        </Ripple>
+        <div style={{ fontSize: "28px", fontWeight: 400, color: c.text, letterSpacing: "-0.02em" }}>Escalation</div>
+      </div>
+
+      <div style={{ margin: "8px 16px 20px", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
+        <div style={{ width: "60px", height: "60px", borderRadius: "16px", background: isCritical ? "#FF2D55" : "#FF9500", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "14px" }}>
+          <div style={{ transform: "scale(1.4)" }}>⚠️</div>
+        </div>
+        <div style={{ fontSize: "20px", color: c.text, marginBottom: "4px" }}>Advanced Troubleshooting</div>
+        <div style={{ fontSize: "13px", color: c.textSub }}>{isCritical ? "Critical action required" : "Caution recommended"}</div>
+      </div>
+
+      {leaf && (
+        <div style={{ background: c.surface, borderRadius: "22px", margin: "0 16px 14px", overflow: "hidden", border: `1px solid ${isCritical ? "#FF2D55" : "#FF9500"}` }}>
+          <Ripple style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "15px 18px" }}>
+            <div style={{ fontSize: "16px", color: c.text }}>{leaf.label}</div>
+            <div style={{ width: "30px", height: "30px", borderRadius: "8px", background: isCritical ? "#FF2D55" : "#FF9500", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <IChevron color="#fff" />
+            </div>
+          </Ripple>
+        </div>
+      )}
+
+      <div style={{ margin: "0 16px 14px", padding: "16px", borderRadius: "16px", border: `1px solid ${c.sep}`, background: "rgba(255,45,85,0.05)" }}>
+        <div style={{ fontSize: "14px", color: c.text, marginBottom: "8px", fontWeight: 500 }}>Warning</div>
+        <div style={{ fontSize: "13px", color: c.textSub, lineHeight: 1.5 }}>
+          This action may erase data, reset settings, or require professional service. Ensure you have backed up your device before proceeding.
+        </div>
+      </div>
+
+      <div style={{ flex: 1 }} />
+      <div style={{ padding: "0 16px 16px", display: "flex", flexDirection: "column", gap: "10px" }}>
+        <Ripple onClick={onReset} style={{ padding: "16px", borderRadius: "22px", background: c.surface, display: "flex", justifyContent: "center", color: c.text, fontSize: "16px", fontWeight: 500 }}>
+          Cancel
         </Ripple>
       </div>
     </div>
@@ -1269,6 +1449,7 @@ export default function PhoneSimulator({ isActive }: { isActive: boolean }) {
   const [query, setQuery]     = useState("");
   const [telemetry, setTelemetry] = useState<any>(null);
   const [settingsPath, setSettingsPath] = useState<SettingsNode[]>(PRESETS[0].path);
+  const [escalationLevel, setEscalationLevel] = useState<string>("CAUTION");
   const [stages, setStages]   = useState<PipelineStage[]>(PIPELINE_STAGES.map(s => ({ ...s })));
   const [navIdx, setNavIdx]   = useState(0);
   const [mounted, setMounted] = useState(false);
@@ -1297,7 +1478,7 @@ export default function PhoneSimulator({ isActive }: { isActive: boolean }) {
 
   const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 
-  const handleDiagnose = async (q: string, fallbackPath: SettingsNode[]) => {
+  const handleDiagnose = async (q: string, fallbackPath: SettingsNode[], siisStr: string = "") => {
     setQuery(q); setSettingsPath(fallbackPath);
     sessionStorage.setItem("fixby_path", JSON.stringify(fallbackPath));
     setPhase("processing"); setHasNotif(false);
@@ -1318,7 +1499,7 @@ export default function PhoneSimulator({ isActive }: { isActive: boolean }) {
           "Content-Type": "application/json",
           "X-API-Key": "test-api-key-123",
         },
-        body: JSON.stringify({ query: q, context: {}, siis_response: "" }),
+        body: JSON.stringify({ query: q, context: {}, siis_response: siisStr }),
         signal: AbortSignal.timeout(30000),
       });
       if (res.ok) {
@@ -1358,6 +1539,49 @@ export default function PhoneSimulator({ isActive }: { isActive: boolean }) {
     setPhase("resolved");
   };
 
+  const handleFollowup = async () => {
+    setPhase("processing");
+    const sc = PIPELINE_STAGES.map(s => ({ ...s }));
+    sc.forEach(s => s.status = "skipped");
+    sc[3].status = "running"; sc[3].sublabel = "Evaluating escalation...";
+    setStages([...sc]);
+
+    let dynPath = PRESETS[0].path; // fallback
+    let escLvl = "CAUTION";
+    
+    try {
+      const leafName = settingsPath[settingsPath.length - 1]?.label || "Unknown";
+      const res = await fetch("http://localhost:8000/v1/troubleshoot/followup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-API-Key": "test-api-key-123" },
+        body: JSON.stringify({ query, attempted_action_ids: [leafName], turn: 2 }),
+      });
+      if (res.ok) {
+        const d = await res.json();
+        escLvl = d.escalation_level || "CAUTION";
+        const pathStr = d.response?.contexts?.[0]?.actions?.[0]?.stepGroups?.[0]?.actionableDeeplink?.classes?.path;
+        if (pathStr) {
+          const parts = (pathStr as string).split(">").map((s: string) => s.trim()).filter(Boolean);
+          dynPath = parts.map((label: string, idx: number) => ({ label, icon: getIconForLabel(label), depth: idx }));
+        }
+      }
+    } catch(e) {}
+    
+    setSettingsPath(dynPath);
+    setEscalationLevel(escLvl);
+    sc[3].status = "done"; setStages([...sc]);
+    await sleep(600);
+    setPhase("escalation");
+  };
+
+  const handleFeedback = (rating: 1 | -1, actionName: string) => {
+    fetch("http://localhost:8000/v1/feedback", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-API-Key": "test-api-key-123" },
+      body: JSON.stringify({ query, action_name: actionName, rating }),
+    }).catch(console.error);
+  };
+
   const handleReset = () => {
     setPhase("input"); setStages(PIPELINE_STAGES.map(s => ({ ...s }))); setNavIdx(0);
     sessionStorage.removeItem("fixby_steps");
@@ -1377,11 +1601,14 @@ export default function PhoneSimulator({ isActive }: { isActive: boolean }) {
 
       <StatusBar theme={theme} onToggle={() => setTheme(t => t === "dark" ? "light" : "dark")} battery={battery} hasNotif={hasNotif} />
 
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", paddingBottom: "20px" }}>
-        {phase === "input"      && <InputScreen      theme={theme} onSetTheme={setTheme} onDiagnose={handleDiagnose} initialQuery={query} recentItems={recentItems} />}
-        {phase === "processing" && <ProcessingScreen theme={theme} query={query} stages={stages} />}
-        {phase === "navigating" && <NavigatingScreen theme={theme} path={settingsPath} activeIdx={navIdx} />}
-        {phase === "resolved"   && <ResolvedScreen   theme={theme} path={settingsPath} query={query} telemetry={telemetry} onReset={handleReset} />}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", paddingBottom: "20px", position: "relative" }}>
+        <AnimatePresence mode="wait">
+          {phase === "input"      && <motion.div key="input" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.3 }} style={{ display: 'flex', flex: 1, flexDirection: 'column' }}><InputScreen      theme={theme} onSetTheme={setTheme} onDiagnose={handleDiagnose} initialQuery={query} recentItems={recentItems} /></motion.div>}
+          {phase === "processing" && <motion.div key="processing" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} style={{ display: 'flex', flex: 1, flexDirection: 'column' }}><ProcessingScreen theme={theme} query={query} stages={stages} /></motion.div>}
+          {phase === "navigating" && <motion.div key="navigating" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.3 }} style={{ display: 'flex', flex: 1, flexDirection: 'column' }}><NavigatingScreen theme={theme} path={settingsPath} activeIdx={navIdx} /></motion.div>}
+          {phase === "resolved"   && <motion.div key="resolved" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }} transition={{ duration: 0.4 }} style={{ display: 'flex', flex: 1, flexDirection: 'column' }}><ResolvedScreen   theme={theme} path={settingsPath} query={query} telemetry={telemetry} onReset={handleReset} onFollowup={handleFollowup} onFeedback={handleFeedback} /></motion.div>}
+          {phase === "escalation" && <motion.div key="escalation" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.4 }} style={{ display: 'flex', flex: 1, flexDirection: 'column' }}><EscalationScreen theme={theme} path={settingsPath} query={query} escalationLevel={escalationLevel} onReset={handleReset} /></motion.div>}
+        </AnimatePresence>
       </div>
 
       {/* Bottom gesture bar (Samsung home indicator) */}

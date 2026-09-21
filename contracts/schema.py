@@ -90,6 +90,7 @@ class PipelineMeta(BaseModel):
     hallucination_check_passed: bool = True
     screen_resolution: Literal["leaf_screen", "parent_menu", "manual_only"] = "leaf_screen"
     pipeline_source: Literal["live", "mock"] = "live"
+    hardware_escalation: Optional[str] = None  # "WARNING", "CRITICAL", or None
 
 
 class TroubleshootResponse(BaseModel):
