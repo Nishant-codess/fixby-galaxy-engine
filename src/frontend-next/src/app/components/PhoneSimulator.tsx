@@ -609,7 +609,10 @@ export default function PhoneSimulator({ isActive }: { isActive: boolean }) {
     try {
       const res = await fetch("http://localhost:8000/v1/troubleshoot", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-API-Key": "test-api-key-123",
+        },
         body: JSON.stringify({ query: q, context: {}, siis_response: "" }),
         signal: AbortSignal.timeout(30000),
       });
