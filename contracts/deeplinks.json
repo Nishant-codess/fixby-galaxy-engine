@@ -56,9 +56,25 @@
     }
   },
   {
+    "id": "DL_DARK_MODE",
+    "deeplink": "bixby://settings/display/dark_mode",
+    "description": "Toggle dark mode theme for reduced eye strain and battery saving",
+    "classes": {
+      "path": "Settings>Display>Dark mode"
+    }
+  },
+  {
+    "id": "DL_DISPLAY_BRIGHTNESS",
+    "deeplink": "bixby://settings/display/brightness",
+    "description": "Adjust screen brightness and adaptive brightness settings",
+    "classes": {
+      "path": "Settings>Display>Brightness"
+    }
+  },
+  {
     "id": "DL_CAMERA_SETTINGS",
     "deeplink": "bixby://settings/apps/camera",
-    "description": "Camera application settings, permissions, and reset options",
+    "description": "Camera application settings, permissions, storage, and clear cache options",
     "classes": {
       "path": "Settings>Apps>Camera"
     }
@@ -88,11 +104,107 @@
     }
   },
   {
+    "id": "DL_DEVICE_CARE_OPTIMIZE",
+    "deeplink": "bixby://settings/device_care/optimize",
+    "description": "Optimize device performance, clear RAM, and scan for issues",
+    "classes": {
+      "path": "Settings>Device care>Optimize now"
+    }
+  },
+  {
     "id": "DL_WIFI_SETTINGS",
     "deeplink": "bixby://settings/connections/wifi",
     "description": "Wi-Fi connections, advanced intelligent Wi-Fi, and network reset",
     "classes": {
       "path": "Settings>Connections>Wi-Fi"
+    }
+  },
+  {
+    "id": "DL_BLUETOOTH_SETTINGS",
+    "deeplink": "bixby://settings/connections/bluetooth",
+    "description": "Bluetooth pairing, connected devices, and Bluetooth settings",
+    "classes": {
+      "path": "Settings>Connections>Bluetooth"
+    }
+  },
+  {
+    "id": "DL_MOBILE_DATA",
+    "deeplink": "bixby://settings/connections/mobile_data",
+    "description": "Mobile data usage, data limit, preferred network type 4G 5G LTE",
+    "classes": {
+      "path": "Settings>Connections>Mobile networks"
+    }
+  },
+  {
+    "id": "DL_HOTSPOT",
+    "deeplink": "bixby://settings/connections/hotspot",
+    "description": "Mobile hotspot and tethering settings to share internet connection",
+    "classes": {
+      "path": "Settings>Connections>Mobile hotspot and tethering"
+    }
+  },
+  {
+    "id": "DL_LOCATION",
+    "deeplink": "bixby://settings/privacy/location",
+    "description": "Toggle location services, GPS accuracy, and app location permissions",
+    "classes": {
+      "path": "Settings>Location"
+    }
+  },
+  {
+    "id": "DL_PRIVACY",
+    "deeplink": "bixby://settings/privacy",
+    "description": "Privacy dashboard, app permissions, and permission manager",
+    "classes": {
+      "path": "Settings>Security and privacy>Permission manager"
+    }
+  },
+  {
+    "id": "DL_SOUND",
+    "deeplink": "bixby://settings/sounds",
+    "description": "Volume, ringtone, vibration, system sounds, and Dolby Atmos settings",
+    "classes": {
+      "path": "Settings>Sounds and vibration"
+    }
+  },
+  {
+    "id": "DL_NOTIFICATIONS",
+    "deeplink": "bixby://settings/notifications",
+    "description": "App notifications, Do Not Disturb, notification style and badges",
+    "classes": {
+      "path": "Settings>Notifications"
+    }
+  },
+  {
+    "id": "DL_SOFTWARE_UPDATE",
+    "deeplink": "bixby://settings/software_update",
+    "description": "Check and download latest software and security patch updates",
+    "classes": {
+      "path": "Settings>Software update"
+    }
+  },
+  {
+    "id": "DL_ACCOUNTS",
+    "deeplink": "bixby://settings/accounts",
+    "description": "Samsung account, Google account sync, backup, and account management",
+    "classes": {
+      "path": "Settings>Accounts and backup"
+    }
+  },
+  {
+    "id": "DL_GENERAL_MANAGEMENT",
+    "deeplink": "bixby://settings/general",
+    "description": "Language, keyboard, date and time, reset options",
+    "classes": {
+      "path": "Settings>General management"
+    }
+  },
+  {
+    "id": "DL_LANGUAGE",
+    "deeplink": "bixby://settings/general/language",
+    "description": "Change device language and input method settings",
+    "classes": {
+      "path": "Settings>General management>Language"
     }
   },
   {

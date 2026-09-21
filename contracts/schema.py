@@ -92,12 +92,21 @@ class PipelineMeta(BaseModel):
     pipeline_source: Literal["live", "mock"] = "live"
 
 
+class ClarificationOption(BaseModel):
+    domain: str
+    suggestion: str
+    category: str
+
+
 class TroubleshootResponse(BaseModel):
     query: str
     query_variations: List[str] = Field(default_factory=list)
     response: ContextDeeplinkResponse
     meta: PipelineMeta
     diagnostic_graph: Optional[Dict] = None
+    clarification_needed: bool = False
+    clarification_options: List[ClarificationOption] = Field(default_factory=list)
+    resolution_count: int = 0
 
 
 class FeedbackRequest(BaseModel):
