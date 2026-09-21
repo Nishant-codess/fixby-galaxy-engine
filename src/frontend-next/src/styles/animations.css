@@ -182,3 +182,14 @@
   0% { background-position: 200% center; }
   100% { background-position: -200% center; }
 }
+
+@keyframes mesh-drift {
+  0% { background-position: 0% 0%; }
+  50% { background-position: 100% 100%; }
+  100% { background-position: 0% 0%; }
+}
+
+.mesh-bg {
+  background-size: 200% 200% !important;
+  animation: mesh-drift 15s ease-in-out infinite alternate !important;
+}
