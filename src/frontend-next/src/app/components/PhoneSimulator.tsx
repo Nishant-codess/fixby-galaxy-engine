@@ -303,8 +303,9 @@ function InputScreen({ theme, onDiagnose, initialQuery, recentItems }: {
     setSuggestions(val.length > 1 ? PRESETS.filter(p => p.label.includes(val.toLowerCase())) : []);
   };
   const submit = (q: string = query) => {
+    const matched = PRESETS.find(p => q.toLowerCase().includes(p.label.split(" ")[0]));
     setShowKb(false); setFocused(false);
-    onDiagnose(q, []);
+    onDiagnose(q, matched?.path || PRESETS[0].path);
   };
 
   return (
@@ -492,9 +493,24 @@ function NavigatingScreen({ path, activeIdx, theme }: { path: SettingsNode[]; ac
 function ResolvedScreen({ path, query, telemetry, onReset, theme }: {
   path: SettingsNode[]; query: string; telemetry: any; onReset: () => void; theme: Theme;
 }) {
-  const leaf = path && path.length > 0 ? path[path.length - 1] : { label: "Target Setting", icon: <ISettings />, depth: 0 };
+  const leaf = path && path.length > 0 ? path[path.length - 1] : null;
   const parentLabel = path && path.length > 1 ? path[path.length - 2]?.label : "Settings";
   const c = getColors(theme);
+
+  // Guard: if path is empty for any reason, show a safe fallback UI
+  if (!leaf) {
+    return (
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: c.bg, padding: "24px", textAlign: "center" }}>
+        <div style={{ fontSize: "40px", marginBottom: "12px" }}>🔍</div>
+        <div style={{ fontSize: "18px", color: c.text, marginBottom: "8px" }}>Setting Located</div>
+        <div style={{ fontSize: "13px", color: c.textSub, marginBottom: "24px" }}>Fixby AI resolved your query successfully.</div>
+        <Ripple onClick={onReset} style={{ padding: "14px 28px", borderRadius: "22px", background: c.surface, color: c.text, fontSize: "15px", fontWeight: 500 }}>
+          Try another query
+        </Ripple>
+      </div>
+    );
+  }
+
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column", background: c.bg, overflowY: "auto", animation: "slideUpFade 0.4s cubic-bezier(0.2,0.8,0.2,1)", backgroundImage: c.wallpaper }}>
       <div style={{ padding: "12px 16px", display: "flex", alignItems: "center", gap: "12px" }}>
@@ -506,9 +522,9 @@ function ResolvedScreen({ path, query, telemetry, onReset, theme }: {
 
       <div style={{ margin: "8px 16px 20px", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
         <div style={{ width: "60px", height: "60px", borderRadius: "16px", background: "#3E91FF", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "14px" }}>
-          <div style={{ transform: "scale(1.4)" }}>{leaf?.icon || <ISettings />}</div>
+          <div style={{ transform: "scale(1.4)" }}>{leaf.icon ?? "⚙️"}</div>
         </div>
-        <div style={{ fontSize: "20px", color: c.text, marginBottom: "4px" }}>{leaf?.label || "Target Setting"}</div>
+        <div style={{ fontSize: "20px", color: c.text, marginBottom: "4px" }}>{leaf.label || "Target Setting"}</div>
         <div style={{ fontSize: "13px", color: c.textSub }}>Target setting reached by Fixby AI</div>
       </div>
 
@@ -584,45 +600,57 @@ export default function PhoneSimulator({ isActive }: { isActive: boolean }) {
     setRecentItems(prev => [q, ...prev.filter(r => r !== q)].slice(0, 3));
 
     const sc = PIPELINE_STAGES.map(s => ({ ...s }));
-    sc[0].status = "running"; setStages([...sc]); await sleep(400);
+    sc[0].status = "running"; setStages([...sc]); await sleep(300);
     sc[0].status = "skipped"; sc[0].ms = 3; sc[1].status = "running"; setStages([...sc]);
 
+    // ── Fetch from backend FIRST, then animate. Prevents race condition. ──
     let apiTelemetry: any = null;
     let dynamicPath: SettingsNode[] = [];
-    
+
     try {
       const res = await fetch("http://localhost:8000/v1/troubleshoot", {
-        method: "POST", headers: { "Content-Type": "application/json", "X-API-Key": "test-api-key-123" },
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-API-Key": "test-api-key-123",
+        },
         body: JSON.stringify({ query: q, context: {}, siis_response: "" }),
+        signal: AbortSignal.timeout(30000),
       });
-      const d = await res.json();
-      apiTelemetry = d.meta;
-      
-      const pathStr = d.response?.contexts?.[0]?.actions?.[0]?.stepGroups?.[0]?.actionableDeeplink?.classes?.path;
-      if (pathStr) {
-        const parts = pathStr.split(">").map((s: string) => s.trim()).filter(Boolean);
-        dynamicPath = parts.map((label: string, idx: number) => ({
-          label,
-          icon: getIconForLabel(label),
-          depth: idx
-        }));
+      if (res.ok) {
+        const d = await res.json();
+        apiTelemetry = d.meta;
+        const pathStr = d.response?.contexts?.[0]?.actions?.[0]?.stepGroups?.[0]?.actionableDeeplink?.classes?.path;
+        if (pathStr) {
+          const parts = (pathStr as string).split(">").map((s: string) => s.trim()).filter(Boolean);
+          dynamicPath = parts.map((label: string, idx: number) => ({
+            label,
+            icon: getIconForLabel(label),
+            depth: idx
+          }));
+        }
       }
-    } catch (e) {}
+    } catch (e) {
+      console.warn("Fixby API unavailable, using fallback path.", e);
+    }
 
-    const finalPath = dynamicPath.length > 0 ? dynamicPath : fallbackPath;
+    // Use live path from API; only fall back to preset if API gave nothing
+    const finalPath = dynamicPath.length > 0 ? dynamicPath : (fallbackPath.length > 0 ? fallbackPath : PRESETS[0].path);
     setSettingsPath(finalPath);
     sessionStorage.setItem("fixby_path", JSON.stringify(finalPath));
 
-    await sleep(450); sc[1].status = "done"; sc[1].ms = 42; sc[2].status = "running"; setStages([...sc]);
-    await sleep(550); sc[2].status = "done"; sc[2].ms = apiTelemetry?.latency_ms || 188; sc[3].status = "skipped"; setStages([...sc]);
+    // ── Now animate the pipeline stages ──
+    sc[1].status = "done"; sc[1].ms = 42; sc[2].status = "running"; setStages([...sc]);
+    await sleep(500);
+    sc[2].status = "done"; sc[2].ms = apiTelemetry?.latency_ms ?? 188; sc[3].status = "skipped"; setStages([...sc]);
     await sleep(250);
 
     setPhase("navigating"); setNavIdx(0);
-    for (let i = 0; i < finalPath.length; i++) { await sleep(450); setNavIdx(i + 1); }
+    for (let i = 0; i < finalPath.length; i++) { await sleep(420); setNavIdx(i + 1); }
 
     if (apiTelemetry) { setTelemetry(apiTelemetry); sessionStorage.setItem("fixby_telemetry", JSON.stringify(apiTelemetry)); }
     sessionStorage.setItem("fixby_query", q);
-    await sleep(600);
+    await sleep(500);
     setPhase("resolved");
   };
 

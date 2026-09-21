@@ -13,6 +13,9 @@ from contracts.schema import (
 )
 from src.backend.telemetry import telemetry
 
+# Eagerly initialize the AI matcher so HF weights load on app startup, eliminating first-request latency
+from src.ai.matcher import matcher
+
 app = FastAPI(
     title="Fixby — Samsung Galaxy Troubleshooting API",
     description="Engine for Samsung PRISM GenAI Hackathon 3rd Edition",
@@ -38,6 +41,10 @@ USE_MOCK = os.getenv("USE_MOCK", "false").lower() in ("1", "true", "yes")
 
 @app.middleware("http")
 async def security_and_rate_limit(request: Request, call_next):
+    # Skip auth/rate-limit for CORS preflight — browser sends OPTIONS before every POST
+    if request.method == "OPTIONS":
+        return await call_next(request)
+
     if request.url.path.startswith("/v1/"):
         # 1. API Key Auth
         api_key = request.headers.get("X-API-Key")
@@ -60,6 +67,7 @@ async def security_and_rate_limit(request: Request, call_next):
     return await call_next(request)
 
 
+
 @app.get("/health")
 def health_check():
     return {
@@ -68,6 +76,16 @@ def health_check():
         "version": "1.1.0",
         "mode": "mock" if USE_MOCK else "live-pipeline"
     }
+
+
+@app.post("/v1/cache/clear")
+def clear_cache():
+    """Clears all in-memory cache tiers. Useful after taxonomy/deeplink updates."""
+    from src.core.cache import cache
+    cache.tier1_exact.clear()
+    cache.tier2_slots.clear()
+    cache.tier3_vectors.clear()
+    return {"status": "ok", "message": "All cache tiers cleared"}
 
 
 @app.post("/v1/troubleshoot", response_model=TroubleshootResponse)

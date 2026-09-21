@@ -103,12 +103,14 @@
   letter-spacing: -0.03em;
   background: linear-gradient(180deg, #ffffff 0%, #cbd5e1 100%);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .hero-title .gradient-span {
   background: linear-gradient(135deg, #60a5fa 0%, #2563eb 50%, #3b82f6 100%);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
@@ -212,6 +214,7 @@
 .stat-number.accent {
   background: linear-gradient(135deg, #60a5fa, #2563eb);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 

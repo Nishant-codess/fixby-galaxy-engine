@@ -31,6 +31,16 @@ SYMPTOM_TAXONOMY: Dict[str, Dict[str, Set[str]]] = {
             "turns off", "shut down", "band ho gaya", "restarts randomly",
             "switch off", "sudden restart", "keeps restarting",
             "꺼짐", "갑자기 꺼져", "재부팅", "random reboot", "boots itself",
+        },
+        "battery_protect": {
+            "protect battery", "limit charge", "maximum charge", "battery health",
+            "stop charging", "85%", "plugged in all night", "overcharge",
+            "배터리 보호", "충전 제한",
+        },
+        "wireless_power_sharing": {
+            "wireless power", "power share", "charge watch", "charge another phone",
+            "reverse charging", "charge buds",
+            "무선 배터리 공유",
         }
     },
     "display": {
@@ -56,6 +66,13 @@ SYMPTOM_TAXONOMY: Dict[str, Dict[str, Set[str]]] = {
             "timeout", "screen turn off", "reading timeout", "screen on while reading",
             "화면 꺼짐", "화면 유지", "자동 꺼짐",
             "screen goes off", "dim screen", "always awake",
+        },
+        "accidental_touch": {
+            "pocket", "dialing itself", "dialing numbers", "accidental", "in my pocket",
+            "phone calling by itself", "screen touches itself", "pocket dial",
+            "random touches", "calling by itself", "types by itself",
+            "주머니", "실수 터치", "주머니 터치", "잠금 해제 안됨",
+            "touches when in bag", "accidental screen touch", "butt dial",
         },
         "brightness": {
             "brightness", "too dim", "too bright", "screen dark", "auto brightness",
@@ -109,7 +126,7 @@ SYMPTOM_TAXONOMY: Dict[str, Dict[str, Set[str]]] = {
             "hang", "lag", "phone slow", "slow response", "ruk ruk ke",
             "phone atak raha", "hang kar raha", "response slow",
             "폰 느려", "버벅임", "렉", "반응 느림", "시스템 지연",
-            "sluggish", "freezing", "slow", "not responding",
+            "sluggish", "freezing", "not responding",
         },
         "app_crash": {
             "app crash", "crashing", "apps closing", "force close",
@@ -130,6 +147,11 @@ SYMPTOM_TAXONOMY: Dict[str, Dict[str, Set[str]]] = {
         },
     },
     "connectivity": {
+        "quick_share": {
+            "send file", "large file", "video file", "quick share", "nearby share",
+            "send to friend", "share to galaxy", "massive video", "send to phone",
+            "퀵쉐어", "파일 전송", "대용량 파일",
+        },
         "wifi_drop": {
             "wifi", "disconnect", "no internet", "wifi drop", "network issue",
             "wifi band", "network nahi aa raha", "wifi reconnect",
@@ -246,8 +268,16 @@ def classify_complaint_taxonomy(query: str) -> List[str]:
     matches = []
     for domain, symptoms in SYMPTOM_TAXONOMY.items():
         for symptom, keywords in symptoms.items():
-            if any(kw in q for kw in keywords):
-                matches.append(f"{domain}.{symptom}")
+            for kw in keywords:
+                # Use word boundaries for English alphanumeric words to prevent 'hot' matching 'photos'
+                if re.match(r"^[a-z0-9\s]+$", kw):
+                    if re.search(rf"\b{re.escape(kw)}\b", q):
+                        matches.append(f"{domain}.{symptom}")
+                        break
+                else:
+                    if kw in q:
+                        matches.append(f"{domain}.{symptom}")
+                        break
     return matches if matches else ["general.unknown"]
 
 
@@ -256,9 +286,8 @@ def extract_slots(query: str) -> Dict[str, Optional[str]]:
     Extracts high-level domain and symptom slots from user query.
     Used for Tier 2 semantic slot hashing in the cascading cache.
     """
-    q = query.lower()
-    for domain, symptoms in SYMPTOM_TAXONOMY.items():
-        for symptom, keywords in symptoms.items():
-            if any(kw in q for kw in keywords):
-                return {"domain": domain, "symptom": symptom}
+    cats = classify_complaint_taxonomy(query)
+    if cats and cats[0] != "general.unknown":
+        domain, symptom = cats[0].split(".", 1)
+        return {"domain": domain, "symptom": symptom}
     return {"domain": "general", "symptom": "unknown"}
