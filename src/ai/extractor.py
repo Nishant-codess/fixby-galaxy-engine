@@ -16,36 +16,33 @@ Generate structured troubleshooting plans in JSON format matching the schema bel
 
 CRITICAL RULES:
 1. `goal` string MUST be EXACTLY formatted: "Follow these steps to perform this <Topic> Troubleshooting".
-2. `title` MUST be 2-3 words in sentence case (e.g. "Do not disturb", "Edge lighting", "Battery drain").
-3. Action `description` MUST be 5-7 words starting with "It will " (e.g. "It will block all night notifications").
+2. `title` MUST be 2-3 words in sentence case (e.g. "Do not disturb", "Fingerprint sensor", "Edge lighting").
+3. Action `description` MUST be 5-7 words starting with "It will " (e.g. "It will reset fingerprint credentials").
 4. Action `category` MUST be one of: "auto" (standard config with deeplink), "manual" (physical fix), "critical" (disruptive/reset, listed last).
 5. ONLY use deeplinks from the provided candidate list — do NOT invent deeplinks.
-6. CAREFULLY READ THE USER COMPLAINT and select the most specific and relevant settings path. Do NOT default to battery unless the complaint is explicitly about battery life.
+6. CAREFULLY READ THE USER COMPLAINT and DETECTED DOMAIN to select the most specific and relevant settings path.
+7. NEVER pick battery or background limits unless the user explicitly says battery or charging.
+8. The DETECTED DOMAIN and SYMPTOM are your PRIMARY hint — prioritize deeplinks matching that domain.
 
 Return JSON in this format:
 {
   "contexts": [
     {
-      "goal": "Follow these steps to perform this Battery Troubleshooting",
-      "title": "Battery drain",
+      "goal": "Follow these steps to perform this <Domain> Troubleshooting",
+      "title": "<2-3 word setting name>",
       "score": 0.91,
       "actions": [
         {
-          "actionName": "Background Usage Limits",
-          "description": "It will limit unused background apps",
+          "actionName": "<Setting name>",
+          "description": "It will <5-7 word outcome>",
           "category": "auto",
           "stepGroups": [
             {
-              "steps": [
-                "Open Settings on your Galaxy device",
-                "Tap Battery",
-                "Tap Background usage limits",
-                "Turn on Put unused apps to sleep"
-              ],
+              "steps": ["Step 1", "Step 2", "Step 3"],
               "actionableDeeplink": {
-                "deeplink": "bixby://settings/device_care/battery/background_limits",
-                "description": "Direct link to Background usage limits",
-                "classes": {"path": "Settings>Battery>Background usage limits"}
+                "deeplink": "<deeplink from candidate list>",
+                "description": "Direct link to <setting name>",
+                "classes": {"path": "Settings><Category>><Sub-setting>"}
               }
             }
           ]
@@ -65,18 +62,32 @@ class PlanExtractor:
         self.llm_client = llm_client
 
     def build_user_prompt(self, query: str, candidate_ids: List[str], siis_response: Optional[str] = None) -> str:
+        # Inject taxonomy domain/symptom as a strong hint to the LLM
+        slots = extract_slots(query)
+        domain = slots.get("domain", "general")
+        symptom = slots.get("symptom", "unknown")
+
         candidates_info = []
         for cid in candidate_ids:
-            # Look up catalog entry if available
             match_entry = next((e for e in matcher.catalog if e.get("id") == cid), None)
             if match_entry:
-                candidates_info.append(f"- ID: {cid}, Deeplink: {match_entry.get('deeplink')}, Path: {match_entry.get('classes', {}).get('path')}, Description: {match_entry.get('description')}")
+                candidates_info.append(
+                    f"- ID: {cid}, Deeplink: {match_entry.get('deeplink')}, "
+                    f"Path: {match_entry.get('classes', {}).get('path')}, "
+                    f"Description: {match_entry.get('description')}"
+                )
             else:
                 candidates_info.append(f"- ID: {cid}")
 
         candidates_str = "\n".join(candidates_info)
 
-        prompt = f"User Complaint: \"{query}\"\n\nCandidate Deeplinks:\n{candidates_str}"
+        prompt = (
+            f"User Complaint: \"{query}\"\n"
+            f"Detected Domain: {domain} | Detected Symptom: {symptom}\n"
+            f"Instruction: Select the deeplink MOST RELEVANT to domain '{domain}' and symptom '{symptom}'.\n"
+            f"Do NOT select battery/background settings unless domain is 'battery'.\n\n"
+            f"Candidate Deeplinks:\n{candidates_str}"
+        )
         if siis_response:
             prompt += f"\n\nSamsung Intelligence (SIIS) Technical Data:\n{siis_response}"
 
