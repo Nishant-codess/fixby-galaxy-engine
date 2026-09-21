@@ -3,6 +3,7 @@ from fastapi.testclient import TestClient
 from src.backend.main import app
 
 client = TestClient(app)
+HEADERS = {"X-API-Key": "test-api-key-123"}
 
 
 def test_health_check():
@@ -12,7 +13,7 @@ def test_health_check():
 
 
 def test_troubleshoot_endpoint():
-    res = client.post("/v1/troubleshoot", json={"query": "battery draining fast"})
+    res = client.post("/v1/troubleshoot", json={"query": "battery draining fast"}, headers=HEADERS)
     assert res.status_code == 200
     data = res.json()
     assert "response" in data
@@ -21,9 +22,14 @@ def test_troubleshoot_endpoint():
 
 
 def test_analytics_endpoint():
-    res = client.get("/v1/analytics")
+    res = client.get("/v1/analytics", headers=HEADERS)
     assert res.status_code == 200
     assert "cache_hit_rate_pct" in res.json()
+
+
+def test_missing_api_key():
+    res = client.get("/v1/analytics")
+    assert res.status_code == 401
 
 
 def test_feedback_endpoint():
@@ -31,7 +37,7 @@ def test_feedback_endpoint():
         "query": "battery draining fast",
         "action_name": "Background Usage Limits",
         "rating": 1
-    })
+    }, headers=HEADERS)
     assert res.status_code == 200
     assert res.json()["status"] == "accepted"
     assert "Background Usage Limits" in res.json()["message"]
@@ -42,7 +48,7 @@ def test_followup_endpoint_turn2_caution():
         "query": "battery is still draining after sleep settings",
         "turn": 2,
         "attempted_action_ids": ["Background Usage Limits"]
-    })
+    }, headers=HEADERS)
     assert res.status_code == 200
     data = res.json()
     assert data["turn"] == 2
@@ -61,7 +67,7 @@ def test_followup_endpoint_turn3_critical():
         "query": "battery rapidly draining phone overheating",
         "turn": 3,
         "attempted_action_ids": ["Background Usage Limits", "Deep Sleeping Apps"]
-    })
+    }, headers=HEADERS)
     assert res.status_code == 200
     data = res.json()
     assert data["turn"] == 3
@@ -69,4 +75,3 @@ def test_followup_endpoint_turn3_critical():
     assert data["is_terminal"] is True
     action_names = [a["actionName"] for a in data["response"]["contexts"][0]["actions"]]
     assert any("Diagnostics" in name or "Partition" in name or "Reset" in name for name in action_names)
-
