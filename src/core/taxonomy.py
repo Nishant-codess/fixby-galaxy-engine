@@ -11,15 +11,22 @@ SYMPTOM_TAXONOMY: Dict[str, Dict[str, Set[str]]] = {
     "battery": {
         "rapid_drain": {
             "drain", "battery fast", "jaldi khatam", "draining", "dying fast",
-            "battery low", "battery backup", "battery drop", "battery utar",
+            "battery low", "battery backup", "battery drop", "battery drops",
+            "drops too fast", "drops fast", "battery utar", "battery dies",
+            "battery drains", "battery draining fast", "losing battery",
+            "battery percentage dropping", "percentage drops", "battery gone",
             "배터리", "방전", "빨리 닳", "배터리 부족", "battery life", "battery percentage",
             "charge keeps dropping", "losing charge", "power draining",
+            "battery doesn't last", "doesn't last all day", "need to charge twice",
         },
         "overheating": {
             "hot", "garam", "heat", "overheat", "overheating", "warm",
             "bohot garam", "garam ho raha", "phone heat", "heating up",
             "발열", "뜨거워", "과열", "온도", "temperature", "burns", "burning",
-            "too hot", "getting hot", "warm to touch",
+            "too hot", "getting hot", "warm to touch", "back is hot",
+            "back of phone", "back burning", "burning up", "feels like burning",
+            "phone is hot", "device is hot", "blazing", "scorching",
+            "thermal", "genshin", "gaming hot", "hot while gaming",
         },
         "slow_charging": {
             "slow charge", "charging slow", "not charging", "slow charging",
@@ -31,6 +38,7 @@ SYMPTOM_TAXONOMY: Dict[str, Dict[str, Set[str]]] = {
             "turns off", "shut down", "band ho gaya", "restarts randomly",
             "switch off", "sudden restart", "keeps restarting",
             "꺼짐", "갑자기 꺼져", "재부팅", "random reboot", "boots itself",
+            "phone turns off", "shuts down randomly", "powers off",
         },
         "battery_protect": {
             "protect battery", "limit charge", "maximum charge", "battery health",
@@ -126,13 +134,18 @@ SYMPTOM_TAXONOMY: Dict[str, Dict[str, Set[str]]] = {
             "hang", "lag", "phone slow", "slow response", "ruk ruk ke",
             "phone atak raha", "hang kar raha", "response slow",
             "폰 느려", "버벅임", "렉", "반응 느림", "시스템 지연",
-            "sluggish", "freezing", "not responding",
+            "sluggish", "freezing", "not responding", "acting slow",
+            "super slow", "lagging", "lags", "very slow", "phone is slow",
+            "slow and lagging", "slow when", "takes forever", "unresponsive",
         },
         "app_crash": {
             "app crash", "crashing", "apps closing", "force close",
             "app band ho jata", "apps restart",
             "앱 튕김", "강제종료", "앱 오류", "앱 꺼짐",
             "app keeps crashing", "app closes itself", "keeps force closing",
+            "randomly crashing", "crash back", "crash to home", "home screen",
+            "app crashes", "keeps crashing", "randomly closing",
+            "goes back to home", "closes randomly", "apps keep crashing",
         },
         "storage_pressure": {
             "storage full", "memory full", "space low",
@@ -141,9 +154,9 @@ SYMPTOM_TAXONOMY: Dict[str, Dict[str, Set[str]]] = {
             "no space", "storage almost full", "free up space",
         },
         "ram": {
-            "ram", "memory", "multitasking", "apps close in background",
+            "ram", "multitasking", "apps close in background",
             "apps keep closing", "background apps", "switching apps slow",
-            "램", "메모리", "멀티태스킹",
+            "램", "메모리", "멀티태스킹", "memory",
         },
     },
     "connectivity": {
@@ -160,10 +173,18 @@ SYMPTOM_TAXONOMY: Dict[str, Dict[str, Set[str]]] = {
         },
         "mobile_data": {
             "mobile data", "data not working", "4g", "5g", "lte",
-            "internet on data", "data slow", "no signal",
+            "internet on data", "data slow", "no signal", "signal weak",
+            "poor signal", "weak signal", "one bar", "no bars",
+            "dead zone", "no service", "signal loss", "signal poor",
             "모바일 데이터", "LTE", "5G", "데이터 안됨",
             "switch to mobile data", "use mobile data when wifi weak",
             "auto switch", "wifi to data",
+        },
+        "internet_slow": {
+            "internet slow", "slow internet", "buffering", "loading slow",
+            "tiktok buffering", "youtube buffering", "video buffering",
+            "instagram slow", "slow loading", "slow network",
+            "인터넷 느림", "버퍼링",
         },
         "bluetooth": {
             "bluetooth", "bt", "buds", "earphone not connecting", "pairing",
