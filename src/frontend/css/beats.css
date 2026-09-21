@@ -31,9 +31,7 @@
 }
 
 /* Point-cloud text placeholder (before JS takes over) */
-.point-cloud-target {
-  /* Fallback to visible since pointtype.js was cut */
-}
+
 
 /* Beat 2: The Failure Mode */
 .fake-url {
