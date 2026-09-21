@@ -258,8 +258,16 @@ def classify_complaint_taxonomy(query: str) -> List[str]:
     matches = []
     for domain, symptoms in SYMPTOM_TAXONOMY.items():
         for symptom, keywords in symptoms.items():
-            if any(kw in q for kw in keywords):
-                matches.append(f"{domain}.{symptom}")
+            for kw in keywords:
+                # Use word boundaries for English alphanumeric words to prevent 'hot' matching 'photos'
+                if re.match(r"^[a-z0-9\s]+$", kw):
+                    if re.search(rf"\b{re.escape(kw)}\b", q):
+                        matches.append(f"{domain}.{symptom}")
+                        break
+                else:
+                    if kw in q:
+                        matches.append(f"{domain}.{symptom}")
+                        break
     return matches if matches else ["general.unknown"]
 
 
@@ -268,9 +276,8 @@ def extract_slots(query: str) -> Dict[str, Optional[str]]:
     Extracts high-level domain and symptom slots from user query.
     Used for Tier 2 semantic slot hashing in the cascading cache.
     """
-    q = query.lower()
-    for domain, symptoms in SYMPTOM_TAXONOMY.items():
-        for symptom, keywords in symptoms.items():
-            if any(kw in q for kw in keywords):
-                return {"domain": domain, "symptom": symptom}
+    cats = classify_complaint_taxonomy(query)
+    if cats and cats[0] != "general.unknown":
+        domain, symptom = cats[0].split(".", 1)
+        return {"domain": domain, "symptom": symptom}
     return {"domain": "general", "symptom": "unknown"}
