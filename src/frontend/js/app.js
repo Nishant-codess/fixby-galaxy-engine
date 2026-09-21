@@ -49,19 +49,27 @@ class AppController {
     this.renderLoading();
 
     try {
-      let data;
+      let rawData;
       if (USE_LIVE_API) {
         const res = await fetch(BACKEND_URL, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'X-API-Key': 'test-api-key-123'
+          },
           body: JSON.stringify({ query: query })
         });
-        data = await res.json();
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        }
+        rawData = await res.json();
       } else {
         const res = await fetch('assets/mock.json');
-        data = await res.json();
-        data.query = query;
+        rawData = await res.json();
+        rawData.query = query;
       }
+
+      const data = this.normalizeResponse(rawData);
 
       this.renderResults(data);
 
@@ -79,6 +87,42 @@ class AppController {
       console.error('Troubleshoot error:', err);
       this.renderError();
     }
+  }
+
+  normalizeResponse(data) {
+    if (!data) return { actions: [], meta: {}, dag: null };
+
+    // Flat / mock format
+    if (data.actions && Array.isArray(data.actions)) {
+      return data;
+    }
+
+    // Canonical TroubleshootResponse format
+    const actions = [];
+    if (data.response && Array.isArray(data.response.contexts)) {
+      data.response.contexts.forEach(ctx => {
+        if (Array.isArray(ctx.actions)) {
+          ctx.actions.forEach(act => {
+            const steps = act.stepGroups ? act.stepGroups.flatMap(sg => sg.steps || []) : [];
+            const deeplink = act.stepGroups?.[0]?.actionableDeeplink?.deeplink || '';
+            actions.push({
+              action_name: act.actionName || 'Diagnostic Action',
+              description: act.description || '',
+              category: (act.category || 'AUTO').toUpperCase(),
+              deeplink_target: deeplink,
+              steps: steps
+            });
+          });
+        }
+      });
+    }
+
+    return {
+      query: data.query,
+      actions: actions,
+      meta: data.meta || {},
+      dag: data.diagnostic_graph || data.dag || null
+    };
   }
 
   renderLoading() {

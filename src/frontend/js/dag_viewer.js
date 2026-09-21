@@ -27,6 +27,13 @@ class DAGViewer {
       'node_done': { x: 700, y: 140 }
     };
 
+    // Auto-calculate positions for dynamic backend graph nodes
+    nodes.forEach((node, idx) => {
+      if (!nodePositions[node.id]) {
+        nodePositions[node.id] = { x: 40 + idx * 220, y: 140 };
+      }
+    });
+
     // Draw Edges
     edges.forEach(edge => {
       const fromPos = nodePositions[edge.from] || { x: 100, y: 100 };
@@ -34,7 +41,7 @@ class DAGViewer {
 
       svgContent += `
         <path class="dag-edge" d="M ${fromPos.x + 120} ${fromPos.y + 20} C ${fromPos.x + 180} ${fromPos.y + 20}, ${toPos.x - 40} ${toPos.y + 20}, ${toPos.x} ${toPos.y + 20}" marker-end="url(#arrow)" />
-        <text x="${(fromPos.x + toPos.x) / 2 + 30}" y="${(fromPos.y + toPos.y) / 2 + 10}" fill="#64748b" font-size="10" font-family="sans-serif">${edge.label}</text>
+        <text x="${(fromPos.x + toPos.x) / 2 + 10}" y="${(fromPos.y + toPos.y) / 2 - 5}" fill="#64748b" font-size="10" font-family="sans-serif">${edge.label || ''}</text>
       `;
     });
 
@@ -43,12 +50,12 @@ class DAGViewer {
       const pos = nodePositions[node.id] || { x: 100, y: 100 };
       const isStart = node.type === 'entry';
       const isDone = node.type === 'terminal';
-      const strokeColor = isStart ? '#10b981' : isDone ? '#3b82f6' : '#64748b';
+      const strokeColor = node.color || (isStart ? '#10b981' : isDone ? '#3b82f6' : '#64748b');
 
       svgContent += `
         <g class="dag-node-group" style="cursor: pointer;">
-          <rect class="dag-node" x="${pos.x}" y="${pos.y}" width="140" height="40" rx="8" stroke="${strokeColor}" />
-          <text x="${pos.x + 12}" y="${pos.y + 24}" fill="#f8fafc" font-size="11" font-weight="600" font-family="sans-serif">${node.label.length > 18 ? node.label.substring(0, 16) + '...' : node.label}</text>
+          <rect class="dag-node" x="${pos.x}" y="${pos.y}" width="180" height="40" rx="8" stroke="${strokeColor}" fill="#0f172a" stroke-width="2" />
+          <text x="${pos.x + 12}" y="${pos.y + 24}" fill="#f8fafc" font-size="11" font-weight="600" font-family="sans-serif">${(node.label || '').length > 22 ? (node.label || '').substring(0, 20) + '...' : (node.label || '')}</text>
         </g>
       `;
     });
