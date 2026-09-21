@@ -69,6 +69,16 @@ class SettingsHierarchyGraph:
         if not valid_nodes:
             return candidate_ids[0]
 
+        if domain and domain.lower() != "general":
+            domain_nodes = [
+                cid for cid in valid_nodes 
+                if domain.lower() in self.catalog_map.get(cid, {}).get("description", "").lower() 
+                or domain.lower() in str(self.catalog_map.get(cid, {}).get("classes", "")).lower()
+                or domain.lower() in self.catalog_map.get(cid, {}).get("deeplink", "").lower()
+            ]
+            if domain_nodes:
+                valid_nodes = domain_nodes
+
         best_node = valid_nodes[0]
         max_depth = -1
         for node in valid_nodes:

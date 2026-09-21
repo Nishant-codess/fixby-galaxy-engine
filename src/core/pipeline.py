@@ -124,6 +124,18 @@ def _stub_extract_structured_plan(query: str, candidate_ids: List[str], siis_res
             "Tap Fingerprints and check registered prints"
         ]
         goal_title = "Biometrics security"
+    elif domain == "camera":
+        action_name = "Reset Camera Settings"
+        desc = "It will restore camera app default configuration"
+        deeplink = "bixby://settings/camera/reset"
+        steps = [
+            "Open Settings on your Galaxy device",
+            "Tap Apps",
+            "Tap Camera",
+            "Tap Camera settings",
+            "Tap Reset settings"
+        ]
+        goal_title = "Camera settings"
     elif domain == "connectivity":
         action_name = "Reset Network Settings"
         desc = "It will restore default wireless connections"
@@ -257,6 +269,8 @@ def run_troubleshoot_pipeline(query: str, siis_response: Optional[str] = None) -
         if sg.actionableDeeplink and leaf_id and leaf_id in settings_graph.catalog_map:
             resolved_item = settings_graph.catalog_map[leaf_id]
             sg.actionableDeeplink.deeplink = resolved_item.get("deeplink", sg.actionableDeeplink.deeplink)
+            if "classes" in resolved_item:
+                sg.actionableDeeplink.classes = resolved_item["classes"]
 
     # Stage 7: Auto-Repair Validation & Compositional Scoring
     topic = slots.get("domain", "Device")

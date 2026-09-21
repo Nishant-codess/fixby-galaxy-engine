@@ -110,8 +110,8 @@ SYMPTOM_TAXONOMY: Dict[str, Dict[str, Set[str]]] = {
     },
     "camera": {
         "crash_or_slow": {
-            "camera crash", "camera lag", "camera slow", "camera band", "photos blurry",
-            "camera freeze", "camera open nahi", "camera error",
+            "camera", "cam", "camera crash", "camera lag", "camera slow", "camera band", "photos blurry",
+            "camera freeze", "camera open nahi", "camera error", "camera not working",
             "카메라 튕김", "카메라 멈춤", "사진 흐림", "카메라 오류",
             "camera app crashed", "can't open camera", "camera stopped working",
         },
@@ -265,6 +265,9 @@ def classify_complaint_taxonomy(query: str) -> List[str]:
     Returns list of matched strings in format 'domain.symptom', or ['general.unknown'].
     """
     q = query.lower()
+    q = re.sub(r"\bnotworking\b", "not working", q)
+    q = re.sub(r"\bnotcharging\b", "not charging", q)
+    q = re.sub(r"\boverheating\b", "over heating", q)
     matches = []
     for domain, symptoms in SYMPTOM_TAXONOMY.items():
         for symptom, keywords in symptoms.items():

@@ -303,9 +303,19 @@ function InputScreen({ theme, onDiagnose, initialQuery, recentItems }: {
     setSuggestions(val.length > 1 ? PRESETS.filter(p => p.label.includes(val.toLowerCase())) : []);
   };
   const submit = (q: string = query) => {
-    const matched = PRESETS.find(p => q.toLowerCase().includes(p.label.split(" ")[0]));
+    const qLower = q.toLowerCase();
+    let matched = PRESETS.find(p => qLower.includes(p.label.split(" ")[0]));
+    let fallback = PRESETS[0].path;
+    if (qLower.includes("cam") || qLower.includes("photo") || qLower.includes("picture")) {
+      fallback = [
+        { label: "Settings", icon: <ISettings />, depth: 0 },
+        { label: "Apps", icon: <IApps />, depth: 1 },
+        { label: "Camera", icon: <ISettings />, depth: 2 },
+        { label: "Camera settings", icon: <ISettings />, depth: 3 }
+      ];
+    }
     setShowKb(false); setFocused(false);
-    onDiagnose(q, matched?.path || PRESETS[0].path);
+    onDiagnose(q, matched?.path || fallback);
   };
 
   return (

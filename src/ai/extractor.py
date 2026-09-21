@@ -248,45 +248,24 @@ class PlanExtractor:
             ),
         }
 
+        if domain == "general":
+            q_lower = query.lower()
+            if any(w in q_lower for w in ["cam", "photo", "picture"]):
+                domain = "camera"
+            elif any(w in q_lower for w in ["wifi", "internet", "net", "bluetooth", "data"]):
+                domain = "connectivity"
+            elif any(w in q_lower for w in ["screen", "display", "touch", "bright"]):
+                domain = "display"
+            elif any(w in q_lower for w in ["sound", "speaker", "audio", "volume", "vibrate"]):
+                domain = "sound"
+            elif any(w in q_lower for w in ["storage", "space", "trash"]):
+                domain = "storage"
+            elif any(w in q_lower for w in ["lock", "pin", "fingerprint", "security"]):
+                domain = "security"
+
+        topic = domain.replace("_", " ").capitalize()
         fb = DOMAIN_FALLBACKS.get(domain, DOMAIN_FALLBACKS["battery"])
         action_name, description, deeplink_url, path, steps = fb
-
-        if domain == "sound":
-            action_name = "Dolby Atmos Audio"
-            desc = "It will optimize speaker audio quality"
-            deeplink = "bixby://settings/sound/dolby_atmos"
-            path = "Settings>Sounds and vibration>Sound quality and effects"
-            steps = ["Open Settings on your Galaxy device", "Tap Sounds and vibration", "Tap Sound quality and effects", "Turn on Dolby Atmos for rich audio"]
-        elif domain == "storage":
-            action_name = "Storage Space Cleanup"
-            desc = "It will clean unnecessary device storage"
-            deeplink = "bixby://settings/device_care/storage"
-            path = "Settings>Device Care>Storage"
-            steps = ["Open Settings on your Galaxy device", "Tap Device Care", "Tap Storage", "Empty Trash and delete temporary files"]
-        elif domain == "security":
-            action_name = "Biometric Fingerprint Calibration"
-            desc = "It will calibrate your biometric fingerprint"
-            deeplink = "bixby://settings/security/biometrics/fingerprints"
-            path = "Settings>Security and privacy>Biometrics>Fingerprints"
-            steps = ["Open Settings on your Galaxy device", "Tap Security and privacy", "Tap Biometrics", "Check registered fingerprints"]
-        elif domain == "display":
-            action_name = "Motion Smoothness"
-            desc = "It will optimize screen refresh rate"
-            deeplink = "bixby://settings/display/motion_smoothness"
-            path = "Settings>Display>Motion smoothness"
-            steps = ["Open Settings on your Galaxy device", "Tap Display", "Select Motion smoothness", "Choose Adaptive 120Hz"]
-        elif domain == "connectivity":
-            action_name = "Reset Network Settings"
-            desc = "It will restore default wireless connections"
-            deeplink = "bixby://settings/general/reset/network"
-            path = "Settings>General management>Reset>Reset network settings"
-            steps = ["Open Settings on your Galaxy device", "Tap General management", "Tap Reset", "Tap Reset network settings"]
-        else:
-            action_name = "Background Usage Limits" if domain == "battery" else "Device Care"
-            desc = "It will limit unused background apps" if domain == "battery" else "It will optimize device system performance"
-            deeplink = "bixby://settings/device_care/battery/background_limits" if domain == "battery" else "bixby://settings/device_care"
-            path = "Settings>Battery>Background usage limits" if domain == "battery" else "Settings>Device Care"
-            steps = ["Open Settings on your Galaxy device", "Tap Battery", "Tap Background usage limits", "Turn on Put unused apps to sleep"] if domain == "battery" else ["Open Settings on your Galaxy device", "Tap Device Care", "Tap Optimize now"]
 
         return [
             Goal(
