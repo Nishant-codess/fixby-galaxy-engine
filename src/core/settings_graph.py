@@ -6,7 +6,7 @@ Resolves parent screens to leaf-node screens to avoid broad-menu penalties.
 """
 import json
 import os
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional, Any, Tuple
 import networkx as nx
 
 DUMMY_POSITIVE = "bixby://dummy_positive"
@@ -24,6 +24,19 @@ DOMAIN_KEYWORDS_MAP: Dict[str, List[str]] = {
     "notifications": ["notifications", "do not disturb", "dnd", "edge lighting", "brief pop-up", "badges", "lock screen notifications"],
     "general": ["general management", "reset", "general"],
     "accessibility": ["font size", "accessibility"],
+}
+
+DOMAIN_PATH_ROOTS: Dict[str, Tuple[str, ...]] = {
+    "connectivity": ("Settings>Connections",),
+    "display": ("Settings>Display",),
+    "camera": ("Settings>Apps>Camera",),
+    "sound": ("Settings>Sounds and vibration",),
+    "security": ("Settings>Security and privacy",),
+    "notifications": ("Settings>Notifications",),
+    "storage": ("Settings>Device care>Storage",),
+    "performance": ("Settings>Device care",),
+    "battery": ("Settings>Battery", "Settings>Device care"),
+    "general": ("Settings>General management",),
 }
 
 
@@ -87,23 +100,45 @@ class SettingsHierarchyGraph:
         if not valid_nodes:
             return candidate_ids[0]
 
-        # 1. Filter by domain keywords if domain is known
+        # 1. Filter by domain path root or keywords if domain is known
         if domain and domain.lower() != "general":
             d_lower = domain.lower()
-            keywords = DOMAIN_KEYWORDS_MAP.get(d_lower, [d_lower])
-            domain_nodes = []
-            for cid in valid_nodes:
-                item = self.catalog_map.get(cid, {})
-                desc = item.get("description", "").lower()
-                classes_str = str(item.get("classes", "")).lower()
-                deeplink = item.get("deeplink", "").lower()
-                cid_str = cid.lower()
-                blob = f"{desc} {classes_str} {deeplink} {cid_str}"
-                if any(kw in blob for kw in keywords):
-                    domain_nodes.append(cid)
-
-            if domain_nodes:
-                valid_nodes = domain_nodes
+            path_roots = DOMAIN_PATH_ROOTS.get(d_lower)
+            if path_roots:
+                root_nodes = [
+                    cid for cid in valid_nodes
+                    if self._get_item_path(self.catalog_map.get(cid, {})).startswith(path_roots)
+                ]
+                if root_nodes:
+                    valid_nodes = root_nodes
+                else:
+                    keywords = DOMAIN_KEYWORDS_MAP.get(d_lower, [d_lower])
+                    domain_nodes = []
+                    for cid in valid_nodes:
+                        item = self.catalog_map.get(cid, {})
+                        desc = item.get("description", "").lower()
+                        classes_str = str(item.get("classes", "")).lower()
+                        deeplink = item.get("deeplink", "").lower()
+                        cid_str = cid.lower()
+                        blob = f"{desc} {classes_str} {deeplink} {cid_str}"
+                        if any(kw in blob for kw in keywords):
+                            domain_nodes.append(cid)
+                    if domain_nodes:
+                        valid_nodes = domain_nodes
+            else:
+                keywords = DOMAIN_KEYWORDS_MAP.get(d_lower, [d_lower])
+                domain_nodes = []
+                for cid in valid_nodes:
+                    item = self.catalog_map.get(cid, {})
+                    desc = item.get("description", "").lower()
+                    classes_str = str(item.get("classes", "")).lower()
+                    deeplink = item.get("deeplink", "").lower()
+                    cid_str = cid.lower()
+                    blob = f"{desc} {classes_str} {deeplink} {cid_str}"
+                    if any(kw in blob for kw in keywords):
+                        domain_nodes.append(cid)
+                if domain_nodes:
+                    valid_nodes = domain_nodes
 
         # 2. Start from the top-ranked candidate for this query
         top_node = valid_nodes[0]

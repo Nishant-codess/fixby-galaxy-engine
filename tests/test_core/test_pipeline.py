@@ -158,7 +158,7 @@ def test_confidence_scorer():
 # 5. Cascading Cache Tests
 # ============================================================================
 def test_cache_tier1_exact_and_tier2_slot():
-    test_cache = CascadingSemanticCache()
+    test_cache = CascadingSemanticCache(similarity_threshold=0.52)
     sample_data = {"test": "data"}
 
     test_cache.put("battery drain", sample_data, slots={"domain": "battery", "symptom": "drain"})
