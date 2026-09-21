@@ -57,6 +57,13 @@ SYMPTOM_TAXONOMY: Dict[str, Dict[str, Set[str]]] = {
             "화면 꺼짐", "화면 유지", "자동 꺼짐",
             "screen goes off", "dim screen", "always awake",
         },
+        "accidental_touch": {
+            "pocket", "dialing itself", "dialing numbers", "accidental", "in my pocket",
+            "phone calling by itself", "screen touches itself", "pocket dial",
+            "random touches", "calling by itself", "types by itself",
+            "주머니", "실수 터치", "주머니 터치", "잠금 해제 안됨",
+            "touches when in bag", "accidental screen touch", "butt dial",
+        },
         "brightness": {
             "brightness", "too dim", "too bright", "screen dark", "auto brightness",
             "밝기", "어두워", "화면 밝기", "adaptive brightness",
