@@ -31,6 +31,16 @@ SYMPTOM_TAXONOMY: Dict[str, Dict[str, Set[str]]] = {
             "turns off", "shut down", "band ho gaya", "restarts randomly",
             "switch off", "sudden restart", "keeps restarting",
             "꺼짐", "갑자기 꺼져", "재부팅", "random reboot", "boots itself",
+        },
+        "battery_protect": {
+            "protect battery", "limit charge", "maximum charge", "battery health",
+            "stop charging", "85%", "plugged in all night", "overcharge",
+            "배터리 보호", "충전 제한",
+        },
+        "wireless_power_sharing": {
+            "wireless power", "power share", "charge watch", "charge another phone",
+            "reverse charging", "charge buds",
+            "무선 배터리 공유",
         }
     },
     "display": {
