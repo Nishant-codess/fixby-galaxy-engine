@@ -1,0 +1,195 @@
+/* src/frontend/css/animations.css - High Performance Animation & 3D System */
+
+/* Keyframes Library */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px) rotateX(8deg);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) rotateX(0deg);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleUp3D {
+  from {
+    opacity: 0;
+    transform: perspective(1000px) translateZ(-80px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: perspective(1000px) translateZ(0) scale(1);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-40px) rotateY(-10deg);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) rotateY(0deg);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(40px) rotateY(10deg);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) rotateY(0deg);
+  }
+}
+
+@keyframes floatHero {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg) translateZ(0);
+  }
+  50% {
+    transform: translateY(-18px) rotate(1.5deg) translateZ(20px);
+  }
+}
+
+@keyframes auraDrift {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(50px, -40px) scale(1.15);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.12);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes reflectionSweep {
+  0% {
+    transform: translateX(-100%) rotate(25deg);
+  }
+  100% {
+    transform: translateX(200%) rotate(25deg);
+  }
+}
+
+/* 3D Scroll Reveal Classes */
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(40px) perspective(1000px) rotateX(10deg);
+  transition: opacity 0.7s var(--ease-smooth),
+              transform 0.7s var(--ease-smooth);
+  will-change: opacity, transform;
+}
+
+.scroll-reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0) perspective(1000px) rotateX(0deg);
+}
+
+.scroll-reveal-left {
+  opacity: 0;
+  transform: translateX(-50px) perspective(1000px) rotateY(-12deg);
+  transition: opacity 0.7s var(--ease-smooth),
+              transform 0.7s var(--ease-smooth);
+}
+
+.scroll-reveal-left.is-visible {
+  opacity: 1;
+  transform: translateX(0) perspective(1000px) rotateY(0deg);
+}
+
+.scroll-reveal-right {
+  opacity: 0;
+  transform: translateX(50px) perspective(1000px) rotateY(12deg);
+  transition: opacity 0.7s var(--ease-smooth),
+              transform 0.7s var(--ease-smooth);
+}
+
+.scroll-reveal-right.is-visible {
+  opacity: 1;
+  transform: translateX(0) perspective(1000px) rotateY(0deg);
+}
+
+/* 3D Card Tilt Container */
+.card-3d-tilt {
+  transform-style: preserve-3d;
+  perspective: 1200px;
+  transition: transform 0.4s var(--ease-smooth), box-shadow 0.4s var(--ease-smooth);
+}
+
+.card-3d-tilt:hover {
+  transform: translateY(-8px) rotateX(4deg) rotateY(-4deg) scale(1.02);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 40px rgba(37, 99, 235, 0.25);
+}
+
+/* Stagger Delay Helpers */
+.delay-1 { transition-delay: 100ms; }
+.delay-2 { transition-delay: 200ms; }
+.delay-3 { transition-delay: 300ms; }
+.delay-4 { transition-delay: 400ms; }
+.delay-5 { transition-delay: 500ms; }
+
+/* Native Scroll-Driven CSS Timeline */
+@supports (animation-timeline: view()) {
+  .native-scroll-reveal {
+    animation: fadeUp linear both;
+    animation-timeline: view();
+    animation-range: entry 10% entry 40%;
+  }
+}
+
+/* Prefers Reduced Motion Safety */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .scroll-reveal, .scroll-reveal-left, .scroll-reveal-right {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% center; }
+  100% { background-position: -200% center; }
+}
+
+@keyframes mesh-drift {
+  0% { background-position: 0% 0%; }
+  50% { background-position: 100% 100%; }
+  100% { background-position: 0% 0%; }
+}
+
+.mesh-bg {
+  background-size: 200% 200% !important;
+  animation: mesh-drift 15s ease-in-out infinite alternate !important;
+}

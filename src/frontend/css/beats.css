@@ -1,0 +1,118 @@
+/* css/beats.css */
+/* Specific styling for individual beats */
+
+/* Beat 0: Preloader */
+#preloader {
+  position: fixed;
+  inset: 0;
+  background: var(--void);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.progress-bar {
+  width: 200px;
+  height: 2px;
+  background: var(--surface);
+  border-radius: 1px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--trace);
+  width: 0%;
+  transition: width 0.1s linear;
+}
+
+/* Beat 1: Hero */
+#beat-1 .hero-content {
+  max-width: 800px;
+}
+
+/* Point-cloud text placeholder (before JS takes over) */
+
+
+/* Beat 2: The Failure Mode */
+.fake-url {
+  text-decoration: line-through;
+  color: var(--text-ghost);
+}
+
+/* Console (Beat 10) placeholders */
+#console-wrapper {
+  width: 100%;
+  height: 100vh;
+  display: grid;
+  grid-template-columns: 58% 1fr;
+  gap: var(--s-6);
+  padding: var(--s-16) var(--s-6) var(--s-6) var(--s-6);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur-mid) var(--ease-descend);
+}
+
+#console-wrapper.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Specific Beat Layouts */
+.preloader-label { color: var(--trace); }
+.hero-desc { max-width: 600px; margin-top: var(--s-6); }
+.hero-actions { margin-top: var(--s-8); }
+.glass-panel-lg { max-width: 600px; padding: var(--s-8); }
+.glass-panel-lg.right { margin-left: auto; }
+.glass-panel-lg.center { text-align: center; }
+.glass-panel-lg.center p { margin: var(--s-4) auto 0; max-width: 600px; }
+.beat-metrics { margin-top: var(--s-8); }
+.fake-url-box { margin-top: var(--s-6); padding: var(--s-4); }
+
+/* Custom HUD styling */
+.hud-progress-bar { display: flex; height: 6px; border-radius: 3px; overflow: hidden; background: rgba(255,255,255,0.1); }
+.hud-progress-safe { flex: 0.4; background: var(--safe); }
+.hud-progress-trace { flex: 0.3; background: var(--trace); }
+.hud-progress-filament { flex: 0.26; background: var(--filament); }
+.hud-json-box { margin-top: var(--s-6); }
+.hud-json-title { margin-bottom: var(--s-2); }
+.hud-json-pre { color: var(--text-mid); }
+.qr-modal-content { padding: var(--s-8); position: relative; }
+.qr-modal-close-btn { position: absolute; top: 16px; right: 16px; }
+.qr-modal-title { margin-bottom: var(--s-4); }
+.qr-canvas-box { margin-bottom: var(--s-4); }
+.qr-url { color: var(--trace); }
+
+/* --- Navbar (Premium Glassmorphism) --- */
+.main-nav {
+  position: fixed;
+  top: var(--s-4);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: calc(100% - var(--s-8));
+  max-width: 1200px;
+  padding: var(--s-3) var(--s-6);
+  border-radius: var(--r-pill, 9999px);
+}
+
+.nav-brand {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-weight: 700;
+  font-size: var(--text-lg, 1.125rem);
+  color: var(--text-hi);
+  letter-spacing: -0.02em;
+}
+
+.nav-link {
+  color: var(--text-mid);
+  text-decoration: none;
+  font-size: var(--t-small, 0.875rem);
+  transition: color var(--dur-fast) ease;
+}
+
+.nav-link:hover {
+  color: var(--filament);
+}

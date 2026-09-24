@@ -1,0 +1,79 @@
+{
+  "query": "battery draining fast",
+  "meta": {
+    "latency_ms": 184.2,
+    "complaint_category": "battery.rapid_drain",
+    "language_detected": "en",
+    "cache_hit": true,
+    "cache_tier": "tier2_slot_hash",
+    "pipeline_source": "mock_engine",
+    "confidence": 0.96,
+    "model": "groq/mixtral-8x7b-instruct"
+  },
+  "actions": [
+    {
+      "action_id": "act_01_bkg_limit",
+      "action_name": "Limit Background Usage",
+      "category": "AUTO",
+      "priority": 1,
+      "description": "Put unused battery-draining apps to sleep automatically when not in active use.",
+      "deeplink_target": "com.android.settings/com.samsung.android.settings.battery.BackgroundUsageActivity",
+      "steps": [
+        "Open Settings app on your Galaxy device",
+        "Tap on Battery and device care",
+        "Select Battery",
+        "Tap Background usage limits",
+        "Enable Put unused apps to sleep toggle"
+      ],
+      "risk_level": "low"
+    },
+    {
+      "action_id": "act_02_adaptive_battery",
+      "action_name": "Enable Adaptive Battery & Refresh Rate",
+      "category": "AUTO",
+      "priority": 2,
+      "description": "Dynamically adjust screen refresh rate and background CPU usage based on habit patterns.",
+      "deeplink_target": "com.android.settings/com.samsung.android.settings.display.RefreshRateActivity",
+      "steps": [
+        "Open Settings",
+        "Tap Display > Motion smoothness",
+        "Select Adaptive (120Hz dynamic scaling)",
+        "Go back to Battery settings",
+        "Enable Adaptive Battery"
+      ],
+      "risk_level": "low"
+    },
+    {
+      "action_id": "act_03_deep_sleep",
+      "action_name": "Put Specific Power-Hungry Apps into Deep Sleep",
+      "category": "CAUTION",
+      "priority": 3,
+      "description": "Prevent designated social/background apps from waking up CPU or sending non-critical background pings.",
+      "deeplink_target": "com.android.settings/com.samsung.android.settings.battery.DeepSleepingAppsActivity",
+      "steps": [
+        "Open Settings > Battery > Background usage limits",
+        "Tap Deep sleeping apps",
+        "Tap the + icon top right",
+        "Select apps consuming excessive background power",
+        "Confirm Add to Deep Sleep"
+      ],
+      "risk_level": "medium"
+    }
+  ],
+  "dag": {
+    "nodes": [
+      { "id": "start", "label": "Issue Detected: Rapid Battery Drain", "type": "entry" },
+      { "id": "node_auto", "label": "Apply Background Limits (AUTO)", "type": "action" },
+      { "id": "node_check", "label": "Battery drain normalized?", "type": "condition" },
+      { "id": "node_deep", "label": "Add Apps to Deep Sleep (CAUTION)", "type": "action" },
+      { "id": "node_done", "label": "Resolved — Optimal Battery Life", "type": "terminal" }
+    ],
+    "edges": [
+      { "from": "start", "to": "node_auto", "label": "Execute Step 1" },
+      { "from": "node_auto", "to": "node_check", "label": "Monitor 24h" },
+      { "from": "node_check", "to": "node_done", "label": "Yes" },
+      { "from": "node_check", "to": "node_deep", "label": "No (If issue persists)" },
+      { "from": "node_deep", "to": "node_done", "label": "Complete" }
+    ]
+  }
+}

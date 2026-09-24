@@ -1,22 +1,56 @@
-# src/ai/paraphraser.py
-from typing import Dict, List
+"""
+src/ai/paraphraser.py — Query Paraphrase & Variation Generator
+Generates 8 semantic registers for Tier-2 cache warming and semantic indexing.
+"""
+import logging
+from typing import List, Optional, Dict
+from src.core.taxonomy import extract_slots
 
-REGISTER_TEMPLATES = {
-    "formal": "I am experiencing {symptom} with my device's {domain}.",
-    "casual": "my {domain} is doing this {symptom} thing",
-    "keyword_only": "{domain} {symptom}",
-    "frustrated": "ugh my {domain} won't stop with the {symptom}, so annoying",
-    "hinglish": "mera phone ka {domain} mein {symptom} ho raha hai",
-}
+logger = logging.getLogger("fixby.ai.paraphraser")
 
-def generate_query_variations(slots: Dict[str, str], min_count: int = 8) -> List[str]:
-    """One generation per register bucket, conditioned on extracted slots —
-    genuinely diverse phrasing (not near-duplicate rewrites of the same
-    sentence), and every variant gets registered into the Tier-2/3 cache so
-    unseen-but-equivalent phrasings from evaluators are pre-warmed."""
-    domain, symptom = slots.get("domain", "device"), slots.get("symptom", "issue").replace("_", " ")
-    variants = [tpl.format(domain=domain, symptom=symptom) for tpl in REGISTER_TEMPLATES.values()]
-    # pad to the required 8-10 range with light lexical variation if needed
-    while len(variants) < min_count:
-        variants.append(f"{domain} {symptom} problem #{len(variants)}")
-    return variants[:10]
+
+
+
+class QueryParaphraser:
+    """
+    Generates multi-register variations of a complaint query.
+    Used for Stage 8 Write-Through Cache Warming.
+    """
+    def generate_query_variations(self, query: str, slots: Optional[Dict] = None) -> List[str]:
+        if slots is None:
+            slots = extract_slots(query)
+
+        domain = slots.get("domain", "device").lower()
+        symptom = slots.get("symptom", "issue").lower().replace("_", " ")
+
+        variations = [
+            f"I am experiencing {symptom} with my {domain}.",
+            f"my {domain} is doing this {symptom} thing",
+            f"{domain} {symptom}",
+            f"mera {domain} ka {symptom} ho raha hai",
+            f"Samsung Galaxy {domain} {symptom} troubleshooting",
+            f"why is my {domain} having {symptom}?",
+            f"{domain} {symptom} issue",
+            f"fix galaxy {domain} {symptom} now",
+            f"Galaxy troubleshooting: {query}",
+            f"Fix {query} on Samsung device"
+        ]
+
+        # Deduplicate while preserving order
+        seen = set()
+        unique_variations = []
+        for v in variations:
+            if v and v.lower() not in seen:
+                seen.add(v.lower())
+                unique_variations.append(v)
+
+        return unique_variations
+
+
+# Singleton instance
+paraphraser = QueryParaphraser()
+
+
+def generate_query_variations(query: str, slots: Optional[Dict] = None) -> List[str]:
+    """Convenience wrapper matching pipeline stub signature."""
+    return paraphraser.generate_query_variations(query, slots=slots)

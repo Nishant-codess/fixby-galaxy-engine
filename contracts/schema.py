@@ -90,6 +90,7 @@ class PipelineMeta(BaseModel):
     hallucination_check_passed: bool = True
     screen_resolution: Literal["leaf_screen", "parent_menu", "manual_only"] = "leaf_screen"
     pipeline_source: Literal["live", "mock"] = "live"
+    hardware_escalation: Optional[str] = None  # "WARNING", "CRITICAL", or None
 
 
 class ClarificationOption(BaseModel):
@@ -107,6 +108,25 @@ class TroubleshootResponse(BaseModel):
     clarification_needed: bool = False
     clarification_options: List[ClarificationOption] = Field(default_factory=list)
     resolution_count: int = 0
+
+
+class FollowupRequest(BaseModel):
+    query: str = Field(..., min_length=2)
+    session_id: Optional[str] = None
+    turn: int = Field(default=2, ge=2)
+    attempted_action_ids: List[str] = Field(default_factory=list)
+    device_model: Optional[str] = "Galaxy S24"
+
+
+class FollowupResponse(BaseModel):
+    query: str
+    turn: int
+    escalation_level: Literal["AUTO", "CAUTION", "CRITICAL"]
+    previous_attempted_actions: List[str]
+    response: ContextDeeplinkResponse
+    meta: PipelineMeta
+    diagnostic_graph: Optional[Dict] = None
+    is_terminal: bool = False
 
 
 class FeedbackRequest(BaseModel):
