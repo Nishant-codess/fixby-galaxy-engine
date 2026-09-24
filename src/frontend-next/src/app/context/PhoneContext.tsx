@@ -173,6 +173,7 @@ interface PhoneContextType {
   
   // Settings navigation
   settingsPath: string[];
+  setSettingsPath: (path: string[]) => void;
   navigateToSetting: (itemId: string) => void;
   goBackSettings: () => void;
   getCurrentSettingsItems: () => SettingsItem[];
@@ -327,7 +328,7 @@ export function PhoneProvider({ children }: { children: React.ReactNode }) {
   return (
     <PhoneContext.Provider value={{
       currentScreen, setScreen,
-      settingsPath, navigateToSetting, goBackSettings,
+      settingsPath, setSettingsPath, navigateToSetting, goBackSettings,
       getCurrentSettingsItems, getCurrentTitle,
       toggleStates, toggleSetting,
       highlightedSetting, setHighlightedSetting,

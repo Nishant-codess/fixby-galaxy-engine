@@ -89,13 +89,13 @@ function ResolutionCard({ goal, onExecute }: { goal: TroubleshootGoal, onExecute
           </ul>
           
           <div className="resolution-actions">
-            <button className="resolution-action-btn demo" onClick={(e) => { e.stopPropagation(); handleExecute('demo'); }}>
+            <button className="resolution-action-btn demo" onClick={(e) => executeMode(e, 'demo')}>
               {t('fixby.watchDemo') !== 'fixby.watchDemo' ? t('fixby.watchDemo') : '▶ Watch Demo'}
             </button>
-            <button className="resolution-action-btn primary" onClick={(e) => { e.stopPropagation(); handleExecute('auto'); }} style={{marginLeft: '8px'}}>
+            <button className="resolution-action-btn primary" onClick={(e) => executeMode(e, 'auto')} style={{marginLeft: '8px'}}>
               {t('fixby.performAuto') !== 'fixby.performAuto' ? t('fixby.performAuto') : '⚡ Auto Fix'}
             </button>
-            <button className="resolution-action-btn secondary" onClick={(e) => { e.stopPropagation(); handleExecute('manual'); }} style={{marginLeft: '8px'}}>
+            <button className="resolution-action-btn secondary" onClick={(e) => executeMode(e, 'manual')} style={{marginLeft: '8px'}}>
               {t('fixby.performManual') !== 'fixby.performManual' ? t('fixby.performManual') : '🔧 Manual Fix'}
             </button>
           </div>
