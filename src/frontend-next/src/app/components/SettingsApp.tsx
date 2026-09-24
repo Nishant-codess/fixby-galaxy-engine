@@ -1,5 +1,5 @@
 'use client';
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { usePhone, SettingsItem } from '../context/PhoneContext';
 
 import { useTranslation } from '../context/TranslationContext';
@@ -18,6 +18,7 @@ export default function SettingsApp() {
   } = usePhone();
   
   const { t, locale, setLocale } = useTranslation();
+  const [searchQuery, setSearchQuery] = useState('');
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const items = getCurrentSettingsItems();
@@ -38,7 +39,28 @@ export default function SettingsApp() {
     }
   }, [highlightedSetting, currentScreen, settingsPath]);
 
+  // Reset search when navigating settings
+  useEffect(() => {
+    setSearchQuery('');
+  }, [settingsPath]);
+
   if (currentScreen !== 'settings') return null;
+
+  const filteredItems = items.filter(item => {
+    if (!searchQuery) return true;
+    
+    const itemKey = getSettingKey(item.id);
+    const titleKey = `settings.${itemKey}`;
+    const subtitleKey = `settings.${itemKey}Desc`;
+    const translatedTitle = t(titleKey) !== titleKey ? t(titleKey) : item.title;
+    const translatedSubtitle = t(subtitleKey) !== subtitleKey ? t(subtitleKey) : item.subtitle;
+    
+    const q = searchQuery.toLowerCase();
+    return (
+      translatedTitle.toLowerCase().includes(q) || 
+      (translatedSubtitle && translatedSubtitle.toLowerCase().includes(q))
+    );
+  });
 
   return (
     <div className="settings-app">
@@ -47,7 +69,13 @@ export default function SettingsApp() {
           <h1 className="settings-title">{t('app.settings') !== 'app.settings' ? t('app.settings') : 'Settings'}</h1>
           <div className="settings-search-container">
             <span className="settings-search-icon">🔍</span>
-            <input type="text" className="settings-search" placeholder={t('settings.searchPlaceholder') !== 'settings.searchPlaceholder' ? t('settings.searchPlaceholder') : 'Search settings'} />
+            <input 
+              type="text" 
+              className="settings-search" 
+              placeholder={t('settings.searchPlaceholder') !== 'settings.searchPlaceholder' ? t('settings.searchPlaceholder') : 'Search settings'} 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
         </div>
       ) : (
@@ -61,7 +89,7 @@ export default function SettingsApp() {
 
       <div className="settings-scroll" ref={scrollRef}>
         <div className="settings-group">
-          {items.map(item => {
+          {filteredItems.map(item => {
             const itemKey = getSettingKey(item.id);
             const titleKey = `settings.${itemKey}`;
             const subtitleKey = `settings.${itemKey}Desc`;
@@ -109,6 +137,11 @@ export default function SettingsApp() {
             </div>
             );
           })}
+          {filteredItems.length === 0 && (
+            <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-tertiary)' }}>
+              No results found
+            </div>
+          )}
         </div>
       </div>
     </div>

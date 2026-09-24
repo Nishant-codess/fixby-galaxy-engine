@@ -197,6 +197,10 @@ interface PhoneContextType {
   // App drawer
   isDrawerOpen: boolean;
   setDrawerOpen: (open: boolean) => void;
+  
+  // Manual Guidance
+  manualGuidancePath: string[];
+  setManualGuidancePath: (path: string[]) => void;
 }
 
 const PhoneContext = createContext<PhoneContextType | null>(null);
@@ -242,6 +246,7 @@ function findSettingTitle(items: SettingsCategory[], path: string[]): string {
 export function PhoneProvider({ children }: { children: React.ReactNode }) {
   const [currentScreen, setCurrentScreen] = useState<PhoneScreen>('lock');
   const [settingsPath, setSettingsPath] = useState<string[]>([]);
+  const [manualGuidancePath, setManualGuidancePath] = useState<string[]>([]);
   const [toggleStates, setToggleStates] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {};
     const collect = (items: SettingsItem[]) => {
@@ -329,6 +334,7 @@ export function PhoneProvider({ children }: { children: React.ReactNode }) {
       isAutoNavigating, autoNavigateTo,
       isFixbyOpen, setFixbyOpen,
       isDrawerOpen, setDrawerOpen,
+      manualGuidancePath, setManualGuidancePath
     }}>
       {children}
     </PhoneContext.Provider>

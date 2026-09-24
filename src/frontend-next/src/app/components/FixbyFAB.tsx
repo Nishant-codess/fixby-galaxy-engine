@@ -5,8 +5,8 @@ import { usePhone } from '../context/PhoneContext';
 export default function FixbyFAB() {
   const { setFixbyOpen, currentScreen } = usePhone();
 
-  // Hide on lock screen
-  if (currentScreen === 'lock') return null;
+  // Only show on Settings screen
+  if (currentScreen !== 'settings') return null;
 
   return (
     <button 

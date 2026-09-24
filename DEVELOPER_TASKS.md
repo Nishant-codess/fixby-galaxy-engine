@@ -33,9 +33,9 @@
 - Settings categories, icons, toggles, and sub-screens should match Samsung One UI styling (rounded cards, Samsung color palette, proper typography).
 
 **Acceptance Criteria:**
-- [ ] Search bar only filters/searches through settings menu items.
-- [ ] No Fixby branding, AI responses, or NLP processing in the search bar.
-- [ ] Settings layout matches Samsung One UI design (icons, grouping, toggles, sub-menus).
+- [x] Search bar only filters/searches through settings menu items.
+- [x] No Fixby branding, AI responses, or NLP processing in the search bar.
+- [x] Settings layout matches Samsung One UI design (icons, grouping, toggles, sub-menus).
 
 ---
 
@@ -55,9 +55,9 @@
 - Animation: Gentle floating/pulse animation on idle.
 
 **Acceptance Criteria:**
-- [ ] FAB is always visible on the Settings screen (does not scroll away).
-- [ ] FAB has a polished design with animation.
-- [ ] Tapping opens the Fixby overlay.
+- [x] FAB is always visible on the Settings screen (does not scroll away).
+- [x] FAB has a polished design with animation.
+- [x] Tapping opens the Fixby overlay.
 
 ---
 
@@ -79,11 +79,11 @@
   - A "Navigate Now" button that triggers the animated walkthrough.
 
 **Acceptance Criteria:**
-- [ ] Overlay appears on FAB click with a text input field.
-- [ ] Query is sent to the backend and response is displayed.
-- [ ] Navigation path is shown as a breadcrumb trail.
-- [ ] Clicking "Navigate" programmatically walks through the settings screens with visible transitions.
-- [ ] Final destination setting is highlighted/focused.
+- [x] Overlay appears on FAB click with a text input field.
+- [x] Query is sent to the backend and response is displayed.
+- [x] Navigation path is shown as a breadcrumb trail.
+- [x] Clicking "Navigate" programmatically walks through the settings screens with visible transitions.
+- [x] Final destination setting is highlighted/focused.
 
 ---
 
@@ -114,11 +114,11 @@
 - **Lock Screen (Optional but Recommended):** A simple lock screen with clock, date, and swipe-to-unlock.
 
 **Acceptance Criteria:**
-- [ ] Home Screen renders with Samsung One UI layout.
-- [ ] App Drawer opens and displays app icons in a grid.
-- [ ] Tapping Settings opens the standalone Settings app.
-- [ ] Navigation bar (Back/Home/Recent) is functional.
-- [ ] Status bar displays time, battery, and signal indicators.
+- [x] Home Screen renders with Samsung One UI layout.
+- [x] App Drawer opens and displays app icons in a grid.
+- [x] Tapping Settings opens the standalone Settings app.
+- [x] Navigation bar (Back/Home/Recent) is functional.
+- [x] Status bar displays time, battery, and signal indicators.
 
 ---
 
@@ -143,9 +143,9 @@
 - Add a domain-confidence threshold: if confidence is below threshold, show "I'm not sure, but here are some possibilities" with multiple options.
 
 **Acceptance Criteria:**
-- [ ] All 15 benchmark queries in `tests/test_domain_rigidity.py` pass with 0% cross-domain leakage.
-- [ ] New queries across all domains return contextually correct results.
-- [ ] Low-confidence queries show multiple possible solutions instead of a wrong one.
+- [x] All 15 benchmark queries in `tests/test_domain_rigidity.py` pass with 0% cross-domain leakage.
+- [x] New queries across all domains return contextually correct results.
+- [x] Low-confidence queries show multiple possible solutions instead of a wrong one.
 
 ---
 
@@ -162,9 +162,9 @@
 - For extremely vague queries, ask a clarifying follow-up question instead of guessing wrong.
 
 **Acceptance Criteria:**
-- [ ] Typo-heavy queries (up to 2 character errors per word) still resolve correctly.
-- [ ] Vague single-word queries trigger clarification prompts or show top-3 possibilities.
-- [ ] Hinglish/mixed queries are understood and routed correctly.
+- [x] Typo-heavy queries (up to 2 character errors per word) still resolve correctly.
+- [x] Vague single-word queries trigger clarification prompts or show top-3 possibilities.
+- [x] Hinglish/mixed queries are understood and routed correctly.
 
 ---
 
@@ -202,11 +202,11 @@
   ```
 
 **Acceptance Criteria:**
-- [ ] Language can be changed from Settings → General Management → Language.
-- [ ] All UI text (menus, labels, buttons) updates to the selected language.
-- [ ] Fixby NLP overlay accepts queries and responds in the selected language.
-- [ ] Keyboard visual changes to match the language script.
-- [ ] Translations cover at minimum: all Settings categories, Home Screen labels, App Drawer names, Fixby UI strings.
+- [x] Language can be changed from Settings → General Management → Language.
+- [x] All UI text (menus, labels, buttons) updates to the selected language.
+- [x] Fixby NLP overlay accepts queries and responds in the selected language.
+- [x] Keyboard visual changes to match the language script.
+- [x] Translations cover at minimum: all Settings categories, Home Screen labels, App Drawer names, Fixby UI strings.
 
 ---
 
@@ -245,10 +245,10 @@
   - Action buttons (see 4.2).
 
 **Acceptance Criteria:**
-- [ ] Backend returns 2–4 ranked solutions per query.
-- [ ] Frontend displays solutions as expandable cards with confidence scores.
-- [ ] Primary/recommended fix is visually highlighted (star icon, accent border).
-- [ ] Alternative fixes are collapsed by default but expandable.
+- [x] Backend returns 2–4 ranked solutions per query.
+- [x] Frontend displays solutions as expandable cards with confidence scores.
+- [x] Primary/recommended fix is visually highlighted (star icon, accent border).
+- [x] Alternative fixes are collapsed by default but expandable.
 
 ---
 
@@ -273,10 +273,10 @@
   - Each step shows a checkpoint indicator (✅ when reached).
 
 **Acceptance Criteria:**
-- [ ] "Watch Demo" button triggers an animated walkthrough on the phone simulator.
-- [ ] "Perform Automatically" navigates directly and applies the setting change.
-- [ ] "Perform Manually" shows a guided breadcrumb trail with progress checkpoints.
-- [ ] Transitions between screens are smooth and visually clear (~500ms per step).
+- [x] "Watch Demo" button triggers an animated walkthrough on the phone simulator.
+- [x] "Perform Automatically" navigates directly and applies the setting change.
+- [x] "Perform Manually" shows a guided breadcrumb trail with progress checkpoints.
+- [x] Transitions between screens are smooth and visually clear (~500ms per step).
 
 ---
 

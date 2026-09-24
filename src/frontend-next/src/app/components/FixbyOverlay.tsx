@@ -5,12 +5,12 @@ import { queryFixby, TroubleshootResponse, TroubleshootGoal, getNavigationPath, 
 
 import { useTranslation } from '../context/TranslationContext';
 
-function ResolutionCard({ goal, onExecute }: { goal: TroubleshootGoal, onExecute: (path: string[], toggleId?: string) => void }) {
+function ResolutionCard({ goal, onExecute }: { goal: TroubleshootGoal, onExecute: (path: string[], toggleId?: string, mode?: 'demo' | 'auto' | 'manual') => void }) {
   const [expanded, setExpanded] = useState(false);
   const confidence = getConfidenceLevel(goal.score);
   const { t } = useTranslation();
   
-  const handleExecute = (e: React.MouseEvent) => {
+  const executeMode = (e: React.MouseEvent, mode: 'demo' | 'auto' | 'manual') => {
     e.stopPropagation();
     // Extract deepest path and toggle ID from actions
     const firstAction = goal.actions[0];
@@ -58,9 +58,9 @@ function ResolutionCard({ goal, onExecute }: { goal: TroubleshootGoal, onExecute
     const isToggle = toggleIds.includes(lastId);
     
     if (isToggle) {
-      onExecute(ids.slice(0, -1), lastId);
+      onExecute(ids.slice(0, -1), lastId, mode);
     } else {
-      onExecute(ids);
+      onExecute(ids, undefined, mode);
     }
   };
   
@@ -89,11 +89,14 @@ function ResolutionCard({ goal, onExecute }: { goal: TroubleshootGoal, onExecute
           </ul>
           
           <div className="resolution-actions">
-            <button className="resolution-action-btn demo" onClick={handleExecute}>
-              {t('fixby.executeDemo') !== 'fixby.executeDemo' ? t('fixby.executeDemo') : '▶ Execute Demo'}
+            <button className="resolution-action-btn demo" onClick={(e) => { e.stopPropagation(); handleExecute('demo'); }}>
+              {t('fixby.watchDemo') !== 'fixby.watchDemo' ? t('fixby.watchDemo') : '▶ Watch Demo'}
             </button>
-            <button className="resolution-action-btn secondary">
-              {t('fixby.cancel') !== 'fixby.cancel' ? t('fixby.cancel') : 'Cancel'}
+            <button className="resolution-action-btn primary" onClick={(e) => { e.stopPropagation(); handleExecute('auto'); }} style={{marginLeft: '8px'}}>
+              {t('fixby.performAuto') !== 'fixby.performAuto' ? t('fixby.performAuto') : '⚡ Auto Fix'}
+            </button>
+            <button className="resolution-action-btn secondary" onClick={(e) => { e.stopPropagation(); handleExecute('manual'); }} style={{marginLeft: '8px'}}>
+              {t('fixby.performManual') !== 'fixby.performManual' ? t('fixby.performManual') : '🔧 Manual Fix'}
             </button>
           </div>
         </div>
@@ -103,7 +106,7 @@ function ResolutionCard({ goal, onExecute }: { goal: TroubleshootGoal, onExecute
 }
 
 export default function FixbyOverlay() {
-  const { isFixbyOpen, setFixbyOpen, autoNavigateTo, toggleSetting } = usePhone();
+  const { isFixbyOpen, setFixbyOpen, autoNavigateTo, toggleSetting, setScreen, setSettingsPath, setManualGuidancePath } = usePhone();
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState<TroubleshootResponse | null>(null);
@@ -145,11 +148,24 @@ export default function FixbyOverlay() {
     }, 100);
   };
 
-  const handleExecute = async (path: string[], toggleId?: string) => {
+  const handleExecute = async (path: string[], toggleId?: string, mode: 'demo' | 'auto' | 'manual' = 'demo') => {
     setFixbyOpen(false); // Close overlay to show demo
-    await autoNavigateTo(path);
-    if (toggleId) {
-      setTimeout(() => toggleSetting(toggleId), 800);
+    
+    if (mode === 'demo') {
+      await autoNavigateTo(path);
+      if (toggleId) {
+        setTimeout(() => toggleSetting(toggleId), 800);
+      }
+    } else if (mode === 'auto') {
+      // instant navigation
+      setScreen('settings');
+      setSettingsPath(path);
+      if (toggleId) toggleSetting(toggleId);
+    } else if (mode === 'manual') {
+      const fullPath = [...path];
+      if (toggleId) fullPath.push(toggleId);
+      setManualGuidancePath(fullPath);
+      setScreen('home'); // Go to home screen to start manual process
     }
   };
 
