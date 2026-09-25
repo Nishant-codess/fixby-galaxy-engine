@@ -14,7 +14,7 @@ DUMMY_POSITIVE = "bixby://dummy_positive"
 
 DOMAIN_KEYWORDS_MAP: Dict[str, List[str]] = {
     "connectivity": ["connections", "wifi", "wi-fi", "bluetooth", "flight mode", "airplane", "network", "wireless", "mobile data"],
-    "battery": ["battery", "power saving", "charging", "protect battery", "wireless power"],
+    "battery": ["battery", "power saving", "charging", "protect battery", "wireless power", "overheating", "thermal"],
     "display": ["display", "motion smoothness", "screen timeout", "brightness", "eye comfort", "dark mode", "navigation bar", "accidental touch", "always on display", "touch sensitivity", "font size"],
     "camera": ["camera", "photos", "scene optimizer", "apps>camera"],
     "performance": ["device care", "memory", "ram", "optimization", "auto optimization", "performance profile", "app protection"],
