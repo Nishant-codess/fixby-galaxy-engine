@@ -7,6 +7,8 @@ export type Screen =
   | 'settings/lock-screen' | 'settings/security' | 'settings/general'
   | 'settings/about' | 'settings/wellbeing' | 'settings/apps'
   | 'settings/phone' | 'settings/generic'
+  | 'settings/sound' | 'settings/camera' | 'settings/advanced'
+  | 'settings/device-care' | 'settings/privacy' | 'settings/accessibility'
   | 'app/mock';
 
 export function usePhoneNavigation(initialScreen: Screen = 'lock') {
