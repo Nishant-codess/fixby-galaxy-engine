@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-export function OneUISlider({ value, onChange, min = 0, max = 100 }: { value: number; onChange?: (v: number) => void; min?: number; max?: number }) {
+export function OneUISlider({ value, onChange, min = 0, max = 100, trackColor = 'var(--oneui-accent)' }: { value: number; onChange?: (v: number) => void; min?: number; max?: number; trackColor?: string }) {
   const [isDragging, setIsDragging] = useState(false);
   const trackRef = useRef<HTMLDivElement>(null);
   
@@ -33,7 +33,7 @@ export function OneUISlider({ value, onChange, min = 0, max = 100 }: { value: nu
       style={{ height: '24px', display: 'flex', alignItems: 'center', cursor: 'pointer', flex: 1, touchAction: 'none' }}
     >
       <div style={{ width: '100%', height: '4px', background: 'rgba(255,255,255,0.2)', borderRadius: '2px', position: 'relative' }}>
-        <div style={{ width: `${percent}%`, height: '100%', background: 'var(--oneui-accent)', borderRadius: '2px' }} />
+        <div style={{ width: `${percent}%`, height: '100%', background: trackColor, borderRadius: '2px' }} />
         <div style={{ 
           position: 'absolute', top: '50%', left: `${percent}%`, transform: 'translate(-50%, -50%)',
           width: '20px', height: '20px', borderRadius: '50%', background: '#fff', boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
