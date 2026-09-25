@@ -1,6 +1,6 @@
 import React from 'react';
 import { Ripple } from './Ripple';
-import { Screen } from '../../hooks/usePhoneNavigation';
+import { Screen } from '../../../hooks/usePhoneNavigation';
 
 export function NavBar({ currentScreen, onBack, onHome, onRecents }: {
   currentScreen: Screen;
