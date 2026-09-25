@@ -87,6 +87,11 @@ SYMPTOM_TAXONOMY: Dict[str, Dict[str, Set[str]]] = {
             "밝기", "어두워", "화면 밝기", "adaptive brightness",
             "screen is dark", "can't see screen", "sunlight readability",
         },
+        "eye_comfort": {
+            "eye comfort", "blue light", "blinding", "blinding me at night",
+            "too blue", "eyes hurt", "screen hurts eyes", "night mode display",
+            "편안하게 보기", "블루라이트",
+        },
         "always_on": {
             "always on display", "aod", "clock on screen", "always on",
             "상시 화면", "잠금화면", "always on clock", "lock screen clock",
@@ -182,10 +187,10 @@ SYMPTOM_TAXONOMY: Dict[str, Dict[str, Set[str]]] = {
             "인터넷 느림", "버퍼링",
         },
         "bluetooth": {
-            "bluetooth", "bt", "buds", "earphone not connecting", "pairing",
-            "블루투스", "연결 안됨", "이어폰",
+            "bluetooth", "bt", "buds", "earbuds", "earphone not connecting", "pairing",
+            "블루투스", "연결 안됨", "이어폰", "dropping connection", "disconnecting from buds",
             "headphones not connecting", "bluetooth keeps disconnecting",
-            "galaxy buds", "watch not connecting",
+            "galaxy buds", "watch not connecting", "keep dropping connection",
         },
     },
     "sound": {
@@ -254,6 +259,14 @@ SYMPTOM_TAXONOMY: Dict[str, Dict[str, Set[str]]] = {
     },
 }
 
+VAGUE_QUERY_LLM_FALLBACK_PROMPT = """
+You are a Samsung Galaxy device classifier. Given a user complaint, classify it into ONE of:
+battery, performance, display, connectivity, sound, camera, security, storage, general, digital_wellbeing
+
+User complaint: "{query}"
+Reply with a JSON object containing a single key "domain" with the domain string. Example: {{"domain": "battery"}}
+"""
+
 _HINGLISH_WORDS = {
     "mera", "meri", "bohot", "garam", "jaldi", "khatam", "nahi", "ho", "raha",
     "rahi", "hai", "band", "gaya", "chal", "kaam", "ruk", "ke", "phone", "bhai"
@@ -284,7 +297,7 @@ def classify_complaint_taxonomy(query: str) -> List[str]:
     q = query.lower()
     q = re.sub(r"\bnotworking\b", "not working", q)
     q = re.sub(r"\bnotcharging\b", "not charging", q)
-    q = re.sub(r"\boverheating\b", "over heating", q)
+    q = re.sub(r"\bheated\b", "heat", q)
     scored_matches = []
     seen_cats = set()
 
@@ -306,6 +319,20 @@ def classify_complaint_taxonomy(query: str) -> List[str]:
                 scored_matches.append((best_kw_len, cat))
 
     if not scored_matches:
+        try:
+            from src.ai.llm_client import llm_client
+            prompt = VAGUE_QUERY_LLM_FALLBACK_PROMPT.format(query=query)
+            response = llm_client.generate_json_sync(prompt)
+            # if we get a raw string response from LLM instead of JSON:
+            domain = response.get("domain", "general").lower().strip()
+            if domain in ["battery", "performance", "display", "connectivity", "sound", "camera", "security", "storage", "digital_wellbeing"]:
+                return [f"{domain}.unknown"]
+        except Exception:
+            try:
+                # In case it returned a raw string, we might just call _call_groq_sync if we want, but sticking to generate_json_sync is fine if we make the prompt ask for JSON.
+                pass
+            except Exception:
+                pass
         return ["general.unknown"]
 
     # Sort descending by keyword length so more specific matches win (e.g. 'screen timeout' > 'turns off')
