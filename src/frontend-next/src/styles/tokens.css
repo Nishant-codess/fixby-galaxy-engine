@@ -8,6 +8,28 @@
   /*  NEW SEMANTIC TOKENS (used by index.html + glass.css etc.) */
   /* ═══════════════════════════════════════════════════════════ */
 
+  /* One UI System Tokens */
+  --oneui-bg-primary:     #000000;
+  --oneui-bg-card:        #1c1c1e;
+  --oneui-bg-card-alt:    #2c2c2e;
+  --oneui-text-primary:   #ffffff;
+  --oneui-text-secondary: #8e8e93;
+  --oneui-text-tertiary:  #48484a;
+  --oneui-accent:         #2075d6;
+  --oneui-accent-light:   #4db8ff;
+  --oneui-success:        #34c759;
+  --oneui-warning:        #ff9f0a;
+  --oneui-danger:         #ff453a;
+  --oneui-separator:      rgba(255,255,255,0.08);
+  --oneui-icon-blue:      #2566d8;
+  --oneui-icon-orange:    #f09000;
+  --oneui-icon-red:       #e9303a;
+  --oneui-icon-green:     #28b865;
+  --oneui-icon-purple:    #8e5ef5;
+  --oneui-icon-teal:      #1aabab;
+  
+  --oneui-wallpaper: radial-gradient(ellipse at 20% 10%, rgba(40, 80, 180, 0.35) 0%, transparent 50%), radial-gradient(ellipse at 80% 90%, rgba(100, 20, 160, 0.3) 0%, transparent 55%), radial-gradient(ellipse at 60% 40%, rgba(10, 40, 120, 0.2) 0%, transparent 60%), linear-gradient(160deg, #050520 0%, #0a0a2e 40%, #120520 100%);
+
   /* Depth scale */
   --void:        #05070B;
   --abyss:       #090D14;

@@ -15,6 +15,7 @@ export default function Home() {
     if (sessionStorage.getItem("fixby_mode") === "console") {
       setSkipTransitions(true);
       document.body.style.overflow = "hidden";
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if ((window as any).lenis) (window as any).lenis.stop();
       setIsFadingOut(true);
       setIsConsoleMode(true);
@@ -23,6 +24,7 @@ export default function Home() {
 
   const handleEnterConsole = () => {
     document.body.style.overflow = "hidden";
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if ((window as any).lenis) (window as any).lenis.stop();
     setIsFadingOut(true);
     sessionStorage.setItem("fixby_mode", "console");
@@ -33,6 +35,7 @@ export default function Home() {
     const restoreStyle = document.getElementById("fixby-restore-screen");
     if (restoreStyle) restoreStyle.remove();
     document.body.style.overflow = "auto";
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if ((window as any).lenis) (window as any).lenis.start();
     setIsConsoleMode(false);
     setIsFadingOut(false);

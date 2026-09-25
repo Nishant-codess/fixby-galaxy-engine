@@ -104,15 +104,18 @@ class LLMClient:
         # Init Gemini Client if key present
         if self.gemini_api_key:
             try:
-                import google.generativeai as genai
-                genai.configure(api_key=self.gemini_api_key)
-                self.gemini_client = genai.GenerativeModel("gemini-1.5-flash")
-                logger.info("Gemini client initialized successfully.")
+                import google.genai as genai
+                self.gemini_client = genai.Client(api_key=self.gemini_api_key)
+                logger.info("Google GenAI (google.genai) client initialized successfully.")
             except ImportError:
                 try:
-                    import google.genai as genai
-                    self.gemini_client = genai.Client(api_key=self.gemini_api_key)
-                    logger.info("Google GenAI client initialized successfully.")
+                    import warnings
+                    with warnings.catch_warnings():
+                        warnings.simplefilter("ignore", FutureWarning)
+                        import google.generativeai as genai_legacy
+                    genai_legacy.configure(api_key=self.gemini_api_key)
+                    self.gemini_client = genai_legacy.GenerativeModel("gemini-1.5-flash")
+                    logger.info("Gemini (legacy google.generativeai) client initialized.")
                 except Exception as e:
                     logger.warning(f"Failed to initialize Gemini client: {e}")
             except Exception as e:
