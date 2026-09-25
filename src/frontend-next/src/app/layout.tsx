@@ -37,7 +37,7 @@ export default function RootLayout({
           immediately — eliminating the flash.
         */}
         <script
-          // eslint-disable-next-line react/no-danger
+           
           dangerouslySetInnerHTML={{
             __html: `(function(){
   try {
