@@ -7,7 +7,7 @@ const KB_ROWS = [
   ["z","x","c","v","b","n","m"],
 ];
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 const K = ({ children, onClick, flex = 1, bg, textColor, style }: any) => (
   <Ripple
     onClick={onClick}
