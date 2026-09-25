@@ -64,6 +64,7 @@ const GENERIC_DATA: Record<string, { title: string, rows: { title: string, toggl
     rows: [
       { title: 'Choose default apps' },
       { title: 'Samsung app settings' },
+      { title: 'Camera', rightLabel: '412 MB' },
       { title: 'Chrome', rightLabel: '240 MB' },
       { title: 'Fixby', rightLabel: '120 MB' }
     ]
