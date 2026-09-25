@@ -17,32 +17,61 @@ import { Connections } from './screens/settings/Connections';
 import { BatteryScreen } from './screens/settings/BatteryScreen';
 import { GenericSettings } from './screens/settings/GenericSettings';
 
+import { SoundSettings } from './screens/settings/SoundSettings';
+import { CameraSettings } from './screens/settings/CameraSettings';
+import { AdvancedFeatures } from './screens/settings/AdvancedFeatures';
+import { DeviceCareScreen } from './screens/settings/DeviceCareScreen';
+import { PrivacySettings } from './screens/settings/PrivacySettings';
+import { AccessibilitySettings } from './screens/settings/AccessibilitySettings';
+import { LockScreenSettings } from './screens/settings/LockScreenSettings';
+import { AboutDevice } from './screens/settings/AboutDevice';
+import { NotificationSettings } from './screens/settings/NotificationSettings';
+import { SecuritySettings } from './screens/settings/SecuritySettings';
+import { AppsSettings } from './screens/settings/AppsSettings';
+import { WellbeingSettings } from './screens/settings/WellbeingSettings';
+import { GeneralSettings } from './screens/settings/GeneralSettings';
+
 // Maps keywords from the API path to a Settings sub-screen
 const SETTINGS_SCREEN_MAP: { keywords: string[]; screen: Screen }[] = [
-  { keywords: ['display', 'brightness', 'dark mode', 'screen mode', 'eye comfort'], screen: 'settings/display' },
+  { keywords: ['display', 'brightness', 'dark mode', 'screen mode', 'eye comfort', 'motion smoothness', 'screen timeout', 'navigation bar'], screen: 'settings/display' },
   { keywords: ['samsung account', 'cloud', 'find my mobile', 'samsung pass'], screen: 'settings/samsung-account' },
-  { keywords: ['connection', 'wifi', 'wi-fi', 'bluetooth', 'nfc', 'mobile network', 'hotspot', 'flight'], screen: 'settings/connections' },
-  { keywords: ['battery', 'device care', 'power', 'storage', 'memory', 'background usage', 'protect battery'], screen: 'settings/battery' },
-  { keywords: ['notification', 'alert', 'do not disturb'], screen: 'settings/notifications' },
-  { keywords: ['lock screen', 'aod', 'always on display', 'wallpaper'], screen: 'settings/lock-screen' },
-  { keywords: ['security', 'privacy', 'biometric', 'fingerprint', 'face recognition', 'permission'], screen: 'settings/security' },
-  { keywords: ['general management', 'language', 'date', 'time', 'reset', 'keyboard'], screen: 'settings/general' },
-  { keywords: ['about', 'software update', 'android version', 'model', 'serial'], screen: 'settings/about' },
-  { keywords: ['wellbeing', 'digital wellbeing', 'screen time', 'focus mode', 'app timer'], screen: 'settings/wellbeing' },
-  { keywords: ['apps', 'applications', 'default apps'], screen: 'settings/apps' },
+  { keywords: ['connection', 'wifi', 'wi-fi', 'bluetooth', 'nfc', 'mobile network', 'hotspot', 'flight', 'data usage', 'airplane'], screen: 'settings/connections' },
+  { keywords: ['battery', 'power saving', 'background usage', 'protect battery', 'charging', 'wireless power'], screen: 'settings/battery' },
+  { keywords: ['device care', 'storage', 'memory', 'ram plus', 'performance profile', 'app protection', 'optimize'], screen: 'settings/device-care' },
+  { keywords: ['notification', 'alert', 'do not disturb', 'dnd', 'edge lighting', 'brief popup'], screen: 'settings/notifications' },
+  { keywords: ['lock screen', 'aod', 'always on display', 'wallpaper', 'clock style'], screen: 'settings/lock-screen' },
+  { keywords: ['security', 'biometric', 'fingerprint', 'face recognition', 'screen lock', 'secure folder'], screen: 'settings/privacy' },
+  { keywords: ['privacy', 'permission manager', 'permission'], screen: 'settings/privacy' },
+  { keywords: ['general management', 'language', 'date', 'time', 'reset', 'keyboard', 'software update', 'safe mode', 'factory'], screen: 'settings/general' },
+  { keywords: ['about', 'android version', 'model', 'serial', 'status'], screen: 'settings/about' },
+  { keywords: ['wellbeing', 'digital wellbeing', 'screen time', 'focus mode', 'app timer', 'bedtime'], screen: 'settings/wellbeing' },
+  { keywords: ['apps', 'applications', 'default apps', 'clear cache', 'force stop', 'clear data'], screen: 'settings/apps' },
   { keywords: ['phone', 'call', 'voicemail', 'block number'], screen: 'settings/phone' },
+  { keywords: ['sound', 'volume', 'ringtone', 'vibration', 'dolby', 'speaker', 'audio', 'mute', 'sounds and vibration'], screen: 'settings/sound' },
+  { keywords: ['camera', 'scene optimizer', 'camera settings', 'camera reset', 'reset settings'], screen: 'settings/camera' },
+  { keywords: ['game booster', 'thermal management', 'advanced features', 'multiwindow', 'dex', 'labs', 'performance mode'], screen: 'settings/advanced' },
+  { keywords: ['accessibility', 'talkback', 'magnification', 'color correction', 'interaction'], screen: 'settings/accessibility' },
 ];
 
 function resolveSettingsScreen(path: string[]): Screen | null {
   // path is like: ["Settings", "Display", "Brightness"] or ["Settings > Connections > Wi-Fi"]
   // Flatten and normalize for matching
   const combined = path.join(' ').toLowerCase();
+  
+  let bestMatch: Screen | null = null;
+  let maxKeywordLen = 0;
+
   for (const entry of SETTINGS_SCREEN_MAP) {
-    if (entry.keywords.some(kw => combined.includes(kw))) {
-      return entry.screen;
+    for (const kw of entry.keywords) {
+      if (combined.includes(kw)) {
+        if (kw.length > maxKeywordLen) {
+          maxKeywordLen = kw.length;
+          bestMatch = entry.screen;
+        }
+      }
     }
   }
-  return null;
+  return bestMatch;
 }
 
 export default function PhoneSimulator() {
@@ -84,14 +113,22 @@ export default function PhoneSimulator() {
       case 'settings/connections':     return <Connections targetPath={targetPath} onNavigate={push} />;
       case 'settings/battery':         return <BatteryScreen targetPath={targetPath} onNavigate={push} />;
 
+      // New Screens
+      case 'settings/sound':           return <SoundSettings targetPath={targetPath} onNavigate={push} />;
+      case 'settings/camera':          return <CameraSettings targetPath={targetPath} onNavigate={push} />;
+      case 'settings/advanced':        return <AdvancedFeatures targetPath={targetPath} onNavigate={push} />;
+      case 'settings/device-care':     return <DeviceCareScreen targetPath={targetPath} onNavigate={push} />;
+      case 'settings/privacy':         return <PrivacySettings targetPath={targetPath} onNavigate={push} />;
+      case 'settings/accessibility':   return <AccessibilitySettings targetPath={targetPath} onNavigate={push} />;
+      case 'settings/notifications':   return <NotificationSettings targetPath={targetPath} onNavigate={push} />;
+      case 'settings/wellbeing':       return <WellbeingSettings targetPath={targetPath} onNavigate={push} />;
+      case 'settings/general':         return <GeneralSettings targetPath={targetPath} onNavigate={push} />;
+
       // Generic Mock Settings
-      case 'settings/notifications':
-      case 'settings/lock-screen':
-      case 'settings/security':
-      case 'settings/general':
-      case 'settings/about':
-      case 'settings/wellbeing':
-      case 'settings/apps':
+      case 'settings/lock-screen':     return <LockScreenSettings targetPath={targetPath} onBack={pop} />;
+      case 'settings/about':           return <AboutDevice targetPath={targetPath} onBack={pop} />;
+      case 'settings/security':        return <SecuritySettings targetPath={targetPath} onNavigate={push} />;
+      case 'settings/apps':            return <AppsSettings targetPath={targetPath} onNavigate={push} />;
       case 'settings/phone':
         return <GenericSettings screen={currentScreen} targetPath={targetPath} onNavigate={push} />;
 
