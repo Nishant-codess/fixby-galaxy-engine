@@ -1,6 +1,6 @@
 import React from 'react';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 const S = ({ d, children, vb = "0 0 24 24", ...p }: any) => (
   <svg width="20" height="20" viewBox={vb} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}>
     {d ? <path d={d} /> : children}
