@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Screen } from '../../../hooks/usePhoneNavigation';
+import { Screen } from '../../../../hooks/usePhoneNavigation';
 import { SettingsRow } from '../../ui/SettingsRow';
 import { ISettings, IDisplay, IUser, IShield, IBell, IBattery, IWifi, IApps, ILock, IPhone, IChart, IInfo, ISearch } from '../../ui/Icons';
 
@@ -27,11 +27,13 @@ export function SettingsRoot({ onNavigate, targetPath }: { onNavigate: (s: Scree
   return (
     <div style={{ position: 'absolute', inset: 0, zIndex: 30, background: 'var(--oneui-bg-primary)' }}>
       
-      <div style={{
-        position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-        overflowY: 'auto', overflowX: 'hidden',
-        WebkitOverflowScrolling: 'touch' as 'auto',
-        paddingBottom: '72px'
+      <div 
+        data-lenis-prevent="true"
+        style={{
+          position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+          overflowY: 'scroll', pointerEvents: 'auto', overflowX: 'hidden',
+          WebkitOverflowScrolling: 'touch' as 'auto',
+          paddingBottom: '72px'
       }}>
         <div style={{ padding: '64px 16px 20px' }}>
           <h1 style={{ fontSize: '34px', fontWeight: 300, color: 'var(--oneui-text-primary)', margin: 0, letterSpacing: '-0.02em' }}>Settings</h1>
