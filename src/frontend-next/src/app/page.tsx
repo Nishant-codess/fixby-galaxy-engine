@@ -9,23 +9,28 @@ import "./transition.css";
 export default function Home() {
   const [isFadingOut, setIsFadingOut] = useState(false);
   const [isConsoleMode, setIsConsoleMode] = useState(false);
-  const [skipTransitions, setSkipTransitions] = useState(false);
+  const [skipTransitions, setSkipTransitions] = useState(() => {
+    if (typeof window !== "undefined") {
+      return sessionStorage.getItem("fixby_mode") === "console";
+    }
+    return false;
+  });
 
   useEffect(() => {
     if (sessionStorage.getItem("fixby_mode") === "console") {
-      setSkipTransitions(true);
       document.body.style.overflow = "hidden";
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      if ((window as any).lenis) (window as any).lenis.stop();
-      setIsFadingOut(true);
-      setIsConsoleMode(true);
+      // if ((window as any).lenis) (window as any).lenis.stop();
+      setTimeout(() => {
+        setIsFadingOut(true);
+        setIsConsoleMode(true);
+      }, 0);
     }
   }, []);
 
   const handleEnterConsole = () => {
     document.body.style.overflow = "hidden";
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if ((window as any).lenis) (window as any).lenis.stop();
+     
+    // if ((window as any).lenis) (window as any).lenis.stop();
     setIsFadingOut(true);
     sessionStorage.setItem("fixby_mode", "console");
     setTimeout(() => setIsConsoleMode(true), 600);
@@ -35,8 +40,8 @@ export default function Home() {
     const restoreStyle = document.getElementById("fixby-restore-screen");
     if (restoreStyle) restoreStyle.remove();
     document.body.style.overflow = "auto";
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if ((window as any).lenis) (window as any).lenis.start();
+     
+    // if ((window as any).lenis) (window as any).lenis.start();
     setIsConsoleMode(false);
     setIsFadingOut(false);
     setSkipTransitions(false);
@@ -52,8 +57,8 @@ export default function Home() {
         </div>
 
         {/* The Diagnostic App rendered inside the phone frame */}
-        <div className="phone-app-layer">
-          <PhoneSimulator isActive={isConsoleMode} />
+        <div className="phone-app-layer" data-lenis-prevent="true">
+          <PhoneSimulator />
         </div>
       </div>
 
