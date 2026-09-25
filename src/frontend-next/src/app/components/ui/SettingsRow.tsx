@@ -49,6 +49,18 @@ export function SettingsRow({
 
       {/* Right Content */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+        {highlight && (
+          <div style={{
+            background: 'linear-gradient(135deg, #2075d6, #6c47ff)',
+            color: '#fff', fontSize: '10px', fontWeight: 700,
+            padding: '3px 8px', borderRadius: '8px',
+            boxShadow: '0 2px 8px rgba(32,117,214,0.5)',
+            whiteSpace: 'nowrap', flexShrink: 0,
+            animation: 'popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)'
+          }}>
+            Toggle this
+          </div>
+        )}
         {rightLabel && <span style={{ fontSize: '14px', color: 'var(--oneui-text-secondary)' }}>{rightLabel}</span>}
         {toggle && <OneUISwitch checked={!!toggleValue} onChange={onToggleChange} />}
         {showChevron && <div style={{ color: 'var(--oneui-text-tertiary)' }}><IChevron /></div>}
@@ -73,19 +85,6 @@ export function SettingsRow({
         </Ripple>
       ) : (
         <div style={wrapperStyle}>{content}</div>
-      )}
-      
-      {highlight && (
-        <div style={{
-          position: 'absolute', top: '-10px', right: '16px',
-          background: 'var(--oneui-accent)', color: '#fff',
-          fontSize: '11px', fontWeight: 600, padding: '2px 8px',
-          borderRadius: '12px', zIndex: 10,
-          boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-          animation: 'popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)'
-        }}>
-          Navigate here
-        </div>
       )}
       
       {divider && (
