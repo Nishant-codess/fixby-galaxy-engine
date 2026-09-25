@@ -22,8 +22,18 @@ export function Connections({ targetPath, onNavigate }: { targetPath: string[]; 
           <SettingsRow 
             title="Wi-Fi" subtitle={wifi ? "Fixby-5G" : undefined} rightLabel={wifi ? "" : "Off"} 
             toggle toggleValue={wifi} onToggleChange={setWifi} divider 
-            highlight={targetNode?.toLowerCase() === 'wi-fi'}
+            highlight={targetNode?.toLowerCase() === 'wi-fi' && !targetPath[3]}
           />
+          {targetNode?.toLowerCase() === 'wi-fi' && (
+            <div style={{ background: 'rgba(32,117,214,0.05)', borderLeft: '3px solid var(--oneui-accent)', paddingLeft: '8px' }}>
+              <SettingsRow 
+                title="Intelligent Wi-Fi" 
+                subtitle="Switch to mobile data when Wi-Fi is unstable" 
+                toggle toggleValue={true} divider 
+                highlight={targetPath[3]?.toLowerCase().includes('intelligent')}
+              />
+            </div>
+          )}
           <SettingsRow title="Wi-Fi calling" rightLabel="SIM 1" toggle toggleValue={true} divider />
           <SettingsRow title="Bluetooth" rightLabel={bluetooth ? "On" : "Off"} toggle toggleValue={bluetooth} onToggleChange={setBluetooth} divider highlight={targetNode?.toLowerCase() === 'bluetooth'} />
           <SettingsRow title="NFC and contactless payments" toggle toggleValue={nfc} onToggleChange={setNfc} highlight={targetNode?.toLowerCase().includes('nfc')} />
