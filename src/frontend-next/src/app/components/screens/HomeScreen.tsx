@@ -27,7 +27,7 @@ const DOCK_APPS = [
   { id: 'settings', icon: <ISettings />, color: '#8E8E93', label: 'Settings', isReal: true },
 ];
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 function AppIcon({ app, onClick }: { app: any; onClick: () => void }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', width: '25%' }}>
