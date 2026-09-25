@@ -31,6 +31,7 @@ export function BatteryScreen({ targetPath, onNavigate }: { targetPath: string[]
 
         {/* Group 1 */}
         <div style={{ margin: '0 16px 24px', background: 'var(--oneui-bg-card)', borderRadius: '24px', overflow: 'hidden' }}>
+          <SettingsRow title="Battery usage" showChevron onPress={() => {}} divider highlight={targetNode?.toLowerCase().includes('usage')} />
           <SettingsRow title="Power saving" toggle toggleValue={powerSaving} onToggleChange={setPowerSaving} divider highlight={targetNode?.toLowerCase().includes('power')} />
           <SettingsRow title="Background usage limits" showChevron onPress={() => {}} divider highlight={targetNode?.toLowerCase().includes('background')} />
           <SettingsRow title="Protect battery" toggle toggleValue={protectBattery} onToggleChange={setProtectBattery} highlight={targetNode?.toLowerCase().includes('protect')} />
