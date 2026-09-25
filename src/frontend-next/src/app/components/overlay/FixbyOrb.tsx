@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useFixbyQuery } from '../../../hooks/useFixbyQuery';
+import { OneUISlider } from '../ui/OneUISlider';
 
 const PRESETS = [
   "battery draining fast",
@@ -12,6 +13,11 @@ export function FixbyOrb({ isOpen, onToggle, onResolved }: { isOpen: boolean, on
   const [isDragging, setIsDragging] = useState(false);
   const [query, setQuery] = useState("");
   
+  // SIIS mock states
+  const [siisBattery, setSiisBattery] = useState(85);
+  const [siisStorage, setSiisStorage] = useState(60);
+  const [siisTemp, setSiisTemp] = useState(32);
+  const [siisSignal, setSiisSignal] = useState(80);
   const { executeQuery, stages, isProcessing, reset } = useFixbyQuery();
   const orbRef = useRef<HTMLDivElement>(null);
   
@@ -35,13 +41,23 @@ export function FixbyOrb({ isOpen, onToggle, onResolved }: { isOpen: boolean, on
 
   const handleSubmit = async (q: string = query) => {
     if (!q) return;
-    const { dynamicPath } = await executeQuery(q);
+    if (q !== query) setQuery(q);
+    
+    const signalLabel = siisSignal >= 70 ? 'Excellent' : siisSignal >= 40 ? 'Good' : siisSignal >= 15 ? 'Weak' : 'None';
+    const siisPayload = JSON.stringify({
+      batteryLevel: siisBattery,
+      storageUsed: siisStorage,
+      temperature: siisTemp,
+      signalStrength: signalLabel
+    });
+
+    const { dynamicPath } = await executeQuery(q, siisPayload);
     onResolved(dynamicPath);
     setTimeout(() => {
       onToggle(false);
       reset();
       setQuery("");
-    }, 2000); // Close sheet after 2 seconds showing success
+    }, 600); // Close sheet quickly after resolving
   };
 
   return (
@@ -89,22 +105,22 @@ export function FixbyOrb({ isOpen, onToggle, onResolved }: { isOpen: boolean, on
       </div>
 
       {/* Expanded Sheet */}
-      <div style={{
-        position: 'absolute', inset: 0, zIndex: 210,
-        pointerEvents: isOpen ? 'auto' : 'none',
-        display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
-        background: isOpen ? 'rgba(0,0,0,0.5)' : 'transparent',
-        transition: 'background 0.3s'
-      }}>
-        <div style={{ flex: 1 }} onClick={() => !isProcessing && onToggle(false)} />
-        
+      {isOpen && (
         <div style={{
-          background: 'var(--oneui-bg-card)', padding: '24px',
-          borderTopLeftRadius: '32px', borderTopRightRadius: '32px',
-          transform: isOpen ? 'translateY(0)' : 'translateY(100%)',
-          transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-          boxShadow: '0 -8px 32px rgba(0,0,0,0.4)', borderTop: '1px solid rgba(255,255,255,0.05)'
+          position: 'absolute', inset: 0, zIndex: 210,
+          pointerEvents: 'auto',
+          display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
+          background: 'rgba(0,0,0,0.5)',
+          transition: 'background 0.3s'
         }}>
+          <div style={{ flex: 1 }} onClick={() => !isProcessing && onToggle(false)} />
+          
+          <div style={{
+            background: 'var(--oneui-bg-card)', padding: '24px',
+            borderTopLeftRadius: '32px', borderTopRightRadius: '32px',
+            animation: 'slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+            boxShadow: '0 -8px 32px rgba(0,0,0,0.4)', borderTop: '1px solid rgba(255,255,255,0.05)'
+          }}>
           {/* Drag Handle */}
           <div style={{ width: '40px', height: '4px', background: 'var(--oneui-text-tertiary)', borderRadius: '2px', margin: '0 auto 24px' }} />
 
@@ -135,13 +151,52 @@ export function FixbyOrb({ isOpen, onToggle, onResolved }: { isOpen: boolean, on
                 ))}
               </div>
 
-              <div onClick={() => handleSubmit()} style={{ width: '100%', padding: '16px', background: 'var(--oneui-accent)', color: '#fff', borderRadius: '16px', textAlign: 'center', fontWeight: 600, cursor: 'pointer' }}>
-                Diagnose →
+              <div onClick={() => handleSubmit()} style={{ width: '100%', padding: '16px', background: (siisBattery !== 85 || siisStorage !== 60 || siisTemp !== 32 || siisSignal !== 80) ? 'linear-gradient(135deg, #ff3b30, #ff6400)' : 'var(--oneui-accent)', color: '#fff', borderRadius: '16px', textAlign: 'center', fontWeight: 600, cursor: 'pointer', marginBottom: '24px' }}>
+                {(siisBattery !== 85 || siisStorage !== 60 || siisTemp !== 32 || siisSignal !== 80) ? '⚡ Diagnose with SIIS' : 'Diagnose →'}
+              </div>
+
+              {/* SIIS Telemetry Override */}
+              <div style={{ background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--oneui-text-secondary)', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Simulate SIIS Telemetry</div>
+                
+                <div style={{ display: 'grid', gap: '16px' }}>
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', marginBottom: '8px' }}>
+                      <span style={{ color: siisBattery < 15 ? 'var(--oneui-error)' : 'var(--oneui-text-primary)' }}>Battery</span>
+                      <span>{siisBattery}%</span>
+                    </div>
+                    <OneUISlider value={siisBattery} onChange={setSiisBattery} min={0} max={100} trackColor={siisBattery < 15 ? 'var(--oneui-error)' : 'var(--oneui-success)'} />
+                  </div>
+                  
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', marginBottom: '8px' }}>
+                      <span style={{ color: siisStorage > 95 ? 'var(--oneui-error)' : 'var(--oneui-text-primary)' }}>Storage Fullness</span>
+                      <span>{siisStorage}%</span>
+                    </div>
+                    <OneUISlider value={siisStorage} onChange={setSiisStorage} min={0} max={100} trackColor={siisStorage > 95 ? 'var(--oneui-error)' : 'var(--oneui-accent)'} />
+                  </div>
+
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', marginBottom: '8px' }}>
+                      <span style={{ color: siisTemp > 45 ? 'var(--oneui-error)' : 'var(--oneui-text-primary)' }}>Temperature</span>
+                      <span>{siisTemp}°C</span>
+                    </div>
+                    <OneUISlider value={siisTemp} onChange={setSiisTemp} min={20} max={60} trackColor={siisTemp > 45 ? 'var(--oneui-error)' : '#ff9800'} />
+                  </div>
+
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', marginBottom: '8px' }}>
+                      <span style={{ color: siisSignal < 20 ? 'var(--oneui-error)' : 'var(--oneui-text-primary)' }}>Signal Strength</span>
+                      <span>{siisSignal}%</span>
+                    </div>
+                    <OneUISlider value={siisSignal} onChange={setSiisSignal} min={0} max={100} trackColor={siisSignal < 20 ? 'var(--oneui-error)' : '#2075d6'} />
+                  </div>
+                </div>
               </div>
             </>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', minHeight: '200px' }}>
-              <div style={{ fontSize: '15px', color: 'var(--oneui-text-secondary)', marginBottom: '8px' }}>Searching: <span style={{ color: '#fff' }}>"{query}"</span></div>
+              <div style={{ fontSize: '15px', color: 'var(--oneui-text-secondary)', marginBottom: '8px' }}>Searching: <span style={{ color: '#fff' }}>&quot;{query}&quot;</span></div>
               {stages.map(s => (
                 <div key={s.id} style={{ display: "flex", alignItems: "center", gap: "14px", opacity: s.status === "pending" ? 0.3 : 1 }}>
                   <div style={{ width: "22px", height: "22px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: s.status === "done" ? "var(--oneui-success)" : s.status === "running" ? "var(--oneui-accent)" : "var(--oneui-text-tertiary)" }}>
@@ -158,6 +213,7 @@ export function FixbyOrb({ isOpen, onToggle, onResolved }: { isOpen: boolean, on
           )}
         </div>
       </div>
+      )}
 
       <style dangerouslySetInnerHTML={{ __html: `
         @keyframes pulseGlow { 0% { box-shadow: 0 0 0 0 rgba(32, 117, 214, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(32, 117, 214, 0); } 100% { box-shadow: 0 0 0 0 rgba(32, 117, 214, 0); } }
