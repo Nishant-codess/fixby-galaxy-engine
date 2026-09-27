@@ -8,7 +8,7 @@ const PRESETS = [
   "wifi keeps disconnecting"
 ];
 
-export function FixbyOrb({ isOpen, onToggle, onResolved }: { isOpen: boolean, onToggle: (v: boolean) => void, onResolved: (path: string[]) => void }) {
+export function FixbyOrb({ isOpen, onToggle, onResolved }: { isOpen: boolean, onToggle: (v: boolean) => void, onResolved: (path: string[], escalation?: string) => void }) {
   const [position, setPosition] = useState({ x: 0, y: 0 }); // relative to bottom right
   const [isDragging, setIsDragging] = useState(false);
   const [query, setQuery] = useState("");
@@ -51,8 +51,8 @@ export function FixbyOrb({ isOpen, onToggle, onResolved }: { isOpen: boolean, on
       signalStrength: signalLabel
     });
 
-    const { dynamicPath } = await executeQuery(q, siisPayload);
-    onResolved(dynamicPath);
+    const { dynamicPath, apiTelemetry } = await executeQuery(q, siisPayload);
+    onResolved(dynamicPath, apiTelemetry?.hardware_escalation);
     setTimeout(() => {
       onToggle(false);
       reset();

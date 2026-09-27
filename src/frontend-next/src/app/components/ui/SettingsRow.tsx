@@ -58,7 +58,7 @@ export function SettingsRow({
             whiteSpace: 'nowrap', flexShrink: 0,
             animation: 'popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)'
           }}>
-            Toggle this
+            {toggle ? 'Toggle this' : 'Tap here'}
           </div>
         )}
         {rightLabel && <span style={{ fontSize: '14px', color: 'var(--oneui-text-secondary)' }}>{rightLabel}</span>}

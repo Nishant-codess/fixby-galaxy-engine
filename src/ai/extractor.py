@@ -98,60 +98,22 @@ class PlanExtractor:
                 temp = siis_data.get("temperature", 30)
                 signal = siis_data.get("signalStrength", "Excellent")
 
-                # Build an authoritative override block
-                override_lines = []
-                if bat <= 15:
-                    override_lines.append(
-                        f"⚠️ CRITICAL BATTERY ({bat}%): You MUST select Power Saving Mode deeplink. "
-                        "Override the no-battery rule — the device is about to die."
-                    )
-                elif bat <= 30:
-                    override_lines.append(
-                        f"⚠️ LOW BATTERY ({bat}%): Prioritize battery power saving or background limits deeplink."
-                    )
-
-                if storage >= 95:
-                    override_lines.append(
-                        f"⚠️ STORAGE CRITICAL ({storage}% full): You MUST select Storage cleanup deeplink "
-                        "(Device Care > Storage). Override domain rules — full storage causes ALL symptoms."
-                    )
-                elif storage >= 80:
-                    override_lines.append(
-                        f"⚠️ STORAGE HIGH ({storage}% full): Strongly prefer Storage cleanup deeplink."
-                    )
-
-                if temp >= 55:
-                    override_lines.append(
-                        f"⚠️ OVERHEATING ({temp}°C): You MUST recommend Device Care > Performance Profile "
-                        "or App Power Management to reduce thermal load. This overrides other domain rules."
-                    )
-                elif temp >= 45:
-                    override_lines.append(
-                        f"⚠️ HIGH TEMP ({temp}°C): Prefer thermal management settings."
-                    )
-
-                if signal in ("None", "Weak"):
-                    override_lines.append(
-                        f"⚠️ SIGNAL {signal}: Prioritize Connections > Mobile Networks or Wi-Fi deeplinks. "
-                        "The hardware signal is the root cause — override software domain rules."
-                    )
-
                 status_summary = (
                     f"Battery {bat}%, Storage {storage}%, CPU Temp {temp}°C, Signal {signal}"
                 )
 
-                if override_lines:
-                    prompt += (
-                        f"\n\n🚨 LIVE SAMSUNG SIIS DEVICE STATE — MANDATORY OVERRIDES:\n"
-                        f"Device readings: {status_summary}\n"
-                        + "\n".join(override_lines)
-                        + "\nYou MUST factor these hardware readings above all other instructions."
-                    )
-                else:
-                    prompt += (
-                        f"\n\nLIVE SIIS DEVICE STATE: {status_summary} — "
-                        "Device is healthy. Use domain and symptom as primary selection criteria."
-                    )
+                prompt += (
+                    f"\n\n🚨 LIVE SAMSUNG SIIS DEVICE TELEMETRY:\n"
+                    f"Device readings: {status_summary}\n"
+                    "You must carefully consider these telemetry metrics alongside the user's query to understand their true intent. "
+                    "Do not blindly jump to conclusions, but use the hardware context to provide realistic and intelligent troubleshooting. "
+                    "Examples of intelligent hardware-aware routing:\n"
+                    "- If query='My battery is draining fast' AND Battery is 75%, navigate to 'Battery Optimization' or 'Background usage limits'.\n"
+                    "- If query='My battery is draining fast' AND Battery is 15%, navigate to 'Power Saving Mode' FIRST to save critical power.\n"
+                    "- If query='Cannot save photos' AND Storage is normal, suggest Camera Storage Settings (like SD card config).\n"
+                    "- If query='Cannot save photos' AND Storage is >=90%, suggest Storage Space Cleanup.\n"
+                    "Evaluate the Battery, Storage, Temperature, and Signal appropriately, and adapt the settings and solutions to solve the real underlying issue."
+                )
             except Exception:
                 prompt += f"\n\nSamsung Intelligence (SIIS) Technical Data:\n{siis_response}"
 

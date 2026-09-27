@@ -13,10 +13,10 @@ export default function Home() {
 
   useEffect(() => {
     if (sessionStorage.getItem("fixby_mode") === "console") {
-      setSkipTransitions(true);
       document.body.style.overflow = "hidden";
       // if ((window as any).lenis) (window as any).lenis.stop();
       setTimeout(() => {
+        setSkipTransitions(true);
         setIsFadingOut(true);
         setIsConsoleMode(true);
       }, 0);

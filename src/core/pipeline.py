@@ -343,6 +343,11 @@ def run_troubleshoot_pipeline(query: str, siis_response: Optional[str] = None) -
             _sym = slots.get("symptom", "unknown")
             _q_lower = query.lower()
 
+            if _bat <= 15 or _sto >= 95 or _tmp >= 55 or _sig == "None":
+                hardware_escalation = "CRITICAL"
+            elif _bat <= 30 or _sto >= 80 or _tmp >= 45 or _sig == "Weak":
+                hardware_escalation = "WARNING"
+
             # \u2500\u2500 SIIS-Native Domain Inference \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
             # The taxonomy classifier can miss colloquial queries (e.g. "dropping so fast").
             # We run a secondary keyword scan directly on the raw query to enrich the domain.
@@ -1029,18 +1034,23 @@ def run_troubleshoot_pipeline(query: str, siis_response: Optional[str] = None) -
             pass
 
 
-    # Fast path for preset quick queries
-    _is_preset = query.lower().strip() in [
-        "phone overheating", "battery draining fast", "wifi keeps disconnecting",
-        "camera blurry", "storage full", "focus mode", "do not disturb",
-        "my phone acts weird", "my phone acts weird (vague)"
-    ]
-    use_ai = AI_MODULES_AVAILABLE and not _is_preset
+    # Always use AI for everything (dynamic)
+    use_ai = AI_MODULES_AVAILABLE
 
     if use_ai:
         candidate_ids = live_get_candidate_ids(query, top_k=10)
     else:
         candidate_ids = _stub_get_candidate_ids(query, top_k=5)
+
+    # Force inject critical candidates if telemetry warrants it
+    if hardware_escalation in ["CRITICAL", "WARNING"]:
+        if _bat <= 30 and "DL_POWER_SAVING" not in candidate_ids:
+            candidate_ids.insert(0, "DL_POWER_SAVING")
+        if _sto >= 80 and "DL_DEVICE_CARE_STORAGE" not in candidate_ids:
+            candidate_ids.insert(0, "DL_DEVICE_CARE_STORAGE")
+        if _tmp >= 45 and "DL_GAME_BOOSTER_THERMAL" not in candidate_ids:
+            candidate_ids.insert(0, "DL_GAME_BOOSTER_THERMAL")
+
 
     # Stage 5: Retrieval-Bound Schema Extraction
     if use_ai:
@@ -1080,8 +1090,8 @@ def run_troubleshoot_pipeline(query: str, siis_response: Optional[str] = None) -
 
             sg.actionableDeeplink.classes = classes_dict
 
-    # Inject SIIS deterministic override goals (multi-winner) as first goals
-    if siis_override_goals:
+    # Bypass SIIS deterministic override goals and let the AI handle it
+    if False:
         raw_goals = siis_override_goals + raw_goals
 
     # Stage 7: Auto-Repair Validation & Compositional Scoring
