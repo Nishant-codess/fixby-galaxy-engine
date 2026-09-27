@@ -9,15 +9,11 @@ import "./transition.css";
 export default function Home() {
   const [isFadingOut, setIsFadingOut] = useState(false);
   const [isConsoleMode, setIsConsoleMode] = useState(false);
-  const [skipTransitions, setSkipTransitions] = useState(() => {
-    if (typeof window !== "undefined") {
-      return sessionStorage.getItem("fixby_mode") === "console";
-    }
-    return false;
-  });
+  const [skipTransitions, setSkipTransitions] = useState(false);
 
   useEffect(() => {
     if (sessionStorage.getItem("fixby_mode") === "console") {
+      setSkipTransitions(true);
       document.body.style.overflow = "hidden";
       // if ((window as any).lenis) (window as any).lenis.stop();
       setTimeout(() => {

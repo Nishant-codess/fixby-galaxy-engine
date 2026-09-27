@@ -283,23 +283,19 @@ def run_troubleshoot_pipeline(query: str, siis_response: Optional[str] = None) -
             )
 
     # Stages 1-3: 3-Tier Cascading Cache Check (<20ms)
-    # IMPORTANT: If a SIIS payload is present, incorporate it into the cache key so
-    # telemetry-influenced results are never served from a non-SIIS cached response.
-    cache_query = query if not siis_response else f"{query}__siis__{siis_response}"
-    if siis_response:
-        slots["__siis_response"] = siis_response
-
-    cached_val, tier = cache.get(cache_query, slots)
-    if cached_val is not None:
-        latency = round((time.time() - start_time) * 1000, 2)
-        # Deep copy to prevent mutating cached state
-        resp_copy = copy.deepcopy(cached_val)
-        resp_copy.query = query
-        resp_copy.meta.latency_ms = latency
-        resp_copy.meta.cache_hit = True
-        resp_copy.meta.cache_tier = tier
-        resp_copy.meta.language_detected = lang
-        return resp_copy
+    # IMPORTANT: Bypass cache if SIIS telemetry is provided, to ensure real-time hardware overrides
+    if not siis_response or siis_response.strip() in ("", "{}"):
+        cached_val, tier = cache.get(query, slots)
+        if cached_val is not None:
+            latency = round((time.time() - start_time) * 1000, 2)
+            # Deep copy to prevent mutating cached state
+            resp_copy = copy.deepcopy(cached_val)
+            resp_copy.query = query
+            resp_copy.meta.latency_ms = latency
+            resp_copy.meta.cache_hit = True
+            resp_copy.meta.cache_tier = tier
+            resp_copy.meta.language_detected = lang
+            return resp_copy
 
     # ── SIIS Deterministic Decision Matrix ────────────────────────────────────────
     # Multi-winner 2D lookup: Query Domain × Live Device State → ranked deeplink list.
@@ -333,30 +329,7 @@ def run_troubleshoot_pipeline(query: str, siis_response: Optional[str] = None) -
                 return display
         return None
 
-    if not siis_response or siis_response.strip() in ("", "{}"):
-        _q_lower = query.lower()
-        QUERY_SIIS_MOCKS = {
-            ("overheating", "hot", "burning", "warm", "heated", "temperature"):
-                '{"batteryLevel": 45, "storageUsed": 65, "temperature": 58, "signalStrength": "Good"}',
-            ("drain", "dropping", "die", "battery", "fast drain", "losing charge"):
-                '{"batteryLevel": 12, "storageUsed": 65, "temperature": 35, "signalStrength": "Good"}',
-            ("lag", "slow", "freeze", "stutter", "hang", "crash", "unresponsive"):
-                '{"batteryLevel": 50, "storageUsed": 96, "temperature": 40, "signalStrength": "Good"}',
-            ("wifi", "disconnect", "signal", "internet", "network", "no service", "mobile data"):
-                '{"batteryLevel": 50, "storageUsed": 50, "temperature": 30, "signalStrength": "Weak"}',
-            ("camera", "photo", "blurry", "focus", "pic", "selfie"):
-                '{"batteryLevel": 60, "storageUsed": 85, "temperature": 32, "signalStrength": "Good"}',
-            ("storage", "space", "full", "memory", "download", "photos"):
-                '{"batteryLevel": 60, "storageUsed": 97, "temperature": 30, "signalStrength": "Good"}',
-            ("sound", "volume", "speaker", "audio", "ringtone", "vibration"):
-                '{"batteryLevel": 70, "storageUsed": 50, "temperature": 30, "signalStrength": "Good"}',
-            ("screen", "display", "brightness", "dark", "flicker", "dim"):
-                '{"batteryLevel": 70, "storageUsed": 50, "temperature": 30, "signalStrength": "Good"}',
-        }
-        for kws, mock_resp in QUERY_SIIS_MOCKS.items():
-            if any(w in _q_lower for w in kws):
-                siis_response = mock_resp
-                break
+
 
     if siis_response and siis_response.strip() not in ("", "{}"):
         try:
@@ -1161,6 +1134,8 @@ def run_troubleshoot_pipeline(query: str, siis_response: Optional[str] = None) -
     cache_vars = variations
     if siis_response and variations:
         cache_vars = [f"{v}__siis__{siis_response}" for v in variations]
+    
+    cache_query = query if not siis_response else f"{query}__siis__{siis_response}"
     cache.put(cache_query, resp, slots=slots, variations=cache_vars)
     return resp
 
