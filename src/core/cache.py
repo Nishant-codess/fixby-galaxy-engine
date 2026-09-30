@@ -13,11 +13,21 @@ import zlib
 from typing import Dict, Any, Tuple, Optional, List
 import numpy as np
 
-try:
-    from sentence_transformers import SentenceTransformer
-    _EMBEDDER = SentenceTransformer("all-MiniLM-L6-v2")
-except Exception:
-    _EMBEDDER = None
+_EMBEDDER = None
+
+def _get_embedder():
+    global _EMBEDDER
+    if _EMBEDDER is None:
+        import os
+        if os.getenv("ENABLE_HEAVY_EMBEDDINGS", "false").lower() in ("1", "true", "yes"):
+            try:
+                from sentence_transformers import SentenceTransformer
+                _EMBEDDER = SentenceTransformer("all-MiniLM-L6-v2")
+            except Exception:
+                _EMBEDDER = False
+        else:
+            _EMBEDDER = False
+    return _EMBEDDER if _EMBEDDER is not False else None
 
 
 class CascadingSemanticCache:
@@ -43,9 +53,10 @@ class CascadingSemanticCache:
         Extracts subword character n-grams and token unigrams to produce an L2-normalized vector.
         Provides robust semantic and phonetic matching across English and Hinglish without heavy model weights.
         """
-        if _EMBEDDER:
+        embedder = _get_embedder()
+        if embedder:
             try:
-                return _EMBEDDER.encode(text, normalize_embeddings=True)
+                return embedder.encode(text, normalize_embeddings=True)
             except Exception:
                 pass
 

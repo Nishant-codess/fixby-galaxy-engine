@@ -12,3 +12,11 @@ services:
         value: test-api-key-123
       - key: USE_MOCK
         value: "false"
+      - key: ENABLE_HEAVY_EMBEDDINGS
+        value: "false"
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+
+

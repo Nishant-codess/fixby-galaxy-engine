@@ -4,6 +4,7 @@ Performs keyword TF-IDF/word-overlap scoring with domain category boosting over 
 """
 import json
 import re
+import os
 import logging
 from typing import List, Dict, Any
 from pathlib import Path
@@ -34,7 +35,8 @@ class DeeplinkMatcher:
         self.corpus_embeddings = None
         self.catalog_texts = []
 
-        if HAS_SENTENCE_TRANSFORMERS and self.catalog:
+        enable_heavy = os.getenv("ENABLE_HEAVY_EMBEDDINGS", "false").lower() in ("1", "true", "yes")
+        if enable_heavy and HAS_SENTENCE_TRANSFORMERS and self.catalog:
             try:
                 self.model = SentenceTransformer("all-MiniLM-L6-v2")
                 self.catalog_texts = []
@@ -50,6 +52,8 @@ class DeeplinkMatcher:
             except Exception as e:
                 logger.error(f"Failed to initialize SentenceTransformer: {e}")
                 self.model = None
+        else:
+            logger.info("Running lightweight high-speed DeeplinkMatcher (low memory footprint).")
 
     def _load_catalog(self) -> List[Dict[str, Any]]:
         try:
