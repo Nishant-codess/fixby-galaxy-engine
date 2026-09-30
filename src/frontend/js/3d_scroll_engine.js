@@ -81,19 +81,37 @@ loader.load('assets/models/source/Untitled.glb', function (gltf) {
   phoneGroup.add(model);
   console.log("Added model to phoneGroup");
   
-  // Remove preloader if it exists
+  // Remove preloader once loaded
+  dismissPreloader();
+}, function (xhr) {
+  if (xhr.lengthComputable) {
+    const percent = (xhr.loaded / xhr.total) * 100;
+    const progressEl = document.getElementById('load-progress');
+    if (progressEl) progressEl.style.width = percent + '%';
+  }
+}, function (error) {
+  console.error('An error happened loading the model:', error);
+  dismissPreloader();
+});
+
+// Helper to dismiss preloader cleanly
+function dismissPreloader() {
   const preloader = document.getElementById('preloader');
-  if (preloader) {
+  if (preloader && !preloader.dataset.dismissed) {
+    preloader.dataset.dismissed = "true";
     gsap.to(preloader, {
       opacity: 0,
-      duration: 1.5,
+      duration: 0.8,
       ease: "power2.inOut",
-      onComplete: () => preloader.remove()
+      onComplete: () => {
+        if (preloader.parentNode) preloader.parentNode.removeChild(preloader);
+      }
     });
   }
-}, undefined, function (error) {
-  console.error('An error happened loading the model:', error);
-});
+}
+
+// Failsafe: dismiss preloader after 2 seconds max so landing page is never blocked
+setTimeout(dismissPreloader, 2000);
 
 // 5. Create Data Particles
 const particleGeometry = new THREE.BufferGeometry();

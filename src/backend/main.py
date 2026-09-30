@@ -4,7 +4,7 @@ import os
 import time
 from collections import defaultdict
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from contracts.schema import (
     TroubleshootRequest, TroubleshootResponse,
@@ -167,10 +167,42 @@ def get_analytics():
     )
 
 
-# Mount static frontend directory for single-service web deployments (index.html, demo.html, assets)
+# Static frontend routes and mounting for unified web console & landing page
 from fastapi.staticfiles import StaticFiles
 
 frontend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../frontend"))
+
 if os.path.exists(frontend_dir):
+    # Explicit file routes take highest precedence
+    @app.get("/", include_in_schema=False)
+    async def serve_landing_page():
+        return FileResponse(os.path.join(frontend_dir, "index.html"))
+
+    @app.get("/index.html", include_in_schema=False)
+    async def serve_index_html():
+        return FileResponse(os.path.join(frontend_dir, "index.html"))
+
+    @app.get("/demo.html", include_in_schema=False)
+    async def serve_demo_html():
+        return FileResponse(os.path.join(frontend_dir, "demo.html"))
+
+    @app.get("/demo", include_in_schema=False)
+    async def serve_demo():
+        return FileResponse(os.path.join(frontend_dir, "demo.html"))
+
+    # Mount static assets
+    css_dir = os.path.join(frontend_dir, "css")
+    js_dir = os.path.join(frontend_dir, "js")
+    assets_dir = os.path.join(frontend_dir, "assets")
+
+    if os.path.exists(css_dir):
+        app.mount("/css", StaticFiles(directory=css_dir), name="css")
+    if os.path.exists(js_dir):
+        app.mount("/js", StaticFiles(directory=js_dir), name="js")
+    if os.path.exists(assets_dir):
+        app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
+
+    # Fallback mount for any remaining static files
     app.mount("/", StaticFiles(directory=frontend_dir, html=True), name="frontend")
+
 
