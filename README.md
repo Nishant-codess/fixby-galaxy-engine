@@ -31,7 +31,7 @@
 | 📺 **Demo Video (YouTube)** | [**Watch on YouTube (5 min)**](https://youtu.be/CweVKNfK24I?si=kOnye3QL2gz9HHFk) | Full walkthrough: cold query, sub-ms cache hits, Hinglish parsing, 3D Galaxy simulator, and One UI deeplinks. |
 | 📊 **Presentation Deck** | [**`SRM_TheCyclops_PPT.pptx.pdf`**](./SRM_TheCyclops_PPT.pptx.pdf) | Official 12-slide presentation detailing architecture, benchmarks, innovations, and Samsung ecosystem fit. |
 | 📝 **AI Disclosure Form** | [**`AI_Disclosure.pdf`**](./AI_Disclosure.pdf) | Complete, signed declaration of AI tools, platforms, system prompts, and human code contributions. |
-| 🌐 **Live Web Console** | [**Launch Interactive Console**](https://fixby-galaxy-engine.onrender.com/demo.html) | Live interactive deployment featuring 3D Galaxy phone model, One UI simulator, and real-time DAG visualizer. |
+| 🌐 **Live Web Console** | [**Launch Interactive Console**](https://fixby-galaxy-engine.onrender.com/)) | Live interactive deployment featuring 3D Galaxy phone model, One UI simulator, and real-time DAG visualizer. |
 | 📖 **Interactive API Docs** | [**Open Swagger / OpenAPI**](https://fixby-galaxy-engine.onrender.com/docs) | Live FastAPI documentation with Swagger UI for `/v1/troubleshoot`, `/v1/analytics`, and health checks. |
 
 <div align="center">
