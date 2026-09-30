@@ -9,7 +9,12 @@ export default function AdminDashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch("http://localhost:8000/v1/analytics", {
+        const analyticsUrl = process.env.NEXT_PUBLIC_ANALYTICS_URL || 
+          (typeof window !== "undefined" && !["localhost", "127.0.0.1"].includes(window.location.hostname)
+            ? `${window.location.origin}/v1/analytics`
+            : "http://localhost:8000/v1/analytics");
+
+        const res = await fetch(analyticsUrl, {
           headers: { "X-API-Key": "test-api-key-123" }
         });
         if (res.ok) setData(await res.json());

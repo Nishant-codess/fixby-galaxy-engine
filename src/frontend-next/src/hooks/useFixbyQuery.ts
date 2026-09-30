@@ -38,7 +38,12 @@ export function useFixbyQuery() {
     let dynamicPath: string[] = [];
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/v1/troubleshoot", {
+      const backendUrl = process.env.NEXT_PUBLIC_API_URL || 
+        (typeof window !== "undefined" && !["localhost", "127.0.0.1"].includes(window.location.hostname)
+          ? `${window.location.origin}/v1/troubleshoot`
+          : "http://127.0.0.1:8000/v1/troubleshoot");
+
+      const res = await fetch(backendUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

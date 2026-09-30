@@ -15,7 +15,7 @@
 
 # next.js
 /.next/
-/out/
+# /out/ (included for unified cloud deployment)
 
 # production
 /build

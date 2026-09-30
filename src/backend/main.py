@@ -167,30 +167,21 @@ def get_analytics():
     )
 
 
-# Static frontend routes and mounting for unified web console & landing page
+# Static frontend routes: Serve the real Next.js application (src/frontend-next/out)
 from fastapi.staticfiles import StaticFiles
 
-frontend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../frontend"))
+next_out_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../frontend-next/out"))
+legacy_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../frontend"))
+
+frontend_dir = next_out_dir if os.path.exists(os.path.join(next_out_dir, "index.html")) else legacy_dir
 
 if os.path.exists(frontend_dir):
-    # Explicit file routes take highest precedence
-    @app.get("/", include_in_schema=False)
-    async def serve_landing_page():
-        return FileResponse(os.path.join(frontend_dir, "index.html"))
+    # 1. Mount Next.js _next chunks (vital for Next.js to render)
+    next_chunks = os.path.join(frontend_dir, "_next")
+    if os.path.exists(next_chunks):
+        app.mount("/_next", StaticFiles(directory=next_chunks), name="next_static")
 
-    @app.get("/index.html", include_in_schema=False)
-    async def serve_index_html():
-        return FileResponse(os.path.join(frontend_dir, "index.html"))
-
-    @app.get("/demo.html", include_in_schema=False)
-    async def serve_demo_html():
-        return FileResponse(os.path.join(frontend_dir, "demo.html"))
-
-    @app.get("/demo", include_in_schema=False)
-    async def serve_demo():
-        return FileResponse(os.path.join(frontend_dir, "demo.html"))
-
-    # Mount static assets
+    # 2. Mount static assets (css, js, assets)
     css_dir = os.path.join(frontend_dir, "css")
     js_dir = os.path.join(frontend_dir, "js")
     assets_dir = os.path.join(frontend_dir, "assets")
@@ -202,7 +193,33 @@ if os.path.exists(frontend_dir):
     if os.path.exists(assets_dir):
         app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
 
-    # Fallback mount for any remaining static files
+    # 3. Explicit HTML Routes
+    @app.get("/", include_in_schema=False)
+    async def serve_landing_page():
+        return FileResponse(os.path.join(frontend_dir, "index.html"))
+
+    @app.get("/index.html", include_in_schema=False)
+    async def serve_index_html():
+        return FileResponse(os.path.join(frontend_dir, "index.html"))
+
+    @app.get("/admin", include_in_schema=False)
+    @app.get("/admin.html", include_in_schema=False)
+    async def serve_admin_page():
+        admin_file = os.path.join(frontend_dir, "admin.html")
+        if os.path.exists(admin_file):
+            return FileResponse(admin_file)
+        return FileResponse(os.path.join(frontend_dir, "index.html"))
+
+    @app.get("/demo", include_in_schema=False)
+    @app.get("/demo.html", include_in_schema=False)
+    async def serve_demo():
+        legacy_demo = os.path.join(legacy_dir, "demo.html")
+        if os.path.exists(legacy_demo):
+            return FileResponse(legacy_demo)
+        return FileResponse(os.path.join(frontend_dir, "index.html"))
+
+    # 4. Fallback mount for any remaining static files (favicon.ico, etc.)
     app.mount("/", StaticFiles(directory=frontend_dir, html=True), name="frontend")
+
 
 
