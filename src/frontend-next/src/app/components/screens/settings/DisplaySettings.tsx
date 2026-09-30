@@ -50,6 +50,7 @@ export function DisplaySettings({ targetPath, onNavigate }: { targetPath: string
 
         {/* Settings Group 2 */}
         <div style={{ margin: '0 16px 24px', background: 'var(--oneui-bg-card)', borderRadius: '24px', overflow: 'hidden' }}>
+          <SettingsRow title="Motion smoothness" rightLabel="Adaptive (120 Hz)" showChevron onPress={() => {}} divider highlight={targetNode?.toLowerCase().includes('motion') || targetNode?.toLowerCase().includes('smoothness') || targetNode?.toLowerCase().includes('120')} />
           <SettingsRow title="Eye comfort shield" toggle toggleValue={eyeComfort} onToggleChange={setEyeComfort} divider highlight={targetNode?.toLowerCase() === 'eye comfort shield'} />
           <SettingsRow title="Screen mode" rightLabel="Vivid" showChevron onPress={() => {}} divider highlight={targetNode?.toLowerCase() === 'screen mode'} />
           <SettingsRow title="Font size and style" showChevron onPress={() => {}} divider />
@@ -63,8 +64,8 @@ export function DisplaySettings({ targetPath, onNavigate }: { targetPath: string
           <SettingsRow title="Screen timeout" rightLabel="30 seconds" showChevron onPress={() => {}} divider highlight={targetNode?.toLowerCase() === 'screen timeout'} />
           <SettingsRow title="Easy mode" toggle toggleValue={false} divider />
           <SettingsRow title="Edge panels" toggle toggleValue={true} divider />
-          <SettingsRow title="Navigation bar" rightLabel="Swipe gestures" showChevron onPress={() => {}} divider />
-          <SettingsRow title="Touch sensitivity" subtitle="Increase touch sensitivity for use with screen protectors" toggle toggleValue={touchSensitivity} onToggleChange={setTouchSensitivity} />
+          <SettingsRow title="Navigation bar" rightLabel="Swipe gestures" showChevron onPress={() => {}} divider highlight={targetNode?.toLowerCase().includes('navigation') || targetNode?.toLowerCase().includes('gesture')} />
+          <SettingsRow title="Touch sensitivity" subtitle="Increase touch sensitivity for screen protectors" toggle toggleValue={touchSensitivity} onToggleChange={setTouchSensitivity} highlight={targetNode?.toLowerCase().includes('touch') || targetNode?.toLowerCase().includes('sensitivity')} />
         </div>
 
       </div>

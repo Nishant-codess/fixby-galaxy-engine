@@ -4,11 +4,24 @@ import { OneUISlider } from '../ui/OneUISlider';
 
 const PRESETS = [
   "battery draining fast",
-  "phone overheating",
-  "wifi keeps disconnecting"
+  "bhai mera phone bohot garam ho raha hai",
+  "배터리가 너무 빨리 닳아요",
+  "wifi keeps disconnecting",
+  "storage full clean up junk files",
+  "화면이 버벅거리고 120hz 안돼요",
+  "phone hang kar raha hai ruk ruk ke",
+  "camera keeps crashing when opening"
 ];
 
-export function FixbyOrb({ isOpen, onToggle, onResolved }: { isOpen: boolean, onToggle: (v: boolean) => void, onResolved: (path: string[], escalation?: string) => void }) {
+export interface FixbyOrbProps {
+  isOpen: boolean;
+  onToggle: (v: boolean) => void;
+  onResolved: (path: string[], escalation?: string) => void;
+  initialQuery?: string;
+  onClearInitialQuery?: () => void;
+}
+
+export function FixbyOrb({ isOpen, onToggle, onResolved, initialQuery, onClearInitialQuery }: FixbyOrbProps) {
   const [position, setPosition] = useState({ x: 0, y: 0 }); // relative to bottom right
   const [isDragging, setIsDragging] = useState(false);
   const [query, setQuery] = useState("");
@@ -20,6 +33,14 @@ export function FixbyOrb({ isOpen, onToggle, onResolved }: { isOpen: boolean, on
   const [siisSignal, setSiisSignal] = useState(80);
   const { executeQuery, stages, isProcessing, reset } = useFixbyQuery();
   const orbRef = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    if (isOpen && initialQuery) {
+      setQuery(initialQuery);
+      handleSubmit(initialQuery);
+      onClearInitialQuery?.();
+    }
+  }, [isOpen, initialQuery]);
   
   // Drag handling
   useEffect(() => {

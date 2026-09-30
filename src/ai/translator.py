@@ -44,14 +44,16 @@ class MultilingualTranslator:
             return query
 
         normalized = query.lower()
-        # Phrase-level replacement
+        # Phrase-level replacement using word boundaries for alphanumeric phrases
         for phrase in self.sorted_keys:
-            # Add word boundary to avoid partial matches on small English words,
-            # but for Korean and Hinglish, direct substring match works if sorted by length.
-            # To be safe and simple, we'll use substring replacement as originally done.
-            if phrase in normalized:
-                english_equiv = TRANSLATION_DICT[phrase]
-                normalized = normalized.replace(phrase, english_equiv)
+            if not phrase:
+                continue
+            english_equiv = TRANSLATION_DICT[phrase]
+            if re.match(r"^[a-z0-9\s]+$", phrase):
+                normalized = re.sub(rf"\b{re.escape(phrase)}\b", english_equiv, normalized)
+            else:
+                if phrase in normalized:
+                    normalized = normalized.replace(phrase, english_equiv)
 
         # Clean multiple spaces
         normalized = re.sub(r"\s+", " ", normalized).strip()

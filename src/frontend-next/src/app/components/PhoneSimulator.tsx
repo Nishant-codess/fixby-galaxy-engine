@@ -79,6 +79,12 @@ export default function PhoneSimulator() {
   const [orbOpen, setOrbOpen] = useState(false);
   const [targetPath, setTargetPath] = useState<string[]>([]);
   const [escalation, setEscalation] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+
+  const handleFixbySearch = (q: string) => {
+    setSearchQuery(q);
+    setOrbOpen(true);
+  };
 
   const handleOrbResolved = (path: string[], escalationLevel?: string) => {
     setTargetPath(path);
@@ -107,7 +113,7 @@ export default function PhoneSimulator() {
       case 'recents': return <RecentApps onNavigate={(s) => { pop(); push(s); }} onCloseAll={reset} />;
 
       // Settings Root
-      case 'settings': return <SettingsRoot onNavigate={push} targetPath={targetPath} />;
+      case 'settings': return <SettingsRoot onNavigate={push} targetPath={targetPath} onFixbyQuery={handleFixbySearch} />;
 
       // Settings Branches
       case 'settings/display':         return <DisplaySettings targetPath={targetPath} onNavigate={push} />;
@@ -167,6 +173,8 @@ export default function PhoneSimulator() {
             isOpen={orbOpen}
             onToggle={setOrbOpen}
             onResolved={handleOrbResolved}
+            initialQuery={searchQuery}
+            onClearInitialQuery={() => setSearchQuery("")}
           />
         )}
 

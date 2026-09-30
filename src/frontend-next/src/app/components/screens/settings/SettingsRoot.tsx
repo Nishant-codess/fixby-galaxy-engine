@@ -18,7 +18,15 @@ const ALL_SETTINGS = [
   { icon: <IChart />,   title: "Digital Wellbeing",   color: "#8e5ef5", screen: "settings/wellbeing" },
 ];
 
-export function SettingsRoot({ onNavigate, targetPath }: { onNavigate: (s: Screen) => void; targetPath: string[] }) {
+export function SettingsRoot({ 
+  onNavigate, 
+  targetPath,
+  onFixbyQuery 
+}: { 
+  onNavigate: (s: Screen) => void; 
+  targetPath: string[]; 
+  onFixbyQuery?: (q: string) => void;
+}) {
   const [query, setQuery] = useState("");
   
   // Normalize target: path might be ["Settings", "Display"] or the full raw string
@@ -40,13 +48,18 @@ export function SettingsRoot({ onNavigate, targetPath }: { onNavigate: (s: Scree
         </div>
         
         {/* Search Bar */}
-        <div style={{ margin: '0 16px 24px', position: 'relative' }}>
+        <div style={{ margin: '0 16px 16px', position: 'relative' }}>
           <div style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--oneui-text-tertiary)' }}>
             <ISearch />
           </div>
           <input 
             value={query}
             onChange={e => setQuery(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === 'Enter' && query.trim()) {
+                onFixbyQuery?.(query.trim());
+              }
+            }}
             placeholder="Search settings"
             style={{
               width: '100%', background: 'var(--oneui-bg-card)', border: 'none', borderRadius: '24px',
@@ -54,6 +67,34 @@ export function SettingsRoot({ onNavigate, targetPath }: { onNavigate: (s: Scree
             }}
           />
         </div>
+
+        {/* Fixby AI Search Prompt Chip */}
+        {query.trim().length > 0 && (
+          <div 
+            onClick={() => onFixbyQuery?.(query.trim())}
+            style={{
+              margin: '0 16px 20px',
+              padding: '10px 16px',
+              background: 'linear-gradient(135deg, rgba(32,117,214,0.2), rgba(108,71,255,0.2))',
+              border: '1px solid rgba(108,71,255,0.4)',
+              borderRadius: '16px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              color: '#fff',
+              fontSize: '13px'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden' }}>
+              <span style={{ fontSize: '15px', flexShrink: 0 }}>⚡</span>
+              <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                Fix with AI: <strong>&quot;{query}&quot;</strong>
+              </span>
+            </div>
+            <span style={{ color: 'var(--oneui-accent)', fontWeight: 600, flexShrink: 0, marginLeft: '8px' }}>Diagnose →</span>
+          </div>
+        )}
 
         {/* Samsung Account Mini-Card */}
         <div style={{ margin: '0 16px 24px', background: 'var(--oneui-bg-card)', borderRadius: '24px', overflow: 'hidden' }}>

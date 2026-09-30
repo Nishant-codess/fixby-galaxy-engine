@@ -40,7 +40,7 @@ export function SettingsRow({
       )}
 
       {/* Text Area */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '2px', overflow: 'hidden' }}>
+      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '2px', overflow: 'hidden' }}>
         <div style={{ fontSize: '16px', color: 'var(--oneui-text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
           {title}
         </div>
@@ -48,7 +48,7 @@ export function SettingsRow({
       </div>
 
       {/* Right Content */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0, marginLeft: 'auto' }}>
         {highlight && (
           <div style={{
             background: 'linear-gradient(135deg, #2075d6, #6c47ff)',
@@ -61,9 +61,9 @@ export function SettingsRow({
             {toggle ? 'Toggle this' : 'Tap here'}
           </div>
         )}
-        {rightLabel && <span style={{ fontSize: '14px', color: 'var(--oneui-text-secondary)' }}>{rightLabel}</span>}
+        {rightLabel && <span style={{ fontSize: '14px', color: 'var(--oneui-text-secondary)', flexShrink: 0, whiteSpace: 'nowrap' }}>{rightLabel}</span>}
         {toggle && <OneUISwitch checked={!!toggleValue} onChange={onToggleChange} />}
-        {showChevron && <div style={{ color: 'var(--oneui-text-tertiary)' }}><IChevron /></div>}
+        {showChevron && <div style={{ color: 'var(--oneui-text-tertiary)', flexShrink: 0, display: 'flex', alignItems: 'center' }}><IChevron /></div>}
       </div>
     </div>
   );

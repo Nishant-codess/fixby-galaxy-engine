@@ -36,9 +36,15 @@ SYMPTOM_TAXONOMY: Dict[str, Dict[str, Set[str]]] = {
         },
         "unexpected_shutdown": {
             "turns off", "shut down", "band ho gaya", "restarts randomly",
-            "switch off", "sudden restart", "keeps restarting",
+            "switch off", "sudden restart", "keeps restarting", "restarts unexpectedly",
+            "restart unexpectedly", "unexpected restart",
             "꺼짐", "갑자기 꺼져", "재부팅", "random reboot", "boots itself",
             "phone turns off", "shuts down randomly", "powers off",
+        },
+        "background_limits": {
+            "unused apps to sleep", "put unused apps to sleep", "put apps to sleep",
+            "sleeping apps", "deep sleeping apps", "background usage limits",
+            "절전 앱", "미사용 앱 절전",
         },
         "battery_protect": {
             "protect battery", "limit charge", "maximum charge", "battery health",
@@ -125,12 +131,12 @@ SYMPTOM_TAXONOMY: Dict[str, Dict[str, Set[str]]] = {
         "crash_or_slow": {
             "camera", "cam", "camera crash", "camera crashing", "camera crashes", "camera lag", "camera slow", "camera band", "photos blurry",
             "camera freeze", "camera open nahi", "camera error", "camera not working",
-            "카메라 튕김", "카메라 멈춤", "사진 흐림", "카메라 오류",
+            "카메라", "카메라 앱", "카메라 튕김", "카메라 멈춤", "사진 흐림", "카메라 오류", "튕겨", "튕겨요", "튕김", "자꾸 튕겨요",
             "camera app crashed", "can't open camera", "camera stopped working",
         },
         "photo_quality": {
             "blurry", "blur", "grainy", "dark photos", "washed out",
-            "흐린 사진", "사진 품질", "야간 사진",
+            "흐린 사진", "사진 품질", "야간 사진", "사진",
             "photos look bad", "picture quality", "night mode", "pro mode",
         },
     },
@@ -138,7 +144,7 @@ SYMPTOM_TAXONOMY: Dict[str, Dict[str, Set[str]]] = {
         "general_lag": {
             "hang", "lag", "phone slow", "slow response", "ruk ruk ke",
             "phone atak raha", "hang kar raha", "response slow",
-            "폰 느려", "버벅임", "렉", "반응 느림", "시스템 지연",
+            "폰 느려", "버벅임", "렉", "반응 느림", "시스템 지연", "폰이", "버벅이고",
             "sluggish", "freezing", "not responding", "acting slow",
             "super slow", "lagging", "lags", "very slow", "phone is slow",
             "slow and lagging", "slow when", "takes forever", "unresponsive",
@@ -146,7 +152,7 @@ SYMPTOM_TAXONOMY: Dict[str, Dict[str, Set[str]]] = {
         "app_crash": {
             "app crash", "crashing", "apps closing", "force close",
             "app band ho jata", "apps restart",
-            "앱 튕김", "강제종료", "앱 오류", "앱 꺼짐",
+            "앱 튕김", "강제종료", "앱 오류", "앱 꺼짐", "앱이 튕겨요",
             "app keeps crashing", "app closes itself", "keeps force closing",
             "randomly crashing", "crash back", "crash to home", "home screen",
             "app crashes", "keeps crashing", "randomly closing",
@@ -168,8 +174,9 @@ SYMPTOM_TAXONOMY: Dict[str, Dict[str, Set[str]]] = {
         "wifi_drop": {
             "wifi", "disconnect", "no internet", "wifi drop", "network issue",
             "wifi band", "network nahi aa raha", "wifi reconnect",
-            "와이파이 끊김", "와이파이", "인터넷 끊김", "네트워크 오류",
+            "와이파이 끊김", "와이파이", "인터넷 끊김", "네트워크 오류", "끊겨", "끊겨요", "자꾸 끊겨요",
             "keeps disconnecting from wifi", "wifi not stable", "internet drops",
+            "reset network settings", "network settings reset", "reset network",
         },
         "mobile_data": {
             "mobile data", "data not working", "4g", "5g", "lte",

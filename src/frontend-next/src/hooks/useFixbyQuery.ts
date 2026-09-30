@@ -39,7 +39,7 @@ export function useFixbyQuery() {
 
     try {
       const backendUrl = process.env.NEXT_PUBLIC_API_URL || 
-        (typeof window !== "undefined" && !["localhost", "127.0.0.1"].includes(window.location.hostname)
+        (typeof window !== "undefined" && window.location.port !== "3000"
           ? `${window.location.origin}/v1/troubleshoot`
           : "http://127.0.0.1:8000/v1/troubleshoot");
 

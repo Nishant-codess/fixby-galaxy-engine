@@ -41,7 +41,7 @@ export function DeviceCareScreen({ targetPath, onNavigate }: Props) {
                 animation: 'popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
                 whiteSpace: 'nowrap'
               }}>
-                Toggle this
+                Tap here
               </div>
             )}
           </div>
@@ -63,7 +63,7 @@ export function DeviceCareScreen({ targetPath, onNavigate }: Props) {
 
         {/* Group 3 */}
         <div style={{ margin: '0 16px 24px', background: 'var(--oneui-bg-card)', borderRadius: '24px', overflow: 'hidden' }}>
-          <SettingsRow title="Auto optimization" rightLabel="Restart when needed" toggle toggleValue={autoOptimization} onToggleChange={setAutoOptimization} divider highlight={isHighlighted(targetPath, 'auto optimization')} />
+          <SettingsRow title="Auto optimization" subtitle="Restart when needed" toggle toggleValue={autoOptimization} onToggleChange={setAutoOptimization} divider highlight={isHighlighted(targetPath, 'auto optimization')} />
           <SettingsRow title="Performance profile" rightLabel="Standard" showChevron onPress={() => {}} highlight={isHighlighted(targetPath, 'performance profile')} />
         </div>
       </div>
