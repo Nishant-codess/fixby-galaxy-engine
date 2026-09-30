@@ -165,3 +165,12 @@ def get_analytics():
         language_distribution=summary.get("language_distribution", {}),
         pipeline_source_breakdown=summary.get("pipeline_source_breakdown", {})
     )
+
+
+# Mount static frontend directory for single-service web deployments (index.html, demo.html, assets)
+from fastapi.staticfiles import StaticFiles
+
+frontend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../frontend"))
+if os.path.exists(frontend_dir):
+    app.mount("/", StaticFiles(directory=frontend_dir, html=True), name="frontend")
+

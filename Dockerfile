@@ -1,9 +1,9 @@
-# docker/Dockerfile — Fixby Core Engine Container
+# Fixby Galaxy Engine — Core AI Engine & Unified Web Console
 FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install system dependencies if required
+# Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
@@ -15,7 +15,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application source code
 COPY . .
 
-# Expose standard API ports (8000 standard, 7860 for HF Spaces)
+# Expose standard API ports (8000 standard, 7860 for Hugging Face Spaces)
 ENV PORT=8000
 EXPOSE 8000 7860
 

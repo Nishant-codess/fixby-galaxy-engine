@@ -2,7 +2,11 @@
 
 // TOGGLE: false = use mock.json, true = fetch live backend API
 const USE_LIVE_API = false;
-const BACKEND_URL = 'http://localhost:8000/v1/troubleshoot';
+// Automatically detect deployed backend origin, support window.FIXBY_API override, or fallback to localhost:8000
+const BACKEND_URL = window.FIXBY_API || 
+  (window.location.protocol.startsWith('http') && !['localhost', '127.0.0.1'].includes(window.location.hostname)
+    ? `${window.location.origin}/v1/troubleshoot`
+    : 'http://localhost:8000/v1/troubleshoot');
 
 class AppController {
   constructor() {
