@@ -180,7 +180,7 @@ export default function LandingPage({ onEnterConsole }: { onEnterConsole: () => 
         }}
       ></canvas>
 
-      <div className="progressive-blur">
+      <div className="progressive-blur-top">
         <span></span><span></span><span></span><span></span><span></span><span></span>
       </div>
 

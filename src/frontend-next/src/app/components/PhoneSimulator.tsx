@@ -170,19 +170,7 @@ export default function PhoneSimulator() {
           />
         )}
 
-        {/* SIIS Escalation Badge */}
-        {escalation && currentScreen !== 'lock' && (
-          <div style={{
-            position: 'absolute', bottom: '80px', left: '50%', transform: 'translateX(-50%)',
-            background: escalation === 'CRITICAL' ? 'var(--oneui-error)' : '#ff9800',
-            color: '#fff', padding: '6px 12px', borderRadius: '12px', fontSize: '13px', fontWeight: 600,
-            zIndex: 100, boxShadow: '0 4px 12px rgba(0,0,0,0.3)', pointerEvents: 'none',
-            display: 'flex', alignItems: 'center', gap: '6px'
-          }}>
-            <span style={{ fontSize: '16px' }}>⚡</span>
-            SIIS Override: {escalation}
-          </div>
-        )}
+
 
         <NavBar
           currentScreen={currentScreen}
