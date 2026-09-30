@@ -55,6 +55,7 @@ Fixby replaces unconstrained generative hallucinations with a **deterministic, r
 3. **Sub-Millisecond Median Latency:** A 3-Tier Cascading Cache serves recurring queries in **under 1ms**, saving 95%+ in AI operational costs.
 4. **Deterministic Auto-Repair:** Code-level schema enforcers normalize phrasing, enforce Samsung word limits, and order actions (non-invasive first, critical last) in **0.01ms** without re-prompting the LLM.
 
+DEMO VIDEO LINK : https://www.youtube.com/watch?v=CweVKNfK24I
 ---
 
 ## Head-to-Head: Naive Chatbot vs. Fixby Diagnostic Engine
