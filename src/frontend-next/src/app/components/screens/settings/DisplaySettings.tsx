@@ -50,7 +50,14 @@ export function DisplaySettings({ targetPath, onNavigate }: { targetPath: string
 
         {/* Settings Group 2 */}
         <div style={{ margin: '0 16px 24px', background: 'var(--oneui-bg-card)', borderRadius: '24px', overflow: 'hidden' }}>
-          <SettingsRow title="Motion smoothness" rightLabel="Adaptive (120 Hz)" showChevron onPress={() => {}} divider highlight={targetNode?.toLowerCase().includes('motion') || targetNode?.toLowerCase().includes('smoothness') || targetNode?.toLowerCase().includes('120')} />
+          <SettingsRow 
+            title="Motion smoothness" 
+            rightLabel="Adaptive" 
+            showChevron 
+            onPress={() => onNavigate('settings/motion-smoothness' as Screen)} 
+            divider 
+            highlight={targetNode?.toLowerCase().includes('motion') || targetNode?.toLowerCase().includes('smoothness') || targetNode?.toLowerCase().includes('120')} 
+          />
           <SettingsRow title="Eye comfort shield" toggle toggleValue={eyeComfort} onToggleChange={setEyeComfort} divider highlight={targetNode?.toLowerCase() === 'eye comfort shield'} />
           <SettingsRow title="Screen mode" rightLabel="Vivid" showChevron onPress={() => {}} divider highlight={targetNode?.toLowerCase() === 'screen mode'} />
           <SettingsRow title="Font size and style" showChevron onPress={() => {}} divider />

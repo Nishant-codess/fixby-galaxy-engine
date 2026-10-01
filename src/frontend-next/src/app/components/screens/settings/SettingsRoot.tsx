@@ -99,7 +99,13 @@ export function SettingsRoot({
         {/* Samsung Account Mini-Card */}
         <div style={{ margin: '0 16px 24px', background: 'var(--oneui-bg-card)', borderRadius: '24px', overflow: 'hidden' }}>
           <SettingsRow 
-            avatar={<div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#444' }} />}
+            avatar={
+              <img 
+                src="/assets/panda_avatar.jpg" 
+                alt="Fixby User" 
+                style={{ width: '42px', height: '42px', borderRadius: '50%', objectFit: 'cover', border: '1.5px solid rgba(255,255,255,0.15)' }} 
+              />
+            }
             title="Fixby User"
             subtitle="Samsung account"
             onPress={() => onNavigate('settings/samsung-account')}

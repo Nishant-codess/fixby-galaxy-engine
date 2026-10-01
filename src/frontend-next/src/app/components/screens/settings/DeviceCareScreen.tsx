@@ -50,7 +50,7 @@ export function DeviceCareScreen({ targetPath, onNavigate }: Props) {
         {/* Group 1 */}
         <div style={{ margin: '0 16px 24px', background: 'var(--oneui-bg-card)', borderRadius: '24px', overflow: 'hidden' }}>
           <SettingsRow title="Battery" rightLabel="12h 35m left" showChevron onPress={() => onNavigate('settings/battery')} divider highlight={isHighlighted(targetPath, 'battery')} />
-          <SettingsRow title="Storage" rightLabel="32.4 GB / 256 GB" showChevron onPress={() => {}} divider highlight={isHighlighted(targetPath, 'storage')} />
+          <SettingsRow title="Storage" rightLabel="32.4 GB / 256 GB" showChevron onPress={() => onNavigate('settings/storage' as Screen)} divider highlight={isHighlighted(targetPath, 'storage')} />
           <SettingsRow title="Memory" rightLabel="4.2 GB / 12 GB" showChevron onPress={() => {}} divider highlight={isHighlighted(targetPath, 'memory')} />
           <SettingsRow title="App protection" rightLabel="No threats" showChevron onPress={() => {}} highlight={isHighlighted(targetPath, 'app protection')} />
         </div>

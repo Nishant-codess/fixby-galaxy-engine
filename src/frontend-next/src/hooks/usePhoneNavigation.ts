@@ -3,12 +3,13 @@ import { useState, useCallback } from 'react';
 export type Screen = 
   | 'lock' | 'home' | 'recents' | 'drawer'
   | 'settings' | 'settings/display' | 'settings/samsung-account'
-  | 'settings/connections' | 'settings/battery' | 'settings/notifications'
+  | 'settings/connections' | 'settings/battery' | 'settings/battery-usage' | 'settings/notifications'
   | 'settings/lock-screen' | 'settings/security' | 'settings/general'
   | 'settings/about' | 'settings/wellbeing' | 'settings/apps'
   | 'settings/phone' | 'settings/generic'
   | 'settings/sound' | 'settings/camera' | 'settings/advanced'
-  | 'settings/device-care' | 'settings/privacy' | 'settings/accessibility'
+  | 'settings/device-care' | 'settings/storage' | 'settings/privacy' | 'settings/accessibility'
+  | 'settings/motion-smoothness'
   | 'app/mock';
 
 export function usePhoneNavigation(initialScreen: Screen = 'lock') {

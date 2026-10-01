@@ -30,6 +30,9 @@ import { SecuritySettings } from './screens/settings/SecuritySettings';
 import { AppsSettings } from './screens/settings/AppsSettings';
 import { WellbeingSettings } from './screens/settings/WellbeingSettings';
 import { GeneralSettings } from './screens/settings/GeneralSettings';
+import { MotionSmoothnessScreen } from './screens/settings/MotionSmoothnessScreen';
+import { BatteryUsageScreen } from './screens/settings/BatteryUsageScreen';
+import { StorageScreen } from './screens/settings/StorageScreen';
 
 // Maps keywords from the API path to a Settings sub-screen
 const SETTINGS_SCREEN_MAP: { keywords: string[]; screen: Screen }[] = [
@@ -131,6 +134,11 @@ export default function PhoneSimulator() {
       case 'settings/notifications':   return <NotificationSettings targetPath={targetPath} onNavigate={push} />;
       case 'settings/wellbeing':       return <WellbeingSettings targetPath={targetPath} onNavigate={push} />;
       case 'settings/general':         return <GeneralSettings targetPath={targetPath} onNavigate={push} />;
+
+      // Interactive Sub-screens
+      case 'settings/motion-smoothness': return <MotionSmoothnessScreen targetPath={targetPath} onBack={pop} />;
+      case 'settings/battery-usage':     return <BatteryUsageScreen targetPath={targetPath} onBack={pop} />;
+      case 'settings/storage':           return <StorageScreen targetPath={targetPath} onBack={pop} />;
 
       // Generic Mock Settings
       case 'settings/lock-screen':     return <LockScreenSettings targetPath={targetPath} onBack={pop} />;
