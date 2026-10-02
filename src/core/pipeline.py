@@ -306,6 +306,8 @@ def run_troubleshoot_pipeline(query: str, siis_response: Optional[str] = None) -
     #   3. Domain × device-state matrix
     siis_override_goals: List[Goal] = []
     hardware_escalation: Optional[str] = None
+    is_named_app_query: bool = False
+    q_domain = slots.get("domain", "general")
 
     # ── KNOWN NAMED APPS LIST for query extraction ──────────────────────────────
     _KNOWN_APPS = [
@@ -415,7 +417,7 @@ def run_troubleshoot_pipeline(query: str, siis_response: Optional[str] = None) -
                 _best_siis_dom = max(_domain_scores, key=_domain_scores.get)
                 _best_siis_score = _domain_scores[_best_siis_dom]
                 # Override if: strong SIIS signal, suspect taxonomy, or taxonomy was vague
-                if _best_siis_score >= 2 or _suspect_taxonomy or _dom in ("general", "unknown", None):
+                if _best_siis_score >= 4 or _suspect_taxonomy or _dom in ("general", "unknown", None):
                     _dom = _best_siis_dom
 
             def _make_goal(goal_str, title, action_name, desc, steps, deeplink, path, score=0.97, category=ActionCategory.auto):
@@ -464,6 +466,8 @@ def run_troubleshoot_pipeline(query: str, siis_response: Optional[str] = None) -
                 ])
             )
 
+            if _is_app_query:
+                is_named_app_query = True
             if _is_app_query and _tier1_breaches == 0:
                 # Route to App-specific clear cache — the most precise fix
                 siis_override_goals.append(_make_goal(
@@ -485,7 +489,7 @@ def run_troubleshoot_pipeline(query: str, siis_response: Optional[str] = None) -
 
             # ── COMPOUND EMERGENCY: 2+ critical states simultaneously ──
             # e.g. Q5: battery 5%, storage 99%, temp 72°C — phone is on the brink
-            elif _tier1_breaches >= 2:
+            elif _tier1_breaches >= 2 and _dom in ("battery", "performance", "storage", "thermal", "general", "unknown"):
                 hardware_escalation = "CRITICAL"
                 
                 siis_override_goals.append(_make_goal(
@@ -1092,7 +1096,12 @@ def run_troubleshoot_pipeline(query: str, siis_response: Optional[str] = None) -
 
     # Inject SIIS deterministic override goals (ranked, hardware-aware) ahead of AI goals
     if siis_override_goals:
-        raw_goals = siis_override_goals + raw_goals
+        if hardware_escalation in ["CRITICAL", "WARNING"] and q_domain in ("battery", "performance", "storage", "thermal", "general", "unknown"):
+            raw_goals = siis_override_goals + raw_goals
+        elif is_named_app_query:
+            raw_goals = siis_override_goals + raw_goals
+        else:
+            raw_goals = raw_goals + siis_override_goals
 
     # Stage 7: Auto-Repair Validation & Compositional Scoring
     topic = slots.get("domain", "Device")
@@ -1106,7 +1115,10 @@ def run_troubleshoot_pipeline(query: str, siis_response: Optional[str] = None) -
     score = compute_compositional_confidence(retrieval_sim=sim_val, consistency_score=cons_val, coverage_score=cov_val)
     for idx, g in enumerate(repaired_goals):
         # Score decay: primary gets full score, alternatives get progressively lower
-        g.score = round(max(0.50, score - (idx * 0.05)), 2)
+        if getattr(g, 'score', 0.0) >= 0.90:
+            g.score = round(max(0.50, g.score - (idx * 0.02)), 2)
+        else:
+            g.score = round(max(0.50, score - (idx * 0.05)), 2)
 
         # Populate navigation_path from the deeplink path string
         try:
