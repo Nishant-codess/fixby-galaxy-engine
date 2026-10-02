@@ -51,12 +51,13 @@ export function SettingsRow({
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0, marginLeft: 'auto' }}>
         {highlight && (
           <div style={{
-            background: 'linear-gradient(135deg, #2075d6, #6c47ff)',
-            color: '#fff', fontSize: '10px', fontWeight: 700,
-            padding: '3px 8px', borderRadius: '8px',
-            boxShadow: '0 2px 8px rgba(32,117,214,0.5)',
+            background: 'linear-gradient(135deg, rgba(32,117,214,0.95), rgba(108,71,255,0.95))',
+            color: '#fff', fontSize: '11px', fontWeight: 700,
+            padding: '4px 10px', borderRadius: '10px',
+            boxShadow: '0 4px 12px rgba(32,117,214,0.4), inset 0 1px 2px rgba(255,255,255,0.4)',
+            border: '1px solid rgba(255,255,255,0.2)',
             whiteSpace: 'nowrap', flexShrink: 0,
-            animation: 'popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)'
+            animation: 'popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)'
           }}>
             {toggle ? 'Toggle this' : 'Tap here'}
           </div>
@@ -71,10 +72,10 @@ export function SettingsRow({
   const wrapperStyle: React.CSSProperties = {
     padding: '0 16px',
     position: 'relative',
-    background: highlight ? 'rgba(32, 117, 214, 0.15)' : 'transparent',
-    boxShadow: highlight ? 'inset 0 0 0 2px var(--oneui-accent)' : 'none',
-    transition: 'background 0.3s, box-shadow 0.3s',
-    borderRadius: highlight ? '12px' : '0'
+    background: highlight ? 'linear-gradient(90deg, rgba(32, 117, 214, 0.15) 0%, rgba(108, 71, 255, 0.05) 100%)' : 'transparent',
+    boxShadow: highlight ? 'inset 0 0 0 1px rgba(32, 117, 214, 0.4), inset 0 1px 1px rgba(255,255,255,0.1)' : 'none',
+    transition: 'background 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
+    borderRadius: highlight ? '16px' : '0'
   };
 
   return (

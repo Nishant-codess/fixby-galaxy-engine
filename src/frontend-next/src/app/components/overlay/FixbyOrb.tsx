@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useSettings } from '../../context/SettingsContext';
 import { useFixbyQuery } from '../../../hooks/useFixbyQuery';
 import type { GoalData } from '../../../hooks/useFixbyQuery';
 import { OneUISlider } from '../ui/OneUISlider';
@@ -42,6 +43,7 @@ export function FixbyOrb({
   const [siisTemp, setSiisTemp] = useState(32);
   const [siisSignal, setSiisSignal] = useState(80);
   const { executeQuery, stages, isProcessing, allGoals, reset } = useFixbyQuery();
+  const { darkMode } = useSettings();
   const orbRef = useRef<HTMLDivElement>(null);
   
   // Track current goals and query for resolution cards
@@ -176,13 +178,14 @@ export function FixbyOrb({
         }}
         style={{
           position: 'absolute', right: `${position.x || 20}px`, bottom: `${position.y || 80}px`, zIndex: 200,
-          width: '52px', height: '52px', borderRadius: '50%',
-          background: 'linear-gradient(135deg, #2075d6 0%, #6c47ff 100%)',
-          boxShadow: '0 8px 16px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.1)',
+          width: '56px', height: '56px', borderRadius: '50%',
+          background: 'linear-gradient(135deg, rgba(32,117,214,0.9) 0%, rgba(108,71,255,0.9) 100%)',
+          backdropFilter: 'blur(20px)',
+          boxShadow: '0 12px 32px rgba(32,117,214,0.4), inset 0 2px 4px rgba(255,255,255,0.3)',
           display: isOpen ? 'none' : 'flex', alignItems: 'center', justifyContent: 'center',
-          color: '#fff', fontWeight: 800, fontSize: '24px', cursor: 'pointer',
-          touchAction: 'none', transition: isDragging ? 'none' : 'bottom 0.3s, right 0.3s',
-          animation: 'pulseGlow 2s infinite'
+          color: '#fff', fontWeight: 800, fontSize: '26px', cursor: 'pointer',
+          touchAction: 'none', transition: isDragging ? 'none' : 'bottom 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), right 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
+          animation: 'pulseGlowPremium 3s infinite ease-in-out'
         }}
       >
         F
@@ -200,10 +203,11 @@ export function FixbyOrb({
           <div style={{ flex: 1 }} onClick={() => !isProcessing && handleClose()} />
           
           <div style={{
-            background: 'var(--oneui-bg-card)', padding: '24px',
+            background: darkMode ? 'rgba(28,28,30,0.65)' : 'rgba(255,255,255,0.7)', backdropFilter: 'blur(40px) saturate(1.8)', padding: '32px 24px',
             borderTopLeftRadius: '32px', borderTopRightRadius: '32px',
-            animation: 'slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-            boxShadow: '0 -8px 32px rgba(0,0,0,0.4)', borderTop: '1px solid rgba(255,255,255,0.05)',
+            animation: 'slideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)',
+            boxShadow: darkMode ? '0 -24px 48px rgba(0,0,0,0.6), inset 0 1px 1px rgba(255,255,255,0.15)' : '0 -24px 48px rgba(0,0,0,0.1), inset 0 1px 2px rgba(255,255,255,0.8)', 
+            borderTop: darkMode ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.05)',
             maxHeight: '85vh', overflowY: 'auto'
           }}>
           {/* Drag Handle */}
@@ -223,7 +227,7 @@ export function FixbyOrb({
                 placeholder="Type your problem..."
                 autoFocus
                 style={{
-                  width: '100%', background: 'var(--oneui-bg-primary)', border: '1px solid var(--oneui-separator)', borderRadius: '16px',
+                  width: '100%', background: darkMode ? 'var(--oneui-bg-primary)' : 'rgba(0,0,0,0.03)', border: darkMode ? '1px solid var(--oneui-separator)' : '1px solid rgba(0,0,0,0.1)', borderRadius: '16px',
                   padding: '16px', color: 'var(--oneui-text-primary)', fontSize: '16px', outline: 'none', marginBottom: '16px'
                 }}
               />
@@ -236,8 +240,8 @@ export function FixbyOrb({
               }}>
                 {PRESETS.map(p => (
                   <div key={p} onClick={() => handleSubmit(p)} style={{ 
-                    whiteSpace: 'nowrap', padding: '8px 16px', background: 'var(--oneui-bg-primary)', 
-                    borderRadius: '16px', fontSize: '14px', border: '1px solid var(--oneui-separator)', 
+                    whiteSpace: 'nowrap', padding: '8px 16px', background: darkMode ? 'var(--oneui-bg-primary)' : 'rgba(0,0,0,0.03)', 
+                    borderRadius: '16px', fontSize: '14px', border: darkMode ? '1px solid var(--oneui-separator)' : '1px solid rgba(0,0,0,0.1)', 
                     cursor: 'pointer', color: 'var(--oneui-text-primary)' 
                   }}>
                     {p}
@@ -245,12 +249,18 @@ export function FixbyOrb({
                 ))}
               </div>
 
-              <div onClick={() => handleSubmit()} style={{ width: '100%', padding: '16px', background: (siisBattery !== 85 || siisStorage !== 60 || siisTemp !== 32 || siisSignal !== 80) ? 'linear-gradient(135deg, #ff3b30, #ff6400)' : 'var(--oneui-accent)', color: '#fff', borderRadius: '16px', textAlign: 'center', fontWeight: 600, cursor: 'pointer', marginBottom: '24px' }}>
+              <div onClick={() => handleSubmit()} style={{ 
+                width: '100%', padding: '16px', 
+                background: (siisBattery !== 85 || siisStorage !== 60 || siisTemp !== 32 || siisSignal !== 80) ? 'linear-gradient(135deg, rgba(255,59,48,0.9), rgba(255,100,0,0.9))' : 'linear-gradient(135deg, rgba(32,117,214,0.9), rgba(61,139,232,0.9))', 
+                boxShadow: (siisBattery !== 85 || siisStorage !== 60 || siisTemp !== 32 || siisSignal !== 80) ? '0 8px 24px rgba(255,59,48,0.3), inset 0 1px 2px rgba(255,255,255,0.3)' : '0 8px 24px rgba(32,117,214,0.3), inset 0 1px 2px rgba(255,255,255,0.3)',
+                color: '#fff', borderRadius: '16px', textAlign: 'center', fontWeight: 600, cursor: 'pointer', marginBottom: '24px',
+                transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)' 
+              }}>
                 {(siisBattery !== 85 || siisStorage !== 60 || siisTemp !== 32 || siisSignal !== 80) ? <><IZap style={{ width: '16px', height: '16px', verticalAlign: 'middle', marginRight: '4px' }} /> Diagnose with SIIS</> : 'Diagnose →'}
               </div>
 
               {/* SIIS Telemetry Override */}
-              <div style={{ background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <div style={{ background: darkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.03)', padding: '16px', borderRadius: '24px', border: darkMode ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.05)' }}>
                 <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--oneui-text-secondary)', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Simulate SIIS Telemetry</div>
                 
                 <div style={{ display: 'grid', gap: '16px' }}>
@@ -310,7 +320,7 @@ export function FixbyOrb({
       )}
 
       <style dangerouslySetInnerHTML={{ __html: `
-        @keyframes pulseGlow { 0% { box-shadow: 0 0 0 0 rgba(32, 117, 214, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(32, 117, 214, 0); } 100% { box-shadow: 0 0 0 0 rgba(32, 117, 214, 0); } }
+        @keyframes pulseGlowPremium { 0% { box-shadow: 0 12px 32px rgba(32,117,214,0.4), inset 0 2px 4px rgba(255,255,255,0.3), 0 0 0 0 rgba(32, 117, 214, 0.6); transform: scale(1); } 50% { box-shadow: 0 16px 48px rgba(32,117,214,0.6), inset 0 2px 4px rgba(255,255,255,0.4), 0 0 0 12px rgba(32, 117, 214, 0); transform: scale(1.02); } 100% { box-shadow: 0 12px 32px rgba(32,117,214,0.4), inset 0 2px 4px rgba(255,255,255,0.3), 0 0 0 0 rgba(32, 117, 214, 0); transform: scale(1); } }
       `}} />
     </>
   );

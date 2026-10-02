@@ -5,19 +5,21 @@ export function OneUISwitch({ checked, onChange }: { checked: boolean; onChange?
     <div 
       onClick={(e) => { e.stopPropagation(); onChange?.(!checked); }}
       style={{
-        width: "38px", height: "22px", borderRadius: "22px",
-        background: checked ? "var(--oneui-accent)" : "rgba(255,255,255,0.22)",
+        width: "48px", height: "28px", borderRadius: "14px",
+        background: checked ? "var(--oneui-accent)" : "rgba(255,255,255,0.15)",
+        boxShadow: checked ? "0 0 16px rgba(32, 117, 214, 0.4), inset 0 2px 4px rgba(0,0,0,0.3)" : "inset 0 2px 6px rgba(0,0,0,0.4)",
+        border: "1px solid rgba(255,255,255,0.05)",
         position: "relative", flexShrink: 0,
         cursor: "pointer",
-        transition: "background 0.22s cubic-bezier(0.4, 0, 0.2, 1)"
+        transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
       }}
     >
       <div style={{
-        width: "18px", height: "18px", borderRadius: "50%",
-        background: "#fff", position: "absolute", top: "2px",
-        left: checked ? "18px" : "2px",
-        boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
-        transition: "left 0.22s cubic-bezier(0.4, 0, 0.2, 1)"
+        width: "24px", height: "24px", borderRadius: "50%",
+        background: "#ffffff", position: "absolute", top: "1px",
+        left: checked ? "21px" : "1px",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.4), inset 0 -2px 4px rgba(0,0,0,0.1), inset 0 2px 4px rgba(255,255,255,0.8)",
+        transition: "all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)"
       }} />
     </div>
   );
