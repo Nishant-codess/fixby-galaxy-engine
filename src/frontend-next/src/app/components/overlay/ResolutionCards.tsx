@@ -78,11 +78,17 @@ export function ResolutionCards({ goals, query, onWatchDemo, onPerformAuto, onPe
               <div
                 key={idx}
                 style={{
-                  background: isPrimary ? 'linear-gradient(145deg, rgba(32,117,214,0.15) 0%, rgba(108,71,255,0.05) 100%)' : (darkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)'),
+                  background: isPrimary
+                    ? 'rgba(255,255,255,0.04)'
+                    : 'rgba(255,255,255,0.02)',
                   backdropFilter: 'blur(20px)',
                   borderRadius: '24px',
-                  border: isPrimary ? '1px solid rgba(32,117,214,0.4)' : (darkMode ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(0,0,0,0.06)'),
-                  boxShadow: isPrimary ? '0 12px 32px rgba(32,117,214,0.15), inset 0 1px 1px rgba(255,255,255,0.1)' : (darkMode ? 'inset 0 1px 1px rgba(255,255,255,0.05)' : 'inset 0 1px 2px rgba(255,255,255,0.8), 0 2px 4px rgba(0,0,0,0.02)'),
+                  border: isPrimary
+                    ? '1px solid rgba(255,255,255,0.12)'
+                    : '1px solid rgba(255,255,255,0.05)',
+                  boxShadow: isPrimary
+                    ? 'inset 0 1px 0 rgba(255,255,255,0.1), 0 8px 24px rgba(0,0,0,0.4)'
+                    : 'inset 0 1px 0 rgba(255,255,255,0.04)',
                   overflow: 'hidden',
                   transition: 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
                   transform: isExpanded ? 'scale(1)' : 'scale(0.98)',
@@ -117,13 +123,10 @@ export function ResolutionCards({ goals, query, onWatchDemo, onPerformAuto, onPe
                   </div>
                   <div style={{
                     padding: '4px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: 700,
-                    background: isPrimary
-                      ? 'rgba(32, 117, 214, 0.15)'
-                      : 'rgba(255,255,255,0.05)',
-                    color: isPrimary
-                      ? 'var(--oneui-accent, #2075d6)'
-                      : 'var(--oneui-text-secondary)',
+                    background: 'rgba(255,255,255,0.06)',
+                    color: isPrimary ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.4)',
                     flexShrink: 0,
+                    border: isPrimary ? '1px solid rgba(255,255,255,0.15)' : '1px solid rgba(255,255,255,0.06)',
                   }}>
                     {matchPct}%
                   </div>
@@ -194,9 +197,10 @@ export function ResolutionCards({ goals, query, onWatchDemo, onPerformAuto, onPe
                       {modes.includes('demo') && (
                         <button onClick={() => onWatchDemo(goal)} style={{
                           flex: 1, minWidth: '80px', padding: '12px 16px', border: 'none', borderRadius: '16px',
-                          background: 'linear-gradient(135deg, rgba(32,117,214,0.9), rgba(61,139,232,0.9))',
-                          boxShadow: '0 8px 16px rgba(32,117,214,0.3), inset 0 1px 2px rgba(255,255,255,0.3)',
-                          color: '#fff', fontSize: '13px', fontWeight: 600, cursor: 'pointer',
+                          background: 'rgba(255,255,255,0.07)',
+                          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.15), 0 4px 12px rgba(0,0,0,0.3)',
+                          border: '1px solid rgba(255,255,255,0.1)',
+                          color: 'rgba(255,255,255,0.85)', fontSize: '13px', fontWeight: 600, cursor: 'pointer',
                           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
                           transition: 'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
                         }}>
@@ -206,9 +210,10 @@ export function ResolutionCards({ goals, query, onWatchDemo, onPerformAuto, onPe
                       {modes.includes('auto') && (
                         <button onClick={() => onPerformAuto(goal)} style={{
                           flex: 1, minWidth: '80px', padding: '12px 16px', border: 'none', borderRadius: '16px',
-                          background: 'linear-gradient(135deg, rgba(52,199,89,0.9), rgba(48,176,80,0.9))',
-                          boxShadow: '0 8px 16px rgba(52,199,89,0.3), inset 0 1px 2px rgba(255,255,255,0.3)',
-                          color: '#fff', fontSize: '13px', fontWeight: 600, cursor: 'pointer',
+                          background: 'rgba(255,255,255,0.05)',
+                          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1)',
+                          border: '1px solid rgba(255,255,255,0.08)',
+                          color: 'rgba(255,255,255,0.75)', fontSize: '13px', fontWeight: 600, cursor: 'pointer',
                           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
                           transition: 'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
                         }}>
