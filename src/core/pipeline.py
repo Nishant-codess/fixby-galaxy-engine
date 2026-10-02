@@ -1090,8 +1090,8 @@ def run_troubleshoot_pipeline(query: str, siis_response: Optional[str] = None) -
 
             sg.actionableDeeplink.classes = classes_dict
 
-    # Bypass SIIS deterministic override goals and let the AI handle it
-    if False:
+    # Inject SIIS deterministic override goals (ranked, hardware-aware) ahead of AI goals
+    if siis_override_goals:
         raw_goals = siis_override_goals + raw_goals
 
     # Stage 7: Auto-Repair Validation & Compositional Scoring
@@ -1104,8 +1104,31 @@ def run_troubleshoot_pipeline(query: str, siis_response: Optional[str] = None) -
     cov_val = calculate_coverage_score(query, leaf_screen_id=leaf_id, siis_response=siis_response)
 
     score = compute_compositional_confidence(retrieval_sim=sim_val, consistency_score=cons_val, coverage_score=cov_val)
-    for g in repaired_goals:
-        g.score = score
+    for idx, g in enumerate(repaired_goals):
+        # Score decay: primary gets full score, alternatives get progressively lower
+        g.score = round(max(0.50, score - (idx * 0.05)), 2)
+
+        # Populate navigation_path from the deeplink path string
+        try:
+            path_str = ""
+            if g.actions and g.actions[0].stepGroups and g.actions[0].stepGroups[0].actionableDeeplink:
+                dl = g.actions[0].stepGroups[0].actionableDeeplink
+                if dl.classes and isinstance(dl.classes, dict):
+                    path_str = dl.classes.get("path", "")
+            if path_str:
+                g.navigation_path = [s.strip() for s in path_str.split(">") if s.strip()]
+        except Exception:
+            pass
+
+        # Set resolution_modes based on action category
+        if g.actions:
+            cat = g.actions[0].category
+            if cat == ActionCategory.manual:
+                g.resolution_modes = ["manual"]
+            elif cat == ActionCategory.critical:
+                g.resolution_modes = ["manual", "auto"]
+            else:
+                g.resolution_modes = ["auto", "demo", "manual"]
 
     # Stage 8: Paraphrase Generation & Write-Through Cache Warming
     if use_ai:

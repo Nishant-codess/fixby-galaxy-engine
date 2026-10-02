@@ -1,11 +1,16 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { usePhoneNavigation, Screen } from '../../hooks/usePhoneNavigation';
+import { useAnimatedNavigation } from '../../hooks/useAnimatedNavigation';
 import { StatusBar } from './ui/StatusBar';
 import { NavBar } from './ui/NavBar';
 import { FixbyOrb } from './overlay/FixbyOrb';
+import { DemoOverlay } from './overlay/DemoOverlay';
+import { GuidedBreadcrumb } from './overlay/GuidedBreadcrumb';
+import { SuccessToast } from './overlay/SuccessToast';
 import { useSettings } from '../context/SettingsContext';
+import type { GoalData } from '../../hooks/useFixbyQuery';
 
 import { LockScreen } from './screens/LockScreen';
 import { HomeScreen } from './screens/HomeScreen';
@@ -78,12 +83,54 @@ function resolveSettingsScreen(path: string[]): Screen | null {
   return bestMatch;
 }
 
+/**
+ * Converts a full navigation path into a sequence of screens for animated demo.
+ * e.g. ["Settings", "Battery", "Power saving"] → ["settings", "settings/battery"]
+ */
+function resolveScreenSequence(path: string[]): Screen[] {
+  const screens: Screen[] = ['settings']; // always start at Settings root
+  
+  for (let i = 1; i < path.length; i++) {
+    const subPath = path.slice(0, i + 1);
+    const screen = resolveSettingsScreen(subPath);
+    if (screen && !screens.includes(screen)) {
+      screens.push(screen);
+    }
+  }
+  
+  return screens;
+}
+
+/**
+ * Extract path segments from a goal's deeplink classes.path
+ */
+function extractGoalPath(goal: GoalData): string[] {
+  if (goal.navigation_path && goal.navigation_path.length > 0) {
+    return goal.navigation_path;
+  }
+  const pathStr = goal.actions?.[0]?.stepGroups?.[0]?.actionableDeeplink?.classes?.path;
+  if (pathStr) {
+    return pathStr.split(">").map((s: string) => s.trim()).filter(Boolean);
+  }
+  return [];
+}
+
 export default function PhoneSimulator() {
   const { currentScreen, push, pop, reset, pushMany } = usePhoneNavigation('lock');
+  const { startDemo, cancelDemo, isAnimating, currentStep, totalSteps } = useAnimatedNavigation();
+  
   const [orbOpen, setOrbOpen] = useState(false);
   const [targetPath, setTargetPath] = useState<string[]>([]);
   const [escalation, setEscalation] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
+
+  // Resolution mode states
+  const [activeMode, setActiveMode] = useState<'idle' | 'demo' | 'manual'>('idle');
+  const [activeGoal, setActiveGoal] = useState<GoalData | null>(null);
+  const [activePath, setActivePath] = useState<string[]>([]);
+  const [activeScreenSequence, setActiveScreenSequence] = useState<Screen[]>([]);
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
   const handleFixbySearch = (q: string) => {
     setSearchQuery(q);
@@ -109,6 +156,86 @@ export default function PhoneSimulator() {
       pushMany(['home', 'settings']);
     }
   };
+
+  // ── Resolution Mode Handlers ──
+  
+  const handleWatchDemo = useCallback((goal: GoalData) => {
+    const path = extractGoalPath(goal);
+    const sequence = resolveScreenSequence(path);
+    
+    setActiveMode('demo');
+    setActiveGoal(goal);
+    setActivePath(path);
+    setActiveScreenSequence(sequence);
+    setTargetPath(path);
+
+    // Start animated walkthrough
+    startDemo(sequence, push, reset, 600);
+  }, [startDemo, push, reset]);
+
+  const handlePerformAuto = useCallback((goal: GoalData) => {
+    const path = extractGoalPath(goal);
+    const subScreen = resolveSettingsScreen(path);
+    
+    setActiveMode('idle');
+    setActiveGoal(null);
+    setTargetPath(path);
+
+    if (subScreen) {
+      pushMany(['home', 'settings', subScreen]);
+    } else {
+      pushMany(['home', 'settings']);
+    }
+
+    // Show success toast
+    setSuccessMessage(`Navigated to ${goal.title}`);
+    setShowSuccessToast(true);
+  }, [pushMany]);
+
+  const handlePerformManual = useCallback((goal: GoalData) => {
+    const path = extractGoalPath(goal);
+    const sequence = resolveScreenSequence(path);
+    
+    setActiveMode('manual');
+    setActiveGoal(goal);
+    setActivePath(path);
+    setActiveScreenSequence(sequence);
+    setTargetPath(path);
+
+    // Navigate to Settings root — user does the rest
+    pushMany(['home', 'settings']);
+  }, [pushMany]);
+
+  const handleDismissManual = useCallback(() => {
+    setActiveMode('idle');
+    setActiveGoal(null);
+    setActivePath([]);
+  }, []);
+
+  const handleSkipDemo = useCallback(() => {
+    cancelDemo();
+    setActiveMode('idle');
+    setActiveGoal(null);
+    
+    // Jump to final screen
+    if (activeScreenSequence.length > 0) {
+      const finalScreen = activeScreenSequence[activeScreenSequence.length - 1];
+      pushMany(['home', 'settings', finalScreen]);
+    }
+    
+    setSuccessMessage(`Demo complete — ${activeGoal?.title || 'Setting'}`);
+    setShowSuccessToast(true);
+  }, [cancelDemo, activeScreenSequence, activeGoal, pushMany]);
+
+  // When demo finishes naturally, show success
+  React.useEffect(() => {
+    if (activeMode === 'demo' && !isAnimating && currentStep === -1 && activeGoal) {
+      setActiveMode('idle');
+      setSuccessMessage(`Demo complete — ${activeGoal.title}`);
+      setShowSuccessToast(true);
+      setActiveGoal(null);
+    }
+  }, [isAnimating, currentStep, activeMode, activeGoal]);
 
   const renderScreen = () => {
     switch (currentScreen) {
@@ -191,6 +318,35 @@ export default function PhoneSimulator() {
         {/* Active screen */}
         {renderScreen()}
 
+        {/* Demo Overlay — shows during animated walkthrough */}
+        {activeMode === 'demo' && isAnimating && (
+          <DemoOverlay
+            title={activeGoal?.title || 'Setting'}
+            pathSegments={activePath}
+            currentStep={currentStep}
+            totalSteps={totalSteps}
+            onSkip={handleSkipDemo}
+          />
+        )}
+
+        {/* Guided Breadcrumb — shows during manual navigation */}
+        {activeMode === 'manual' && activeGoal && (
+          <GuidedBreadcrumb
+            pathSegments={activePath}
+            currentScreen={currentScreen}
+            targetScreens={activeScreenSequence}
+            onDismiss={handleDismissManual}
+          />
+        )}
+
+        {/* Success Toast — auto-dismiss after auto-fix or demo completion */}
+        {showSuccessToast && (
+          <SuccessToast
+            message={successMessage}
+            onDismiss={() => setShowSuccessToast(false)}
+          />
+        )}
+
         {/* Fixby Orb — overlay on every screen except lock */}
         {currentScreen !== 'lock' && (
           <FixbyOrb
@@ -199,6 +355,9 @@ export default function PhoneSimulator() {
             onResolved={handleOrbResolved}
             initialQuery={searchQuery}
             onClearInitialQuery={() => setSearchQuery("")}
+            onWatchDemo={handleWatchDemo}
+            onPerformAuto={handlePerformAuto}
+            onPerformManual={handlePerformManual}
           />
         )}
 

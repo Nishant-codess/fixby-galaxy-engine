@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useFixbyQuery } from '../../../hooks/useFixbyQuery';
+import type { GoalData } from '../../../hooks/useFixbyQuery';
 import { OneUISlider } from '../ui/OneUISlider';
+import { ResolutionCards } from './ResolutionCards';
 
 const PRESETS = [
   "battery draining fast",
@@ -19,21 +21,32 @@ export interface FixbyOrbProps {
   onResolved: (path: string[], escalation?: string) => void;
   initialQuery?: string;
   onClearInitialQuery?: () => void;
+  onWatchDemo?: (goal: GoalData) => void;
+  onPerformAuto?: (goal: GoalData) => void;
+  onPerformManual?: (goal: GoalData) => void;
 }
 
-export function FixbyOrb({ isOpen, onToggle, onResolved, initialQuery, onClearInitialQuery }: FixbyOrbProps) {
+export function FixbyOrb({
+  isOpen, onToggle, onResolved, initialQuery, onClearInitialQuery,
+  onWatchDemo, onPerformAuto, onPerformManual
+}: FixbyOrbProps) {
   const [position, setPosition] = useState({ x: 0, y: 0 }); // relative to bottom right
   const [isDragging, setIsDragging] = useState(false);
   const [query, setQuery] = useState("");
+  const [showResults, setShowResults] = useState(false);
   
   // SIIS mock states
   const [siisBattery, setSiisBattery] = useState(85);
   const [siisStorage, setSiisStorage] = useState(60);
   const [siisTemp, setSiisTemp] = useState(32);
   const [siisSignal, setSiisSignal] = useState(80);
-  const { executeQuery, stages, isProcessing, reset } = useFixbyQuery();
+  const { executeQuery, stages, isProcessing, allGoals, reset } = useFixbyQuery();
   const orbRef = useRef<HTMLDivElement>(null);
   
+  // Track current goals and query for resolution cards
+  const [resolvedGoals, setResolvedGoals] = useState<GoalData[]>([]);
+  const [resolvedQuery, setResolvedQuery] = useState("");
+
   useEffect(() => {
     if (isOpen && initialQuery) {
       setQuery(initialQuery);
@@ -63,6 +76,8 @@ export function FixbyOrb({ isOpen, onToggle, onResolved, initialQuery, onClearIn
   const handleSubmit = async (q: string = query) => {
     if (!q) return;
     if (q !== query) setQuery(q);
+    setShowResults(false);
+    setResolvedQuery(q);
     
     const signalLabel = siisSignal >= 70 ? 'Excellent' : siisSignal >= 40 ? 'Good' : siisSignal >= 15 ? 'Weak' : 'None';
     const siisPayload = JSON.stringify({
@@ -72,14 +87,61 @@ export function FixbyOrb({ isOpen, onToggle, onResolved, initialQuery, onClearIn
       signalStrength: signalLabel
     });
 
-    const { dynamicPath, apiTelemetry } = await executeQuery(q, siisPayload);
-    onResolved(dynamicPath, apiTelemetry?.hardware_escalation);
-    setTimeout(() => {
-      onToggle(false);
-      reset();
-      setQuery("");
-    }, 600); // Close sheet quickly after resolving
+    const { dynamicPath, apiTelemetry, allGoals: goals } = await executeQuery(q, siisPayload);
+    
+    if (goals && goals.length > 0) {
+      // Show resolution cards with all ranked solutions
+      setResolvedGoals(goals);
+      setShowResults(true);
+    } else {
+      // Fallback: no goals returned, navigate directly
+      onResolved(dynamicPath, apiTelemetry?.hardware_escalation);
+      handleClose();
+    }
   };
+
+  const handleClose = () => {
+    onToggle(false);
+    reset();
+    setQuery("");
+    setShowResults(false);
+    setResolvedGoals([]);
+  };
+
+  const handleGoalAction = (goal: GoalData, mode: 'demo' | 'auto' | 'manual') => {
+    // Extract path for navigation
+    const pathStr = goal.actions?.[0]?.stepGroups?.[0]?.actionableDeeplink?.classes?.path;
+    const path = pathStr ? pathStr.split(">").map((s: string) => s.trim()).filter(Boolean) : [];
+
+    if (mode === 'demo' && onWatchDemo) {
+      onWatchDemo(goal);
+    } else if (mode === 'auto' && onPerformAuto) {
+      onPerformAuto(goal);
+    } else if (mode === 'manual' && onPerformManual) {
+      onPerformManual(goal);
+    } else {
+      // Fallback: just navigate
+      onResolved(path);
+    }
+
+    handleClose();
+  };
+
+  // Resolution Cards view
+  if (isOpen && showResults && resolvedGoals.length > 0) {
+    return (
+      <>
+        <ResolutionCards
+          goals={resolvedGoals}
+          query={resolvedQuery}
+          onWatchDemo={(g) => handleGoalAction(g, 'demo')}
+          onPerformAuto={(g) => handleGoalAction(g, 'auto')}
+          onPerformManual={(g) => handleGoalAction(g, 'manual')}
+          onClose={handleClose}
+        />
+      </>
+    );
+  }
 
   return (
     <>
@@ -134,7 +196,7 @@ export function FixbyOrb({ isOpen, onToggle, onResolved, initialQuery, onClearIn
           background: 'rgba(0,0,0,0.5)',
           transition: 'background 0.3s'
         }}>
-          <div style={{ flex: 1 }} onClick={() => !isProcessing && onToggle(false)} />
+          <div style={{ flex: 1 }} onClick={() => !isProcessing && handleClose()} />
           
           <div style={{
             background: 'var(--oneui-bg-card)', padding: '24px',

@@ -64,6 +64,14 @@ class Goal(BaseModel):
     title: str             # 2-3 words, sentence case
     actions: List[Action]  # auto before critical
     score: float = Field(..., ge=0.0, le=1.0)
+    resolution_modes: List[str] = Field(
+        default_factory=lambda: ["auto", "demo", "manual"],
+        description="Available action modes: auto (instant navigate), demo (animated walkthrough), manual (guided breadcrumb)"
+    )
+    navigation_path: Optional[List[str]] = Field(
+        default=None,
+        description="Parsed breadcrumb path segments, e.g. ['Settings', 'Battery', 'Power saving']"
+    )
 
 
 class ContextDeeplinkResponse(BaseModel):

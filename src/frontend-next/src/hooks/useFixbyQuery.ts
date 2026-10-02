@@ -8,6 +8,29 @@ export interface PipelineStage {
   ms?: number;
 }
 
+export interface GoalAction {
+  actionName: string;
+  description: string;
+  category: string;
+  stepGroups: {
+    steps: string[];
+    actionableDeeplink?: {
+      deeplink: string;
+      description: string;
+      classes?: { path?: string };
+    };
+  }[];
+}
+
+export interface GoalData {
+  goal: string;
+  title: string;
+  score: number;
+  resolution_modes: string[];
+  navigation_path: string[] | null;
+  actions: GoalAction[];
+}
+
 export const PIPELINE_STAGES: PipelineStage[] = [
   { id: "cache",  label: "Exact Match Cache",     sublabel: "Checking SHKG cache",   status: "pending" },
   { id: "vector", label: "Semantic Vector Store", sublabel: "Embedding query",        status: "pending" },
@@ -23,11 +46,13 @@ export function useFixbyQuery() {
    
   const [telemetry, setTelemetry] = useState<any>(null);
   const [targetPath, setTargetPath] = useState<string[]>([]);
+  const [allGoals, setAllGoals] = useState<GoalData[]>([]);
 
   const executeQuery = async (query: string, siisResponse: string = "") => {
     setIsProcessing(true);
     setTelemetry(null);
     setTargetPath([]);
+    setAllGoals([]);
     
     const sc = PIPELINE_STAGES.map(s => ({ ...s }));
     sc[0].status = "running"; setStages([...sc]);
@@ -36,6 +61,7 @@ export function useFixbyQuery() {
      
     let apiTelemetry: any = null;
     let dynamicPath: string[] = [];
+    let goals: GoalData[] = [];
 
     try {
       const backendUrl = process.env.NEXT_PUBLIC_API_URL || 
@@ -59,7 +85,12 @@ export function useFixbyQuery() {
       if (res.ok) {
         const d = await res.json();
         apiTelemetry = d.meta;
-        const pathStr = d.response?.contexts?.[0]?.actions?.[0]?.stepGroups?.[0]?.actionableDeeplink?.classes?.path;
+        
+        // Store ALL goals from the response
+        goals = (d.response?.contexts || []) as GoalData[];
+        
+        // Extract primary path from first goal for backward compat
+        const pathStr = goals[0]?.actions?.[0]?.stepGroups?.[0]?.actionableDeeplink?.classes?.path;
         if (pathStr) {
           dynamicPath = (pathStr as string).split(">").map((s: string) => s.trim()).filter(Boolean);
         }
@@ -74,9 +105,10 @@ export function useFixbyQuery() {
 
     setTelemetry(apiTelemetry);
     setTargetPath(dynamicPath);
+    setAllGoals(goals);
     setIsProcessing(false);
     
-    return { dynamicPath, apiTelemetry };
+    return { dynamicPath, apiTelemetry, allGoals: goals };
   };
 
   const reset = () => {
@@ -84,7 +116,9 @@ export function useFixbyQuery() {
     setIsProcessing(false);
     setTelemetry(null);
     setTargetPath([]);
+    setAllGoals([]);
   };
 
-  return { executeQuery, stages, isProcessing, telemetry, targetPath, reset };
+  return { executeQuery, stages, isProcessing, telemetry, targetPath, allGoals, reset };
 }
+
