@@ -25,17 +25,17 @@ export function NotificationSettings({ targetPath, onNavigate }: Props) {
 
         {/* Notifications */}
         <div style={{ margin: '0 16px 24px', background: 'var(--oneui-bg-card)', borderRadius: '24px', overflow: 'hidden' }}>
-          <SettingsRow title="App notifications" showChevron onPress={() => {}} divider highlight={isHighlighted(targetPath, 'app notifications')} />
-          <SettingsRow title="Lock screen notifications" rightLabel="Show content" showChevron onPress={() => {}} divider highlight={isHighlighted(targetPath, 'lock screen notifications')} />
-          <SettingsRow title="Notification pop-up style" rightLabel={briefPopUp ? "Brief" : "Detailed"} showChevron onPress={() => {}} highlight={isHighlighted(targetPath, 'notification pop-up style')} />
+          <SettingsRow title="App notifications" showChevron onPress={() => onNavigate('settings/generic/App notifications')} divider highlight={isHighlighted(targetPath, 'app notifications')} />
+          <SettingsRow title="Lock screen notifications" rightLabel="Show content" showChevron onPress={() => onNavigate('settings/generic/Lock screen notifications')} divider highlight={isHighlighted(targetPath, 'lock screen notifications')} />
+          <SettingsRow title="Notification pop-up style" rightLabel={briefPopUp ? "Brief" : "Detailed"} showChevron onPress={() => onNavigate('settings/generic/Notification pop-up style')} highlight={isHighlighted(targetPath, 'notification pop-up style')} />
         </div>
 
         {/* Pop-up style specific */}
         {briefPopUp && (
           <div style={{ margin: '0 16px 24px', background: 'var(--oneui-bg-card)', borderRadius: '24px', overflow: 'hidden' }}>
             <div style={{ fontSize: '14px', color: 'var(--oneui-text-secondary)', padding: '16px 16px 8px' }}>Brief pop-up settings</div>
-            <SettingsRow title="Edge lighting style" showChevron onPress={() => {}} divider highlight={isHighlighted(targetPath, 'edge lighting style')} />
-            <SettingsRow title="Color by keyword" showChevron onPress={() => {}} highlight={isHighlighted(targetPath, 'color by keyword')} />
+            <SettingsRow title="Edge lighting style" showChevron onPress={() => onNavigate('settings/generic/Edge lighting style')} divider highlight={isHighlighted(targetPath, 'edge lighting style')} />
+            <SettingsRow title="Color by keyword" showChevron onPress={() => onNavigate('settings/generic/Color by keyword')} highlight={isHighlighted(targetPath, 'color by keyword')} />
           </div>
         )}
 
@@ -46,7 +46,7 @@ export function NotificationSettings({ targetPath, onNavigate }: Props) {
         
         {/* Advanced settings */}
         <div style={{ margin: '0 16px 24px', background: 'var(--oneui-bg-card)', borderRadius: '24px', overflow: 'hidden' }}>
-          <SettingsRow title="Advanced settings" showChevron onPress={() => {}} divider highlight={isHighlighted(targetPath, 'advanced settings')} />
+          <SettingsRow title="Advanced settings" showChevron onPress={() => onNavigate('settings/generic/Advanced settings')} divider highlight={isHighlighted(targetPath, 'advanced settings')} />
           <SettingsRow title="App icon badges" toggle toggleValue={appIconBadges} onToggleChange={setAppIconBadges} highlight={isHighlighted(targetPath, 'app icon badges')} />
         </div>
 

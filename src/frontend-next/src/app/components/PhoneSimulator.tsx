@@ -5,6 +5,7 @@ import { usePhoneNavigation, Screen } from '../../hooks/usePhoneNavigation';
 import { StatusBar } from './ui/StatusBar';
 import { NavBar } from './ui/NavBar';
 import { FixbyOrb } from './overlay/FixbyOrb';
+import { useSettings } from '../context/SettingsContext';
 
 import { LockScreen } from './screens/LockScreen';
 import { HomeScreen } from './screens/HomeScreen';
@@ -12,6 +13,7 @@ import { RecentApps } from './screens/RecentApps';
 
 import { SettingsRoot } from './screens/settings/SettingsRoot';
 import { DisplaySettings } from './screens/settings/DisplaySettings';
+import { MotionSmoothnessScreen } from './screens/settings/MotionSmoothnessScreen';
 import { SamsungAccount } from './screens/settings/SamsungAccount';
 import { Connections } from './screens/settings/Connections';
 import { BatteryScreen } from './screens/settings/BatteryScreen';
@@ -30,7 +32,6 @@ import { SecuritySettings } from './screens/settings/SecuritySettings';
 import { AppsSettings } from './screens/settings/AppsSettings';
 import { WellbeingSettings } from './screens/settings/WellbeingSettings';
 import { GeneralSettings } from './screens/settings/GeneralSettings';
-import { MotionSmoothnessScreen } from './screens/settings/MotionSmoothnessScreen';
 import { BatteryUsageScreen } from './screens/settings/BatteryUsageScreen';
 import { StorageScreen } from './screens/settings/StorageScreen';
 
@@ -147,17 +148,32 @@ export default function PhoneSimulator() {
       case 'settings/apps':            return <AppsSettings targetPath={targetPath} onNavigate={push} />;
       case 'settings/phone':
         return <GenericSettings screen={currentScreen} targetPath={targetPath} onNavigate={push} />;
-
-      default: return <div style={{ color: '#fff', padding: '64px 24px' }}>Mock Screen</div>;
+      default: 
+        if (currentScreen.startsWith('settings/generic')) {
+          return <GenericSettings screen={currentScreen} targetPath={targetPath} onNavigate={push} />;
+        }
+        return <div style={{ color: '#fff', padding: '64px 24px' }}>Mock Screen: {currentScreen}</div>;
     }
   };
 
   const isWallpaperScreen = currentScreen === 'lock' || currentScreen === 'home' || currentScreen === 'recents';
   const isDarkScreen = !isWallpaperScreen;
 
+  const { darkMode } = useSettings();
+
+  const lightModeVars = {
+    '--oneui-bg-primary': '#f2f2f7',
+    '--oneui-bg-card': '#ffffff',
+    '--oneui-text-primary': '#000000',
+    '--oneui-text-secondary': '#8e8e93',
+    '--oneui-text-tertiary': '#c7c7cc',
+    '--oneui-separator': 'rgba(0,0,0,0.08)',
+  } as React.CSSProperties;
+
   return (
     <div style={{
-      width: '380px', height: '820px', borderRadius: '48px',
+      ...(darkMode ? {} : lightModeVars),
+      width: '100%', height: '100%', borderRadius: 'inherit',
       backgroundColor: isWallpaperScreen ? 'transparent' : 'var(--oneui-bg-primary)',
       backgroundImage: isWallpaperScreen ? 'var(--oneui-wallpaper)' : 'none',
       backgroundSize: 'cover',

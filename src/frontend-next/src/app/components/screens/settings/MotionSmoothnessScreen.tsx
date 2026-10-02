@@ -1,28 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Ripple } from '../../ui/Ripple';
+import { useSettings } from '../../../context/SettingsContext';
 
 interface Props {
   onBack: () => void;
   targetPath?: string[];
-  currentMode?: 'adaptive' | 'standard';
-  onModeChange?: (mode: 'adaptive' | 'standard') => void;
 }
 
 export function MotionSmoothnessScreen({ 
   onBack, 
-  targetPath = [], 
-  currentMode = 'adaptive', 
-  onModeChange 
+  targetPath = []
 }: Props) {
-  const [selected, setSelected] = useState<'adaptive' | 'standard'>(currentMode);
+  const { motionSmoothness, setMotionSmoothness } = useSettings();
+  const [selected, setSelected] = useState<'adaptive' | 'standard'>(
+    motionSmoothness === 'Adaptive' ? 'adaptive' : 'standard'
+  );
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    setSelected(motionSmoothness === 'Adaptive' ? 'adaptive' : 'standard');
+  }, [motionSmoothness]);
 
   const isHighlighted = targetPath.join(' ').toLowerCase().includes('motion') || 
                         targetPath.join(' ').toLowerCase().includes('120') ||
                         targetPath.join(' ').toLowerCase().includes('smoothness');
 
   const handleApply = () => {
-    onModeChange?.(selected);
+    setMotionSmoothness(selected === 'adaptive' ? 'Adaptive' : 'Standard');
     const msg = selected === 'adaptive' ? 'Applied: Adaptive (120 Hz)' : 'Applied: Standard (60 Hz)';
     setToastMessage(msg);
     setTimeout(() => {
@@ -66,13 +70,13 @@ export function MotionSmoothnessScreen({
             <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: selected === 'adaptive' ? 'var(--oneui-accent)' : 'var(--oneui-text-secondary)', fontWeight: 700, marginBottom: '6px' }}>
               120 Hz
             </div>
-            <div style={{ fontSize: '15px', fontWeight: 600, color: '#fff', marginBottom: '8px' }}>
+            <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--oneui-text-primary)', marginBottom: '8px' }}>
               Adaptive
             </div>
             <div style={{ height: '36px', display: 'flex', flexDirection: 'column', gap: '4px', overflow: 'hidden' }}>
               <div style={{ height: '4px', background: 'var(--oneui-accent)', borderRadius: '2px', width: '80%', margin: '0 auto', animation: 'shimmer 1.2s infinite ease-in-out' }} />
-              <div style={{ height: '4px', background: 'rgba(255,255,255,0.3)', borderRadius: '2px', width: '60%', margin: '0 auto' }} />
-              <div style={{ height: '4px', background: 'rgba(255,255,255,0.2)', borderRadius: '2px', width: '70%', margin: '0 auto' }} />
+              <div style={{ height: '4px', background: 'var(--oneui-separator)', borderRadius: '2px', width: '60%', margin: '0 auto' }} />
+              <div style={{ height: '4px', background: 'var(--oneui-separator)', borderRadius: '2px', width: '70%', margin: '0 auto' }} />
             </div>
             <div style={{ fontSize: '11px', color: 'var(--oneui-success)', marginTop: '8px', fontWeight: 600 }}>
               Ultra smooth
@@ -89,13 +93,13 @@ export function MotionSmoothnessScreen({
             <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: selected === 'standard' ? 'var(--oneui-accent)' : 'var(--oneui-text-secondary)', fontWeight: 700, marginBottom: '6px' }}>
               60 Hz
             </div>
-            <div style={{ fontSize: '15px', fontWeight: 600, color: '#fff', marginBottom: '8px' }}>
+            <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--oneui-text-primary)', marginBottom: '8px' }}>
               Standard
             </div>
             <div style={{ height: '36px', display: 'flex', flexDirection: 'column', gap: '4px', overflow: 'hidden' }}>
-              <div style={{ height: '4px', background: 'rgba(255,255,255,0.4)', borderRadius: '2px', width: '80%', margin: '0 auto' }} />
-              <div style={{ height: '4px', background: 'rgba(255,255,255,0.2)', borderRadius: '2px', width: '60%', margin: '0 auto' }} />
-              <div style={{ height: '4px', background: 'rgba(255,255,255,0.15)', borderRadius: '2px', width: '70%', margin: '0 auto' }} />
+              <div style={{ height: '4px', background: 'var(--oneui-separator)', borderRadius: '2px', width: '80%', margin: '0 auto' }} />
+              <div style={{ height: '4px', background: 'var(--oneui-separator)', borderRadius: '2px', width: '60%', margin: '0 auto' }} />
+              <div style={{ height: '4px', background: 'var(--oneui-separator)', borderRadius: '2px', width: '70%', margin: '0 auto' }} />
             </div>
             <div style={{ fontSize: '11px', color: 'var(--oneui-text-secondary)', marginTop: '8px' }}>
               Saves battery
@@ -119,7 +123,7 @@ export function MotionSmoothnessScreen({
             {/* Custom Radio Button */}
             <div style={{
               width: '22px', height: '22px', borderRadius: '50%',
-              border: `2px solid ${selected === 'adaptive' ? 'var(--oneui-accent)' : 'rgba(255,255,255,0.3)'}`,
+              border: `2px solid ${selected === 'adaptive' ? 'var(--oneui-accent)' : 'var(--oneui-separator)'}`,
               display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '2px', flexShrink: 0
             }}>
               {selected === 'adaptive' && (
@@ -160,7 +164,7 @@ export function MotionSmoothnessScreen({
           >
             <div style={{
               width: '22px', height: '22px', borderRadius: '50%',
-              border: `2px solid ${selected === 'standard' ? 'var(--oneui-accent)' : 'rgba(255,255,255,0.3)'}`,
+              border: `2px solid ${selected === 'standard' ? 'var(--oneui-accent)' : 'var(--oneui-separator)'}`,
               display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '2px', flexShrink: 0
             }}>
               {selected === 'standard' && (
@@ -225,7 +229,6 @@ export function MotionSmoothnessScreen({
           ✓ {toastMessage}
         </div>
       )}
-
     </div>
   );
 }

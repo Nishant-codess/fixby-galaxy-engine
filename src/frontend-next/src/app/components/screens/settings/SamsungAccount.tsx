@@ -31,23 +31,23 @@ export function SamsungAccount({ targetPath, onNavigate }: { targetPath: string[
 
         {/* Group 1 */}
         <div style={{ margin: '0 16px 24px', background: 'var(--oneui-bg-card)', borderRadius: '24px', overflow: 'hidden' }}>
-          <SettingsRow title="Profile info" showChevron onPress={() => {}} divider highlight={targetNode === 'Profile info'} />
-          <SettingsRow title="Password and security" showChevron onPress={() => {}} divider highlight={targetNode === 'Password and security'} />
-          <SettingsRow title="Registered devices" showChevron onPress={() => {}} divider />
-          <SettingsRow title="Places" showChevron onPress={() => {}} />
+          <SettingsRow title="Profile info" showChevron onPress={() => onNavigate('settings/generic/Profile info')} divider highlight={targetNode === 'Profile info'} />
+          <SettingsRow title="Password and security" showChevron onPress={() => onNavigate('settings/generic/Password and security')} divider highlight={targetNode === 'Password and security'} />
+          <SettingsRow title="Registered devices" showChevron onPress={() => onNavigate('settings/generic/Registered devices')} divider />
+          <SettingsRow title="Places" showChevron onPress={() => onNavigate('settings/generic/Places')} />
         </div>
 
         {/* Group 2 */}
         <div style={{ margin: '0 16px 24px', background: 'var(--oneui-bg-card)', borderRadius: '24px', overflow: 'hidden' }}>
-          <SettingsRow title="Payment methods" showChevron onPress={() => {}} divider />
-          <SettingsRow title="Subscriptions" showChevron onPress={() => {}} />
+          <SettingsRow title="Payment methods" showChevron onPress={() => onNavigate('settings/generic/Payment methods')} divider />
+          <SettingsRow title="Subscriptions" showChevron onPress={() => onNavigate('settings/generic/Subscriptions')} />
         </div>
 
         {/* Group 3 */}
         <div style={{ margin: '0 16px 24px', background: 'var(--oneui-bg-card)', borderRadius: '24px', overflow: 'hidden' }}>
-          <SettingsRow title="Samsung Cloud" rightLabel="Synced" showChevron onPress={() => {}} divider highlight={targetNode === 'Samsung Cloud'} />
-          <SettingsRow title="Find My Mobile" showChevron onPress={() => {}} divider highlight={targetNode === 'Find My Mobile'} />
-          <SettingsRow title="Samsung Pass" showChevron onPress={() => {}} />
+          <SettingsRow title="Samsung Cloud" rightLabel="Synced" showChevron onPress={() => onNavigate('settings/generic/Samsung Cloud')} divider highlight={targetNode === 'Samsung Cloud'} />
+          <SettingsRow title="Find My Mobile" showChevron onPress={() => onNavigate('settings/generic/Find My Mobile')} divider highlight={targetNode === 'Find My Mobile'} />
+          <SettingsRow title="Samsung Pass" showChevron onPress={() => onNavigate('settings/generic/Samsung Pass')} />
         </div>
 
       </div>

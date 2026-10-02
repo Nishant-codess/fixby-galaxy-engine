@@ -5,6 +5,7 @@ import LandingPage from "@/app/components/LandingPage";
 import PhoneSimulator from "@/app/components/PhoneSimulator";
 import DemoGuide from "@/app/components/DemoGuide";
 import "./transition.css";
+import { SettingsProvider } from "@/app/context/SettingsContext";
 
 export default function Home() {
   const [isFadingOut, setIsFadingOut] = useState(false);
@@ -45,29 +46,31 @@ export default function Home() {
   };
 
   return (
-    <div className={`master-app-wrapper ${isFadingOut ? "fading-out" : ""} ${isConsoleMode ? "in-console" : ""} ${skipTransitions ? "skip-transitions" : ""}`}>
-      <div className="cinematic-viewport">
-        {/* Landing Page Content */}
-        <div className="landing-layer">
-          <LandingPage onEnterConsole={handleEnterConsole} />
+    <SettingsProvider>
+      <div className={`master-app-wrapper ${isFadingOut ? "fading-out" : ""} ${isConsoleMode ? "in-console" : ""} ${skipTransitions ? "skip-transitions" : ""}`}>
+        <div className="cinematic-viewport">
+          {/* Landing Page Content */}
+          <div className="landing-layer">
+            <LandingPage onEnterConsole={handleEnterConsole} />
+          </div>
+
+          {/* The Diagnostic App rendered inside the phone frame */}
+          <div className="phone-app-layer" data-lenis-prevent="true">
+            <PhoneSimulator />
+          </div>
         </div>
 
-        {/* The Diagnostic App rendered inside the phone frame */}
-        <div className="phone-app-layer" data-lenis-prevent="true">
-          <PhoneSimulator />
-        </div>
+        {/* Demo testing guide floats in beside the phone */}
+        <DemoGuide isVisible={isConsoleMode} />
+        
+        {/* Back button floats in on the left side */}
+        <button 
+          className="back-to-landing-btn"
+          onClick={handleExitConsole}
+        >
+          ← Back to Landing
+        </button>
       </div>
-
-      {/* Demo testing guide floats in beside the phone */}
-      <DemoGuide isVisible={isConsoleMode} />
-      
-      {/* Back button floats in on the left side */}
-      <button 
-        className="back-to-landing-btn"
-        onClick={handleExitConsole}
-      >
-        ← Back to Landing
-      </button>
-    </div>
+    </SettingsProvider>
   );
 }

@@ -4,10 +4,10 @@ import { OneUISlider } from '../../ui/OneUISlider';
 import { Screen } from '../../../../hooks/usePhoneNavigation';
 import { IChevron } from '../../ui/Icons';
 import { Ripple } from '../../ui/Ripple';
+import { useSettings } from '../../../context/SettingsContext';
 
 export function DisplaySettings({ targetPath, onNavigate }: { targetPath: string[]; onNavigate: (s: Screen) => void }) {
-  const [darkMode, setDarkMode] = useState(true);
-  const [brightness, setBrightness] = useState(65);
+  const { darkMode, setDarkMode, brightness, setBrightness, motionSmoothness, extraBrightness, setExtraBrightness, easyMode, setEasyMode } = useSettings();
   const [adaptive, setAdaptive] = useState(true);
   const [eyeComfort, setEyeComfort] = useState(false);
   const [touchSensitivity, setTouchSensitivity] = useState(false);
@@ -45,34 +45,34 @@ export function DisplaySettings({ targetPath, onNavigate }: { targetPath: string
             </div>
           </div>
           <SettingsRow title="Adaptive brightness" toggle toggleValue={adaptive} onToggleChange={setAdaptive} divider />
-          <SettingsRow title="Extra brightness" toggle toggleValue={false} />
+          <SettingsRow title="Extra brightness" toggle toggleValue={extraBrightness} onToggleChange={setExtraBrightness} />
         </div>
 
         {/* Settings Group 2 */}
         <div style={{ margin: '0 16px 24px', background: 'var(--oneui-bg-card)', borderRadius: '24px', overflow: 'hidden' }}>
           <SettingsRow 
             title="Motion smoothness" 
-            rightLabel="Adaptive" 
+            rightLabel={motionSmoothness} 
             showChevron 
-            onPress={() => onNavigate('settings/motion-smoothness' as Screen)} 
+            onPress={() => onNavigate('settings/motion-smoothness')} 
             divider 
             highlight={targetNode?.toLowerCase().includes('motion') || targetNode?.toLowerCase().includes('smoothness') || targetNode?.toLowerCase().includes('120')} 
           />
           <SettingsRow title="Eye comfort shield" toggle toggleValue={eyeComfort} onToggleChange={setEyeComfort} divider highlight={targetNode?.toLowerCase() === 'eye comfort shield'} />
-          <SettingsRow title="Screen mode" rightLabel="Vivid" showChevron onPress={() => {}} divider highlight={targetNode?.toLowerCase() === 'screen mode'} />
-          <SettingsRow title="Font size and style" showChevron onPress={() => {}} divider />
-          <SettingsRow title="Screen zoom" showChevron onPress={() => {}} />
+          <SettingsRow title="Screen mode" rightLabel="Vivid" showChevron onPress={() => onNavigate('settings/generic/Screen mode')} divider highlight={targetNode?.toLowerCase() === 'screen mode'} />
+          <SettingsRow title="Font size and style" showChevron onPress={() => onNavigate('settings/generic/Font size and style')} divider />
+          <SettingsRow title="Screen zoom" showChevron onPress={() => onNavigate('settings/generic/Screen zoom')} />
         </div>
 
         {/* Settings Group 3 */}
         <div style={{ margin: '0 16px 24px', background: 'var(--oneui-bg-card)', borderRadius: '24px', overflow: 'hidden' }}>
-          <SettingsRow title="Full screen apps" showChevron onPress={() => {}} divider />
-          <SettingsRow title="Camera cutout" showChevron onPress={() => {}} divider />
-          <SettingsRow title="Screen timeout" rightLabel="30 seconds" showChevron onPress={() => {}} divider highlight={targetNode?.toLowerCase() === 'screen timeout'} />
-          <SettingsRow title="Easy mode" toggle toggleValue={false} divider />
+          <SettingsRow title="Full screen apps" showChevron onPress={() => onNavigate('settings/generic/Full screen apps')} divider />
+          <SettingsRow title="Camera cutout" showChevron onPress={() => onNavigate('settings/generic/Camera cutout')} divider />
+          <SettingsRow title="Screen timeout" rightLabel="30 seconds" showChevron onPress={() => onNavigate('settings/generic/Screen timeout')} divider highlight={targetNode?.toLowerCase() === 'screen timeout'} />
+          <SettingsRow title="Easy mode" toggle toggleValue={easyMode} onToggleChange={setEasyMode} divider />
           <SettingsRow title="Edge panels" toggle toggleValue={true} divider />
-          <SettingsRow title="Navigation bar" rightLabel="Swipe gestures" showChevron onPress={() => {}} divider highlight={targetNode?.toLowerCase().includes('navigation') || targetNode?.toLowerCase().includes('gesture')} />
-          <SettingsRow title="Touch sensitivity" subtitle="Increase touch sensitivity for screen protectors" toggle toggleValue={touchSensitivity} onToggleChange={setTouchSensitivity} highlight={targetNode?.toLowerCase().includes('touch') || targetNode?.toLowerCase().includes('sensitivity')} />
+          <SettingsRow title="Navigation bar" rightLabel="Swipe gestures" showChevron onPress={() => onNavigate('settings/generic/Navigation bar')} divider highlight={targetNode?.toLowerCase().includes('navigation') || targetNode?.toLowerCase().includes('gesture')} />
+          <SettingsRow title="Touch sensitivity" subtitle="Increase touch sensitivity for use with screen protectors" toggle toggleValue={touchSensitivity} onToggleChange={setTouchSensitivity} highlight={targetNode?.toLowerCase().includes('touch') || targetNode?.toLowerCase().includes('sensitivity')} />
         </div>
 
       </div>

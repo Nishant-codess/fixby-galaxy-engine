@@ -356,3 +356,41 @@
 .master-app-wrapper.skip-transitions .back-to-landing-btn {
   transition: none !important;
 }
+
+/* ------------------------------------------------------- */
+/*  Mobile Responsiveness (Max Width: 768px)             */
+/* ------------------------------------------------------- */
+@media (max-width: 768px) {
+  /* Expand the console viewport to fill the entire mobile screen */
+  .master-app-wrapper.in-console .cinematic-viewport {
+    width: 100vw !important;
+    height: 100vh !important;
+    border-radius: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    animation: none !important; /* Disable morph animation on mobile to avoid layout shifts */
+  }
+
+  /* Hide the fake camera punch hole on mobile */
+  .master-app-wrapper.in-console .cinematic-viewport::before {
+    display: none;
+  }
+
+  /* Reposition the 'Back to Landing' button to be less intrusive */
+  .master-app-wrapper.in-console .back-to-landing-btn {
+    left: 16px;
+    top: 16px;
+    padding: 8px 16px;
+    font-size: 0.8rem;
+    background: rgba(0, 0, 0, 0.4);
+    color: #fff;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    z-index: 100000;
+  }
+
+  /* Hide the Demo Guide on mobile to prevent overlapping */
+  .demo-guide-card {
+    display: none !important;
+  }
+}

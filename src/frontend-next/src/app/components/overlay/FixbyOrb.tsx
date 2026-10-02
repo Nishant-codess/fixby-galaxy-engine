@@ -147,7 +147,7 @@ export function FixbyOrb({ isOpen, onToggle, onResolved, initialQuery, onClearIn
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
             <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'linear-gradient(135deg, #2075d6 0%, #6c47ff 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800 }}>F</div>
-            <div style={{ fontSize: '18px', fontWeight: 500 }}>Fixby AI Assistant</div>
+            <div style={{ fontSize: '18px', fontWeight: 500, color: 'var(--oneui-text-primary)' }}>Fixby AI Assistant</div>
           </div>
 
           {!isProcessing && stages[0].status === 'pending' ? (
@@ -160,13 +160,13 @@ export function FixbyOrb({ isOpen, onToggle, onResolved, initialQuery, onClearIn
                 autoFocus
                 style={{
                   width: '100%', background: 'var(--oneui-bg-primary)', border: '1px solid var(--oneui-separator)', borderRadius: '16px',
-                  padding: '16px', color: '#fff', fontSize: '16px', outline: 'none', marginBottom: '16px'
+                  padding: '16px', color: 'var(--oneui-text-primary)', fontSize: '16px', outline: 'none', marginBottom: '16px'
                 }}
               />
 
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '24px' }}>
                 {PRESETS.map(p => (
-                  <div key={p} onClick={() => handleSubmit(p)} style={{ padding: '8px 16px', background: 'var(--oneui-bg-primary)', borderRadius: '16px', fontSize: '14px', border: '1px solid var(--oneui-separator)', cursor: 'pointer' }}>
+                  <div key={p} onClick={() => handleSubmit(p)} style={{ padding: '8px 16px', background: 'var(--oneui-bg-primary)', borderRadius: '16px', fontSize: '14px', border: '1px solid var(--oneui-separator)', cursor: 'pointer', color: 'var(--oneui-text-primary)' }}>
                     {p}
                   </div>
                 ))}
@@ -217,14 +217,14 @@ export function FixbyOrb({ isOpen, onToggle, onResolved, initialQuery, onClearIn
             </>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', minHeight: '200px' }}>
-              <div style={{ fontSize: '15px', color: 'var(--oneui-text-secondary)', marginBottom: '8px' }}>Searching: <span style={{ color: '#fff' }}>&quot;{query}&quot;</span></div>
+              <div style={{ fontSize: '15px', color: 'var(--oneui-text-secondary)', marginBottom: '8px' }}>Searching: <span style={{ color: 'var(--oneui-text-primary)' }}>&quot;{query}&quot;</span></div>
               {stages.map(s => (
                 <div key={s.id} style={{ display: "flex", alignItems: "center", gap: "14px", opacity: s.status === "pending" ? 0.3 : 1 }}>
                   <div style={{ width: "22px", height: "22px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: s.status === "done" ? "var(--oneui-success)" : s.status === "running" ? "var(--oneui-accent)" : "var(--oneui-text-tertiary)" }}>
                     {s.status === "done" ? "✓" : s.status === "running" ? <div style={{ width: "14px", height: "14px", border: "2px solid rgba(32,117,214,0.3)", borderTopColor: "var(--oneui-accent)", borderRadius: "50%", animation: "spin 1s linear infinite" }} /> : <div style={{ width: "6px", height: "6px", background: "currentColor", borderRadius: "50%" }} />}
                   </div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: "15px", color: s.status === "running" ? '#fff' : 'var(--oneui-text-secondary)' }}>{s.label}</div>
+                    <div style={{ fontSize: "15px", color: s.status === "running" ? 'var(--oneui-text-primary)' : 'var(--oneui-text-secondary)' }}>{s.label}</div>
                     {s.status === "running" && <div style={{ fontSize: "12px", color: "var(--oneui-accent)", marginTop: "2px" }}>{s.sublabel}</div>}
                   </div>
                   {s.ms && <div style={{ fontSize: "12px", color: 'var(--oneui-text-secondary)' }}>{s.ms}ms</div>}
