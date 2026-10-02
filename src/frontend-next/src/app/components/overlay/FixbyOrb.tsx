@@ -140,10 +140,11 @@ export function FixbyOrb({ isOpen, onToggle, onResolved, initialQuery, onClearIn
             background: 'var(--oneui-bg-card)', padding: '24px',
             borderTopLeftRadius: '32px', borderTopRightRadius: '32px',
             animation: 'slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-            boxShadow: '0 -8px 32px rgba(0,0,0,0.4)', borderTop: '1px solid rgba(255,255,255,0.05)'
+            boxShadow: '0 -8px 32px rgba(0,0,0,0.4)', borderTop: '1px solid rgba(255,255,255,0.05)',
+            maxHeight: '85vh', overflowY: 'auto'
           }}>
           {/* Drag Handle */}
-          <div style={{ width: '40px', height: '4px', background: 'var(--oneui-text-tertiary)', borderRadius: '2px', margin: '0 auto 24px' }} />
+          <div style={{ width: '40px', height: '4px', background: 'var(--oneui-text-tertiary)', borderRadius: '2px', margin: '0 auto 24px', flexShrink: 0 }} />
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
             <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'linear-gradient(135deg, #2075d6 0%, #6c47ff 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800 }}>F</div>
@@ -164,9 +165,18 @@ export function FixbyOrb({ isOpen, onToggle, onResolved, initialQuery, onClearIn
                 }}
               />
 
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '24px' }}>
+              {/* Horizontally scrollable presets to save vertical space */}
+              <div style={{ 
+                display: 'flex', flexWrap: 'nowrap', overflowX: 'auto', 
+                gap: '8px', marginBottom: '24px', paddingBottom: '8px',
+                WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' 
+              }}>
                 {PRESETS.map(p => (
-                  <div key={p} onClick={() => handleSubmit(p)} style={{ padding: '8px 16px', background: 'var(--oneui-bg-primary)', borderRadius: '16px', fontSize: '14px', border: '1px solid var(--oneui-separator)', cursor: 'pointer', color: 'var(--oneui-text-primary)' }}>
+                  <div key={p} onClick={() => handleSubmit(p)} style={{ 
+                    whiteSpace: 'nowrap', padding: '8px 16px', background: 'var(--oneui-bg-primary)', 
+                    borderRadius: '16px', fontSize: '14px', border: '1px solid var(--oneui-separator)', 
+                    cursor: 'pointer', color: 'var(--oneui-text-primary)' 
+                  }}>
                     {p}
                   </div>
                 ))}
