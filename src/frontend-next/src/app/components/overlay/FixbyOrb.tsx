@@ -251,12 +251,19 @@ export function FixbyOrb({
 
               <div onClick={() => handleSubmit()} style={{ 
                 width: '100%', padding: '16px', 
-                background: (siisBattery !== 85 || siisStorage !== 60 || siisTemp !== 32 || siisSignal !== 80) ? 'linear-gradient(135deg, rgba(255,59,48,0.9), rgba(255,100,0,0.9))' : 'linear-gradient(135deg, rgba(32,117,214,0.9), rgba(61,139,232,0.9))', 
-                boxShadow: (siisBattery !== 85 || siisStorage !== 60 || siisTemp !== 32 || siisSignal !== 80) ? '0 8px 24px rgba(255,59,48,0.3), inset 0 1px 2px rgba(255,255,255,0.3)' : '0 8px 24px rgba(32,117,214,0.3), inset 0 1px 2px rgba(255,255,255,0.3)',
-                color: '#fff', borderRadius: '16px', textAlign: 'center', fontWeight: 600, cursor: 'pointer', marginBottom: '24px',
-                transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)' 
+                background: (siisBattery !== 85 || siisStorage !== 60 || siisTemp !== 32 || siisSignal !== 80) 
+                  ? 'linear-gradient(135deg, #FF453A 0%, #FF9F0A 100%)' 
+                  : 'linear-gradient(135deg, #2075D6 0%, #6C47FF 100%)',
+                boxShadow: (siisBattery !== 85 || siisStorage !== 60 || siisTemp !== 32 || siisSignal !== 80)
+                  ? '0 12px 24px rgba(255, 69, 58, 0.4), inset 0 2px 4px rgba(255,255,255,0.4)'
+                  : '0 12px 24px rgba(32, 117, 214, 0.4), inset 0 2px 4px rgba(255,255,255,0.4)',
+                color: '#fff', borderRadius: '16px', textAlign: 'center', fontWeight: 700, fontSize: '16px', cursor: 'pointer', marginBottom: '24px',
+                transition: 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                textShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                animation: (siisBattery !== 85 || siisStorage !== 60 || siisTemp !== 32 || siisSignal !== 80) ? 'pulseGlowOrange 2s infinite ease-in-out' : 'pulseGlowPremium 3s infinite ease-in-out'
               }}>
-                {(siisBattery !== 85 || siisStorage !== 60 || siisTemp !== 32 || siisSignal !== 80) ? <><IZap style={{ width: '16px', height: '16px', verticalAlign: 'middle', marginRight: '4px' }} /> Diagnose with SIIS</> : 'Diagnose →'}
+                {(siisBattery !== 85 || siisStorage !== 60 || siisTemp !== 32 || siisSignal !== 80) ? <><IZap style={{ width: '20px', height: '20px' }} /> Diagnose with SIIS</> : 'Diagnose →'}
               </div>
 
               {/* SIIS Telemetry Override */}
@@ -269,15 +276,15 @@ export function FixbyOrb({
                       <span style={{ color: siisBattery < 15 ? 'var(--oneui-error)' : 'var(--oneui-text-primary)' }}>Battery</span>
                       <span>{siisBattery}%</span>
                     </div>
-                    <OneUISlider value={siisBattery} onChange={setSiisBattery} min={0} max={100} trackColor={siisBattery < 15 ? 'var(--oneui-error)' : 'var(--oneui-success)'} />
+                    <OneUISlider value={siisBattery} onChange={setSiisBattery} min={0} max={100} trackColor={siisBattery > 80 ? 'var(--oneui-success)' : siisBattery < 20 ? 'var(--oneui-error)' : '#2075d6'} />
                   </div>
                   
                   <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', marginBottom: '8px' }}>
-                      <span style={{ color: siisStorage > 95 ? 'var(--oneui-error)' : 'var(--oneui-text-primary)' }}>Storage Fullness</span>
+                      <span style={{ color: siisStorage > 80 ? 'var(--oneui-error)' : 'var(--oneui-text-primary)' }}>Storage Fullness</span>
                       <span>{siisStorage}%</span>
                     </div>
-                    <OneUISlider value={siisStorage} onChange={setSiisStorage} min={0} max={100} trackColor={siisStorage > 95 ? 'var(--oneui-error)' : 'var(--oneui-accent)'} />
+                    <OneUISlider value={siisStorage} onChange={setSiisStorage} min={0} max={100} trackColor={siisStorage > 80 ? 'var(--oneui-error)' : siisStorage < 20 ? 'var(--oneui-success)' : 'var(--oneui-accent)'} />
                   </div>
 
                   <div>
@@ -285,7 +292,7 @@ export function FixbyOrb({
                       <span style={{ color: siisTemp > 45 ? 'var(--oneui-error)' : 'var(--oneui-text-primary)' }}>Temperature</span>
                       <span>{siisTemp}°C</span>
                     </div>
-                    <OneUISlider value={siisTemp} onChange={setSiisTemp} min={20} max={60} trackColor={siisTemp > 45 ? 'var(--oneui-error)' : '#ff9800'} />
+                    <OneUISlider value={siisTemp} onChange={setSiisTemp} min={20} max={60} trackColor={siisTemp > 45 ? 'var(--oneui-error)' : siisTemp < 30 ? 'var(--oneui-success)' : '#ff9800'} />
                   </div>
 
                   <div>
@@ -293,7 +300,7 @@ export function FixbyOrb({
                       <span style={{ color: siisSignal < 20 ? 'var(--oneui-error)' : 'var(--oneui-text-primary)' }}>Signal Strength</span>
                       <span>{siisSignal}%</span>
                     </div>
-                    <OneUISlider value={siisSignal} onChange={setSiisSignal} min={0} max={100} trackColor={siisSignal < 20 ? 'var(--oneui-error)' : '#2075d6'} />
+                    <OneUISlider value={siisSignal} onChange={setSiisSignal} min={0} max={100} trackColor={siisSignal > 80 ? 'var(--oneui-success)' : siisSignal < 20 ? 'var(--oneui-error)' : '#2075d6'} />
                   </div>
                 </div>
               </div>
@@ -321,6 +328,7 @@ export function FixbyOrb({
 
       <style dangerouslySetInnerHTML={{ __html: `
         @keyframes pulseGlowPremium { 0% { box-shadow: 0 12px 32px rgba(32,117,214,0.4), inset 0 2px 4px rgba(255,255,255,0.3), 0 0 0 0 rgba(32, 117, 214, 0.6); transform: scale(1); } 50% { box-shadow: 0 16px 48px rgba(32,117,214,0.6), inset 0 2px 4px rgba(255,255,255,0.4), 0 0 0 12px rgba(32, 117, 214, 0); transform: scale(1.02); } 100% { box-shadow: 0 12px 32px rgba(32,117,214,0.4), inset 0 2px 4px rgba(255,255,255,0.3), 0 0 0 0 rgba(32, 117, 214, 0); transform: scale(1); } }
+        @keyframes pulseGlowOrange { 0% { box-shadow: 0 12px 24px rgba(255,69,58,0.4), inset 0 2px 4px rgba(255,255,255,0.4), 0 0 0 0 rgba(255, 69, 58, 0.6); transform: scale(1); } 50% { box-shadow: 0 16px 32px rgba(255,69,58,0.6), inset 0 2px 4px rgba(255,255,255,0.4), 0 0 0 12px rgba(255, 69, 58, 0); transform: scale(1.02); } 100% { box-shadow: 0 12px 24px rgba(255,69,58,0.4), inset 0 2px 4px rgba(255,255,255,0.4), 0 0 0 0 rgba(255, 69, 58, 0); transform: scale(1); } }
       `}} />
     </>
   );
