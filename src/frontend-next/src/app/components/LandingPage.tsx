@@ -9,7 +9,8 @@ function TypewriterHero() {
   useEffect(() => {
     const phrases = [
       '"my phone is getting really hot"',
-      '"mera phone garam ho raha hai"'
+      '"mera phone garam ho raha hai"',
+      '"내 폰이 너무 뜨거워요"'
     ];
 
     let cancelled = false;
@@ -180,16 +181,15 @@ export default function LandingPage({ onEnterConsole }: { onEnterConsole: () => 
         }}
       ></canvas>
 
-      <div className="progressive-blur-top">
-        <span></span><span></span><span></span><span></span><span></span><span></span>
-      </div>
+      <div className="progressive-blur-top"></div>
+      <div className="progressive-blur-bottom"></div>
 
       <div id="depth-rail" className="depth-rail">
         <div className="rail-line"></div>
         <div className="rail-indicator" id="depth-indicator"></div>
       </div>
 
-      <nav className="glass-vapor main-nav">
+      <nav className="main-nav">
         <div className="nav-brand">Fixby</div>
         <button onClick={onEnterConsole} className="nav-link data" style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}>Skip to console →</button>
       </nav>
@@ -214,9 +214,9 @@ export default function LandingPage({ onEnterConsole }: { onEnterConsole: () => 
         {/* Beat 2 — Terminal card: fake link hallucination */}
         <section className="beat" id="beat-2" style={{height: '120vh', position: 'relative'}}>
           <div className="container" style={{display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%', alignItems: 'flex-end'}}>
-            <div className="glass-pane card" style={{maxWidth: '520px', padding: '0', overflow: 'hidden', border: '1px solid rgba(255,80,80,0.15)'}}>
+            <div className="glass-pane card" style={{maxWidth: '520px', padding: '0', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.06)'}}>
               {/* Terminal header */}
-              <div style={{background: 'rgba(255,60,60,0.08)', padding: '12px 20px', borderBottom: '1px solid rgba(255,80,80,0.12)', display: 'flex', alignItems: 'center', gap: '8px'}}>
+              <div style={{background: 'rgba(255,255,255,0.02)', padding: '12px 20px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', gap: '8px'}}>
                 <span style={{width: '10px', height: '10px', borderRadius: '50%', background: '#ff5f57', display: 'inline-block'}} />
                 <span style={{width: '10px', height: '10px', borderRadius: '50%', background: '#febc2e', display: 'inline-block'}} />
                 <span style={{width: '10px', height: '10px', borderRadius: '50%', background: '#28c840', display: 'inline-block'}} />
@@ -269,9 +269,9 @@ export default function LandingPage({ onEnterConsole }: { onEnterConsole: () => 
         {/* Beat 5 — Constrained retrieval */}
         <section className="beat" id="beat-5" style={{height: '120vh', position: 'relative'}}>
           <div className="container" style={{display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%', alignItems: 'flex-end'}}>
-            <div className="glass-pane card" style={{maxWidth: '520px', padding: '40px 44px', border: '1px solid rgba(74,222,128,0.12)'}}>
+            <div className="glass-pane card" style={{maxWidth: '520px', padding: '40px 44px', border: '1px solid rgba(255,255,255,0.06)'}}>
               <div style={{display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px'}}>
-                <div style={{width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(74,222,128,0.12)', border: '1px solid rgba(74,222,128,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><ILockKeyhole style={{ width: '16px', height: '16px', color: '#4ade80' }} /></div>
+                <div style={{width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><ILockKeyhole style={{ width: '16px', height: '16px', color: '#4ade80' }} /></div>
                 <span style={{fontSize: '11px', fontFamily: 'monospace', color: '#4ade80', letterSpacing: '0.1em', textTransform: 'uppercase'}}>Constrained Output</span>
               </div>
               <h2 className="h2">The model never writes a link. It picks one.</h2>
@@ -316,8 +316,8 @@ export default function LandingPage({ onEnterConsole }: { onEnterConsole: () => 
         {/* Beat 6.5 — UI automation glitch card */}
         <section className="beat" id="beat-6-5" style={{height: '120vh', position: 'relative'}}>
           <div className="container" style={{display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%', alignItems: 'flex-end'}}>
-            <div className="glass-pane card" style={{maxWidth: '520px', padding: '0', overflow: 'hidden', border: '1px solid rgba(255,60,60,0.18)'}}>
-              <div style={{background: 'rgba(255,40,40,0.06)', padding: '14px 24px', borderBottom: '1px solid rgba(255,60,60,0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+            <div className="glass-pane card" style={{maxWidth: '520px', padding: '0', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.06)'}}>
+              <div style={{background: 'rgba(255,255,255,0.02)', padding: '14px 24px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
                 <span style={{fontSize: '12px', fontFamily: 'monospace', color: '#ff6b6b'}}>EXCEPTION: AccessibilityServiceCrash</span>
                 <span style={{fontSize: '11px', color: 'rgba(255,100,100,0.5)'}}>OneUI 7.1</span>
               </div>
