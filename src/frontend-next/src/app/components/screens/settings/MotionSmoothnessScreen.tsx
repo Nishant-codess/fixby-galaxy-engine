@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Ripple } from '../../ui/Ripple';
+import { ICheck } from '../../ui/Icons';
 import { useSettings } from '../../../context/SettingsContext';
 
 interface Props {
@@ -226,7 +227,7 @@ export function MotionSmoothnessScreen({
           animation: 'popIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)',
           zIndex: 100
         }}>
-          ✓ {toastMessage}
+          <ICheck style={{ width: '13px', height: '13px', verticalAlign: 'middle' }} /> {toastMessage}
         </div>
       )}
     </div>

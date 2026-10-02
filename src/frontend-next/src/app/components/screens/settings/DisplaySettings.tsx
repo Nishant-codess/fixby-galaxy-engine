@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { SettingsRow } from '../../ui/SettingsRow';
 import { OneUISlider } from '../../ui/OneUISlider';
 import { Screen } from '../../../../hooks/usePhoneNavigation';
-import { IChevron } from '../../ui/Icons';
+import { IChevron, ISun } from '../../ui/Icons';
 import { Ripple } from '../../ui/Ripple';
 import { useSettings } from '../../../context/SettingsContext';
 
@@ -39,9 +39,9 @@ export function DisplaySettings({ targetPath, onNavigate }: { targetPath: string
           <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div style={{ fontSize: '16px' }}>Brightness</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <span style={{ fontSize: '14px', color: 'var(--oneui-text-tertiary)' }}>☀️</span>
+              <span style={{ color: 'var(--oneui-text-tertiary)', display: 'inline-flex', alignItems: 'center' }}><ISun /></span>
               <OneUISlider value={brightness} onChange={setBrightness} />
-              <span style={{ fontSize: '14px', color: 'var(--oneui-text-tertiary)' }}>☀️</span>
+              <span style={{ color: 'var(--oneui-text-tertiary)', display: 'inline-flex', alignItems: 'center' }}><ISun /></span>
             </div>
           </div>
           <SettingsRow title="Adaptive brightness" toggle toggleValue={adaptive} onToggleChange={setAdaptive} divider />

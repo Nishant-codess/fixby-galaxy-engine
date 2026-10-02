@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { SettingsRow } from '../../ui/SettingsRow';
 import { Screen } from '../../../../hooks/usePhoneNavigation';
+import { IFlame } from '../../ui/Icons';
 
 function isHighlighted(targetPath: string[], ...keywords: string[]): boolean {
   const combined = targetPath.join(' ').toLowerCase();
@@ -60,7 +61,7 @@ export function AdvancedFeatures({ targetPath, onNavigate }: Props) {
               <div style={{ margin: '0 16px 16px', background: 'rgba(255,100,0,0.1)', borderRadius: '16px', 
                             border: '1px solid rgba(255,100,0,0.4)', padding: '16px' }}>
                 <div style={{ color: '#ff6400', fontSize: '13px', fontWeight: 600, marginBottom: '12px' }}>
-                  🔥 GAME BOOSTER
+                  <IFlame style={{ width: '13px', height: '13px', verticalAlign: 'middle', marginRight: '4px' }} /> GAME BOOSTER
                 </div>
                 <SettingsRow title="Thermal management" toggle toggleValue={thermal} onToggleChange={setThermal} divider
                   highlight={targetSubNode.includes('thermal')} />

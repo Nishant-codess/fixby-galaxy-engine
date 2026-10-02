@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import type { GoalData } from '../../../hooks/useFixbyQuery';
+import { ISearchMag, IStar, IClipboard, IChevronRight, IMapPin, IFilm, IZap, IWrench } from '../ui/Icons';
 
 export interface ResolutionCardsProps {
   goals: GoalData[];
@@ -49,7 +50,7 @@ export function ResolutionCards({ goals, query, onWatchDemo, onPerformAuto, onPe
           }}>F</div>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: '17px', fontWeight: 600, color: 'var(--oneui-text-primary)', lineHeight: 1.3 }}>
-              🔍 Issue Identified
+              <ISearchMag style={{ width: '18px', height: '18px', verticalAlign: 'middle', marginRight: '4px' }} /> Issue Identified
             </div>
             <div style={{ fontSize: '13px', color: 'var(--oneui-text-secondary)', marginTop: '2px', lineHeight: 1.3 }}>
               &quot;{query}&quot;
@@ -94,7 +95,7 @@ export function ResolutionCards({ goals, query, onWatchDemo, onPerformAuto, onPe
                     fontSize: '18px', flexShrink: 0,
                     filter: isPrimary ? 'none' : 'grayscale(0.5)',
                   }}>
-                    {isPrimary ? '⭐' : '📋'}
+                    {isPrimary ? <IStar style={{ width: '18px', height: '18px', color: '#f5a623' }} /> : <IClipboard style={{ width: '18px', height: '18px' }} />}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{
@@ -125,7 +126,7 @@ export function ResolutionCards({ goals, query, onWatchDemo, onPerformAuto, onPe
                     transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
                     transition: 'transform 0.2s',
                     flexShrink: 0,
-                  }}>▶</div>
+                  }}><IChevronRight style={{ width: '14px', height: '14px' }} /></div>
                 </div>
 
                 {/* Expanded Content */}
@@ -153,7 +154,7 @@ export function ResolutionCards({ goals, query, onWatchDemo, onPerformAuto, onPe
                         background: 'rgba(32, 117, 214, 0.06)',
                         marginBottom: '12px', flexWrap: 'wrap'
                       }}>
-                        <span style={{ fontSize: '13px', marginRight: '4px' }}>📍</span>
+                        <span style={{ marginRight: '4px', display: 'inline-flex', alignItems: 'center' }}><IMapPin style={{ width: '13px', height: '13px' }} /></span>
                         {pathSegments.map((seg, si) => (
                           <span key={si} style={{ fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                             <span style={{ color: si === pathSegments.length - 1 ? 'var(--oneui-accent, #2075d6)' : 'var(--oneui-text-secondary)', fontWeight: si === pathSegments.length - 1 ? 600 : 400 }}>{seg}</span>
@@ -192,7 +193,7 @@ export function ResolutionCards({ goals, query, onWatchDemo, onPerformAuto, onPe
                           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px',
                           transition: 'transform 0.15s, opacity 0.15s',
                         }}>
-                          🎬 Watch Demo
+                          <IFilm style={{ width: '14px', height: '14px' }} /> Watch Demo
                         </button>
                       )}
                       {modes.includes('auto') && (
@@ -203,7 +204,7 @@ export function ResolutionCards({ goals, query, onWatchDemo, onPerformAuto, onPe
                           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px',
                           transition: 'transform 0.15s, opacity 0.15s',
                         }}>
-                          ⚡ Auto Fix
+                          <IZap style={{ width: '14px', height: '14px' }} /> Auto Fix
                         </button>
                       )}
                       {modes.includes('manual') && (
@@ -215,7 +216,7 @@ export function ResolutionCards({ goals, query, onWatchDemo, onPerformAuto, onPe
                           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px',
                           transition: 'transform 0.15s, opacity 0.15s',
                         }}>
-                          🔧 Manual
+                          <IWrench style={{ width: '14px', height: '14px' }} /> Manual
                         </button>
                       )}
                     </div>

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Screen } from '../../../../hooks/usePhoneNavigation';
 import { SettingsRow } from '../../ui/SettingsRow';
-import { ISettings, IDisplay, IUser, IShield, IBell, IBattery, IWifi, IApps, ILock, IPhone, IChart, IInfo, ISearch } from '../../ui/Icons';
+import { ISettings, IDisplay, IUser, IShield, IBell, IBattery, IWifi, IApps, ILock, IPhone, IChart, IInfo, ISearch, IZap } from '../../ui/Icons';
 
 const ALL_SETTINGS = [
   { icon: <IUser />,    title: "Samsung account",      color: "#2566d8", screen: "settings/samsung-account" },
@@ -87,7 +87,7 @@ export function SettingsRoot({
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden' }}>
-              <span style={{ fontSize: '15px', flexShrink: 0 }}>⚡</span>
+              <span style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center' }}><IZap style={{ width: '15px', height: '15px' }} /></span>
               <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 Fix with AI: <strong>&quot;{query}&quot;</strong>
               </span>

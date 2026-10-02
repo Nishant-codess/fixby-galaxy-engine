@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ICamera } from '../ui/Icons';
+import { ICamera, IMessageCircle, IMail, IPhone } from '../ui/Icons';
 import { Screen } from '../../../hooks/usePhoneNavigation';
 
 export function LockScreen({ onUnlock }: { onUnlock: () => void }) {
@@ -64,15 +64,15 @@ export function LockScreen({ onUnlock }: { onUnlock: () => void }) {
       
       {/* Notifications mockup */}
       <div style={{ marginTop: '32px', display: 'flex', gap: '8px', opacity: 0.7 }}>
-        <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>💬</div>
-        <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>📧</div>
+        <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><IMessageCircle style={{ width: '16px', height: '16px' }} /></div>
+        <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><IMail style={{ width: '16px', height: '16px' }} /></div>
       </div>
 
       <div style={{ flex: 1 }} />
 
       <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', padding: '0 32px 48px' }}>
         <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <span style={{ fontSize: '20px' }}>📞</span>
+          <IPhone style={{ width: '20px', height: '20px' }} />
         </div>
         <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <ICamera />

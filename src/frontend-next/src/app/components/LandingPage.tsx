@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-
+import { IAlertTriangle, ILockKeyhole, ICheck, IChevronRight, IXClose, ICircleDot } from "./ui/Icons";
 function TypewriterHero() {
   const textRef = useRef<HTMLSpanElement>(null);
   const cursorRef = useRef<HTMLSpanElement>(null);
@@ -228,7 +228,7 @@ export default function LandingPage({ onEnterConsole }: { onEnterConsole: () => 
                 <div style={{marginTop: '24px', background: 'rgba(0,0,0,0.4)', borderRadius: '10px', padding: '16px 20px', fontFamily: 'monospace', fontSize: '13px', border: '1px solid rgba(255,80,80,0.2)'}}>
                   <div style={{color: 'rgba(255,255,255,0.3)', marginBottom: '6px', fontSize: '11px'}}>$ suggested path</div>
                   <div style={{color: '#ff6b6b', textDecoration: 'line-through'}}>samsung.com/support/battery-fix-s24</div>
-                  <div style={{color: 'rgba(255,100,100,0.6)', marginTop: '6px', fontSize: '12px'}}>⚠ 404 Not Found — does not exist</div>
+                  <div style={{color: 'rgba(255,100,100,0.6)', marginTop: '6px', fontSize: '12px'}}><IAlertTriangle style={{ width: '12px', height: '12px', verticalAlign: 'middle', marginRight: '4px' }} /> 404 Not Found — does not exist</div>
                 </div>
               </div>
             </div>
@@ -271,7 +271,7 @@ export default function LandingPage({ onEnterConsole }: { onEnterConsole: () => 
           <div className="container" style={{display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%', alignItems: 'flex-end'}}>
             <div className="glass-pane card" style={{maxWidth: '520px', padding: '40px 44px', border: '1px solid rgba(74,222,128,0.12)'}}>
               <div style={{display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px'}}>
-                <div style={{width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(74,222,128,0.12)', border: '1px solid rgba(74,222,128,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px'}}>🔒</div>
+                <div style={{width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(74,222,128,0.12)', border: '1px solid rgba(74,222,128,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><ILockKeyhole style={{ width: '16px', height: '16px', color: '#4ade80' }} /></div>
                 <span style={{fontSize: '11px', fontFamily: 'monospace', color: '#4ade80', letterSpacing: '0.1em', textTransform: 'uppercase'}}>Constrained Output</span>
               </div>
               <h2 className="h2">The model never writes a link. It picks one.</h2>
@@ -281,7 +281,7 @@ export default function LandingPage({ onEnterConsole }: { onEnterConsole: () => 
                   <span key={id} style={{padding: '4px 10px', borderRadius: '6px', background: 'rgba(74,222,128,0.08)', border: '1px solid rgba(74,222,128,0.2)', fontSize: '12px', fontFamily: 'monospace', color: '#4ade80'}}>{id}</span>
                 ))}
               </div>
-              <div style={{marginTop: '16px', fontSize: '12px', color: 'rgba(255,255,255,0.3)', fontFamily: 'monospace'}}>✓ Selected: SKG-4821 — Battery &gt; Optimization &gt; Background Activity</div>
+              <div style={{marginTop: '16px', fontSize: '12px', color: 'rgba(255,255,255,0.3)', fontFamily: 'monospace'}}><ICheck style={{ width: '12px', height: '12px', verticalAlign: 'middle' }} /> Selected: SKG-4821 — Battery &gt; Optimization &gt; Background Activity</div>
             </div>
           </div>
         </section>
@@ -294,14 +294,17 @@ export default function LandingPage({ onEnterConsole }: { onEnterConsole: () => 
               <p style={{marginTop: '14px', color: 'var(--text-mid)', lineHeight: 1.6}}>&quot;Go to Settings &gt; Display&quot; still leaves the user hunting. Fixby descends the full Samsung Hierarchical Knowledge Graph to output the exact leaf node.</p>
               <div style={{marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '6px', fontFamily: 'monospace', fontSize: '12px'}}>
                 {[
-                  { label: '◉ Settings', depth: 0, done: true },
-                  { label: '◉ Battery & Device Care', depth: 1, done: true },
-                  { label: '◉ Battery', depth: 2, done: true },
-                  { label: '▶ Background usage limits', depth: 3, done: false },
+                  { label: 'Settings', isLeaf: false, depth: 0, done: true },
+                  { label: 'Battery & Device Care', isLeaf: false, depth: 1, done: true },
+                  { label: 'Battery', isLeaf: false, depth: 2, done: true },
+                  { label: 'Background usage limits', isLeaf: true, depth: 3, done: false },
                 ].map((node, i) => (
                   <div key={i} style={{display: 'flex', alignItems: 'center', gap: '8px', paddingLeft: `${node.depth * 16}px`}}>
-                    <span style={{color: node.done ? 'var(--trace)' : 'rgba(255,255,255,0.25)'}}>{node.label}</span>
-                    {node.done && <span style={{color: 'rgba(255,255,255,0.2)', fontSize: '10px'}}>✓</span>}
+                    <span style={{color: node.done ? 'var(--trace)' : 'rgba(255,255,255,0.25)', display: 'inline-flex', alignItems: 'center', gap: '6px'}}>
+                      {node.isLeaf ? <IChevronRight style={{ width: '10px', height: '10px' }}/> : <ICircleDot style={{ width: '10px', height: '10px' }}/>} 
+                      {node.label}
+                    </span>
+                    {node.done && <span style={{color: 'rgba(255,255,255,0.2)'}}><ICheck style={{width:'12px', height:'12px'}}/></span>}
                   </div>
                 ))}
               </div>
@@ -324,7 +327,7 @@ export default function LandingPage({ onEnterConsole }: { onEnterConsole: () => 
                 <div style={{marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '8px'}}>
                   {['OS Update 7.1.2 → tap target shifted 4px', 'Theme change → element ID reassigned', 'Font scale 1.3× → layout overflow, tap missed'].map((err, i) => (
                     <div key={i} style={{display: 'flex', gap: '10px', alignItems: 'flex-start', fontSize: '12px', fontFamily: 'monospace', color: 'rgba(255,100,100,0.7)'}}>
-                      <span style={{flexShrink: 0, color: '#ff6b6b'}}>✗</span>
+                      <span style={{flexShrink: 0, color: '#ff6b6b'}}><IXClose style={{ width: '12px', height: '12px', marginTop: '2px' }} /></span>
                       <span>{err}</span>
                     </div>
                   ))}

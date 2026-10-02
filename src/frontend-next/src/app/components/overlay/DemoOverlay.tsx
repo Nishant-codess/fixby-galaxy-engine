@@ -1,4 +1,5 @@
 import React from 'react';
+import { IFilm, ICheckCircle, ICircleDot } from '../ui/Icons';
 
 export interface DemoOverlayProps {
   title: string;
@@ -25,7 +26,7 @@ export function DemoOverlay({ title, pathSegments, currentStep, totalSteps, onSk
       {/* Title row */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontSize: '16px' }}>🎬</span>
+          <span style={{ display: 'inline-flex', alignItems: 'center' }}><IFilm style={{ width: '16px', height: '16px' }} /></span>
           <span style={{ fontSize: '14px', fontWeight: 600, color: '#fff' }}>Demo: {title}</span>
         </div>
         <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>
@@ -45,7 +46,7 @@ export function DemoOverlay({ title, pathSegments, currentStep, totalSteps, onSk
                 color: isCompleted ? '#34c759' : isCurrent ? '#2075d6' : 'rgba(255,255,255,0.35)',
                 transition: 'color 0.3s, font-weight 0.3s',
               }}>
-                {isCompleted && !isCurrent ? '✅ ' : isCurrent ? '⬤ ' : ''}{seg}
+                {isCompleted && !isCurrent ? <><ICheckCircle style={{ width: '12px', height: '12px', verticalAlign: 'middle' }} />{' '}</> : isCurrent ? <><ICircleDot style={{ width: '12px', height: '12px', verticalAlign: 'middle' }} />{' '}</> : ''}{seg}
               </span>
               {i < pathSegments.length - 1 && (
                 <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: '10px' }}>›</span>

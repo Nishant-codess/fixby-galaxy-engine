@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Ripple } from '../../ui/Ripple';
+import { ICheck } from '../../ui/Icons';
 
 interface Props {
   onBack: () => void;
@@ -57,7 +58,7 @@ export function BatteryUsageScreen({ onBack, targetPath = [] }: Props) {
                 fontSize: '13px', fontWeight: 600, cursor: optimized ? 'default' : 'pointer'
               }}
             >
-              {optimized ? '✓ Optimized' : 'Put apps to sleep'}
+              {optimized ? <><ICheck style={{ width: '13px', height: '13px', verticalAlign: 'middle' }} /> Optimized</> : 'Put apps to sleep'}
             </button>
           </div>
 
@@ -115,7 +116,7 @@ export function BatteryUsageScreen({ onBack, targetPath = [] }: Props) {
           animation: 'popIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)',
           zIndex: 100
         }}>
-          ✓ {toastMessage}
+          <ICheck style={{ width: '13px', height: '13px', verticalAlign: 'middle' }} /> {toastMessage}
         </div>
       )}
 

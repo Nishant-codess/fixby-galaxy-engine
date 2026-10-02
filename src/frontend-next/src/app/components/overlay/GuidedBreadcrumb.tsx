@@ -1,4 +1,5 @@
 import React from 'react';
+import { ICheckCircle, IXClose, IMapPin, ICircleDot, ISquare } from '../ui/Icons';
 
 export interface GuidedBreadcrumbProps {
   pathSegments: string[];
@@ -69,7 +70,7 @@ export function GuidedBreadcrumb({ pathSegments, currentScreen, targetScreens, o
         /* Success state */
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '18px' }}>✅</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center' }}><ICheckCircle style={{ width: '18px', height: '18px' }} /></span>
             <span style={{ fontSize: '14px', fontWeight: 600, color: '#fff' }}>
               Destination reached! Apply the setting.
             </span>
@@ -80,14 +81,14 @@ export function GuidedBreadcrumb({ pathSegments, currentScreen, targetScreens, o
               fontSize: '12px', color: 'rgba(255,255,255,0.7)',
               cursor: 'pointer', padding: '4px 8px',
             }}
-          >✕</div>
+          ><IXClose style={{ width: '12px', height: '12px' }} /></div>
         </div>
       ) : (
         /* Navigation state */
         <>
           {/* Path breadcrumb with progress */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '8px', flexWrap: 'wrap' }}>
-            <span style={{ fontSize: '13px', marginRight: '2px' }}>📍</span>
+            <span style={{ marginRight: '2px', display: 'inline-flex', alignItems: 'center' }}><IMapPin style={{ width: '13px', height: '13px' }} /></span>
             {pathSegments.map((seg, i) => {
               const isReached = i <= reachedIndex;
               const isNext = i === nextIndex;
@@ -98,7 +99,7 @@ export function GuidedBreadcrumb({ pathSegments, currentScreen, targetScreens, o
                     fontWeight: isNext ? 700 : 400,
                     color: isReached ? '#34c759' : isNext ? '#2075d6' : 'rgba(255,255,255,0.35)',
                   }}>
-                    {isReached ? '✅' : isNext ? '⬤' : '⬜'} {seg}
+                    {isReached ? <ICheckCircle style={{ width: '12px', height: '12px' }} /> : isNext ? <ICircleDot style={{ width: '12px', height: '12px' }} /> : <ISquare style={{ width: '12px', height: '12px' }} />} {seg}
                   </span>
                   {i < pathSegments.length - 1 && (
                     <span style={{ color: 'rgba(255,255,255,0.15)', fontSize: '10px' }}>›</span>
@@ -121,7 +122,7 @@ export function GuidedBreadcrumb({ pathSegments, currentScreen, targetScreens, o
                 fontSize: '11px', color: 'rgba(255,255,255,0.4)',
                 cursor: 'pointer', padding: '2px 6px',
               }}
-            >✕</div>
+            ><IXClose style={{ width: '11px', height: '11px' }} /></div>
           </div>
         </>
       )}

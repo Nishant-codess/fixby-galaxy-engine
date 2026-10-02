@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ICheck } from '../../ui/Icons';
 
 interface Props {
   onBack: () => void;
@@ -142,7 +143,7 @@ export function StorageScreen({ onBack, targetPath = [] }: Props) {
           animation: 'popIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)',
           zIndex: 100
         }}>
-          ✓ {toastMessage}
+          <ICheck style={{ width: '13px', height: '13px', verticalAlign: 'middle' }} /> {toastMessage}
         </div>
       )}
 

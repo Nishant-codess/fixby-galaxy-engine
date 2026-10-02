@@ -3,6 +3,7 @@ import { useFixbyQuery } from '../../../hooks/useFixbyQuery';
 import type { GoalData } from '../../../hooks/useFixbyQuery';
 import { OneUISlider } from '../ui/OneUISlider';
 import { ResolutionCards } from './ResolutionCards';
+import { IZap, ICheck } from '../ui/Icons';
 
 const PRESETS = [
   "battery draining fast",
@@ -245,7 +246,7 @@ export function FixbyOrb({
               </div>
 
               <div onClick={() => handleSubmit()} style={{ width: '100%', padding: '16px', background: (siisBattery !== 85 || siisStorage !== 60 || siisTemp !== 32 || siisSignal !== 80) ? 'linear-gradient(135deg, #ff3b30, #ff6400)' : 'var(--oneui-accent)', color: '#fff', borderRadius: '16px', textAlign: 'center', fontWeight: 600, cursor: 'pointer', marginBottom: '24px' }}>
-                {(siisBattery !== 85 || siisStorage !== 60 || siisTemp !== 32 || siisSignal !== 80) ? '⚡ Diagnose with SIIS' : 'Diagnose →'}
+                {(siisBattery !== 85 || siisStorage !== 60 || siisTemp !== 32 || siisSignal !== 80) ? <><IZap style={{ width: '16px', height: '16px', verticalAlign: 'middle', marginRight: '4px' }} /> Diagnose with SIIS</> : 'Diagnose →'}
               </div>
 
               {/* SIIS Telemetry Override */}
@@ -293,7 +294,7 @@ export function FixbyOrb({
               {stages.map(s => (
                 <div key={s.id} style={{ display: "flex", alignItems: "center", gap: "14px", opacity: s.status === "pending" ? 0.3 : 1 }}>
                   <div style={{ width: "22px", height: "22px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: s.status === "done" ? "var(--oneui-success)" : s.status === "running" ? "var(--oneui-accent)" : "var(--oneui-text-tertiary)" }}>
-                    {s.status === "done" ? "✓" : s.status === "running" ? <div style={{ width: "14px", height: "14px", border: "2px solid rgba(32,117,214,0.3)", borderTopColor: "var(--oneui-accent)", borderRadius: "50%", animation: "spin 1s linear infinite" }} /> : <div style={{ width: "6px", height: "6px", background: "currentColor", borderRadius: "50%" }} />}
+                    {s.status === "done" ? <ICheck /> : s.status === "running" ? <div style={{ width: "14px", height: "14px", border: "2px solid rgba(32,117,214,0.3)", borderTopColor: "var(--oneui-accent)", borderRadius: "50%", animation: "spin 1s linear infinite" }} /> : <div style={{ width: "6px", height: "6px", background: "currentColor", borderRadius: "50%" }} />}
                   </div>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: "15px", color: s.status === "running" ? 'var(--oneui-text-primary)' : 'var(--oneui-text-secondary)' }}>{s.label}</div>
