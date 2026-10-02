@@ -87,4 +87,5 @@ telemetry.db
 # Allow Submission Artifacts
 !SRM_TheCyclops_PPT.pptx.pdf
 !AI_Disclosure.pdf
+webgl-progressive-blur/
 
