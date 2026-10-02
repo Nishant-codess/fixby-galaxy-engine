@@ -23,6 +23,7 @@ CRITICAL RULES:
 6. CAREFULLY READ THE USER COMPLAINT and DETECTED DOMAIN to select the most specific and relevant settings path.
 7. NEVER pick battery or background limits unless the user explicitly says battery or charging.
 8. The DETECTED DOMAIN and SYMPTOM are your PRIMARY hint — prioritize deeplinks matching that domain.
+9. DIVERSE ALTERNATIVES: When providing multiple contexts, they MUST address DIFFERENT settings paths and different approaches to solve the problem. Do not repeat the same setting.
 
 Return JSON in this format:
 {
@@ -197,14 +198,6 @@ class PlanExtractor:
             slots = extract_slots(query)
             detected_domain = slots.get("domain", "general")
 
-            # Guard against offline mock fixture returning battery data for non-battery queries
-            if detected_domain != "battery" and goals and any(
-                "battery" in a.actionName.lower() or "background usage" in a.actionName.lower()
-                for g in goals for a in g.actions
-            ):
-                logger.info(f"Detected offline battery fixture for domain '{detected_domain}'. Using domain fallback goal.")
-                return self._create_fallback_goal(query)
-
             if goals:
                 return goals
         except Exception as e:
@@ -290,6 +283,13 @@ class PlanExtractor:
                 "Settings>Battery>Background usage limits",
                 ["Open Settings on your Galaxy device", "Tap Battery", "Tap Background usage limits", "Turn on Put unused apps to sleep"]
             ),
+            "general": (
+                "General Settings",
+                "It will open settings to explore options",
+                "bixby://settings",
+                "Settings",
+                ["Open Settings", "Explore available options"]
+            ),
         }
 
         if domain == "general":
@@ -308,7 +308,7 @@ class PlanExtractor:
                 domain = "security"
 
         topic = domain.replace("_", " ").capitalize()
-        fb = DOMAIN_FALLBACKS.get(domain, DOMAIN_FALLBACKS["battery"])
+        fb = DOMAIN_FALLBACKS.get(domain, DOMAIN_FALLBACKS["general"])
         action_name, description, deeplink_url, path, steps = fb
 
         return [
