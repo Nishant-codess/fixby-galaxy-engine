@@ -32,11 +32,13 @@ def validate_and_repair(goals: List[Goal], topic: str) -> Tuple[List[Goal], List
         # Enforce exact goal string template
         goal.goal = build_goal_string(topic)
 
-        # Title: 2-3 words, sentence case
         words = goal.title.split()
-        if len(words) > 3 or len(words) < 2:
-            goal.title = f"{topic.title()} fix"
-            logs.append("Normalized goal title to 2 words")
+        if len(words) > 3:
+            goal.title = " ".join(words[:3])
+            logs.append("Truncated goal title to 3 words")
+        elif len(words) < 2:
+            goal.title = f"{topic.title()} {goal.title}".strip()
+            logs.append("Padded goal title to 2 words")
 
         # Partition actions: auto/manual first, critical last
         safe_actions = [a for a in goal.actions if a.category != ActionCategory.critical]
