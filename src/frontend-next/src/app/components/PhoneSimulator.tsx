@@ -312,7 +312,8 @@ export default function PhoneSimulator() {
     }}>
 
       {/* Screen container */}
-      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
+      <div className="phone-edge-fade" style={{ position: 'absolute', inset: 0 }}>
+        <div className="phone-screen-scroll" style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
         <StatusBar theme={isDarkScreen ? 'dark' : 'light'} />
 
         {/* Active screen */}
@@ -369,6 +370,7 @@ export default function PhoneSimulator() {
           onHome={reset}
           onRecents={() => push('recents')}
         />
+      </div>
       </div>
 
     </div>

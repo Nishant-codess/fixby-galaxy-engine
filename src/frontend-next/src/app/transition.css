@@ -170,6 +170,40 @@
   animation: phoneBootUp 0.8s ease-out 1.6s forwards;
 }
 
+/* ═══════════════════════════════════════════════════════ */
+/*  Scroll-Edge Blur — content fades as it leaves screen  */
+/* ═══════════════════════════════════════════════════════ */
+
+/*
+  .phone-edge-fade wraps the screen container div in PhoneSimulator.tsx.
+  The mask-image creates a soft fade at top and bottom so content dissolves
+  into the phone bezels as it scrolls out — no JS needed.
+  We must apply it to a wrapper WITHOUT overflow:hidden, due to a Chromium bug
+  where mask-image and overflow:hidden on the same element cancel each other out.
+*/
+.phone-edge-fade {
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    black 7%,
+    black 93%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    black 7%,
+    black 93%,
+    transparent 100%
+  );
+}
+
+/* Exempt overlays — the FixbyOrb/ResolutionCards sheets float above and must not be masked */
+.phone-screen-scroll > [style*="position: absolute"][style*="zIndex"] {
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
 @keyframes phoneBootUp {
   from { opacity: 0; transform: scale(0.95); }
   to { opacity: 1; transform: scale(1); }

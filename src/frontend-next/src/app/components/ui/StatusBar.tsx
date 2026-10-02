@@ -27,21 +27,18 @@ function SignalBars({ bars, color }: { bars: number; color: string }) {
 export function StatusBar({ battery = 78, hasNotif = true, theme = 'dark', onToggleTheme }: {
   battery?: number; hasNotif?: boolean; theme?: 'dark' | 'light'; onToggleTheme?: () => void;
 }) {
-  const [time, setTime] = useState(() => {
-    const d = new Date();
-    const use24 = Intl.DateTimeFormat([], { hour: "numeric" }).resolvedOptions().hour12 === false;
-    if (use24) return `${d.getHours().toString().padStart(2,"0")}:${d.getMinutes().toString().padStart(2,"0")}`;
-    const h = d.getHours() % 12 || 12;
-    return `${h}:${d.getMinutes().toString().padStart(2,"0")}`;
-  });
+  const [time, setTime] = useState('');
 
   useEffect(() => {
-    const i = setInterval(() => {
+    const getTime = () => {
       const d = new Date();
-      const use24 = Intl.DateTimeFormat([], { hour: "numeric" }).resolvedOptions().hour12 === false;
-      if (use24) setTime(`${d.getHours().toString().padStart(2,"0")}:${d.getMinutes().toString().padStart(2,"0")}`);
-      else { const h = d.getHours() % 12 || 12; setTime(`${h}:${d.getMinutes().toString().padStart(2,"0")}`); }
-    }, 10000);
+      const use24 = Intl.DateTimeFormat([], { hour: 'numeric' }).resolvedOptions().hour12 === false;
+      if (use24) return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+      const h = d.getHours() % 12 || 12;
+      return `${h}:${d.getMinutes().toString().padStart(2, '0')}`;
+    };
+    setTime(getTime());
+    const i = setInterval(() => setTime(getTime()), 10000);
     return () => clearInterval(i);
   }, []);
 

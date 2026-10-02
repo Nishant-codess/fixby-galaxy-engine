@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -36,8 +37,9 @@ export default function RootLayout({
           stamps a class on <html>, which CSS uses to hide the landing layer
           immediately — eliminating the flash.
         */}
-        <script
-           
+        <Script
+          id="fixby-console-mode"
+          strategy="beforeInteractive"
           dangerouslySetInnerHTML={{
             __html: `(function(){
   try {

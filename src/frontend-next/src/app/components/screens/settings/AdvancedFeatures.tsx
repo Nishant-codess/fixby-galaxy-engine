@@ -37,10 +37,11 @@ export function AdvancedFeatures({ targetPath, onNavigate }: Props) {
   return (
     <div style={{ position: 'absolute', inset: 0, zIndex: 30, background: 'var(--oneui-bg-primary)' }}>
       <div style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingBottom: '72px' }}>
-        <div style={{ padding: '64px 16px 20px' }}>
+        <div style={{ padding: '64px 16px 20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
           <h1 style={{ fontSize: '28px', fontWeight: 300, color: 'var(--oneui-text-primary)', margin: 0 }}>
             Advanced features
           </h1>
+          <span style={{ background: 'var(--oneui-accent)', color: '#fff', padding: '4px 8px', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold' }}>New</span>
         </div>
 
         {/* Sync */}
@@ -54,7 +55,7 @@ export function AdvancedFeatures({ targetPath, onNavigate }: Props) {
         {/* Labs and Game Booster */}
         <div style={{ margin: '0 16px 16px', background: 'var(--oneui-bg-card)', borderRadius: '24px', overflow: 'hidden' }}>
             <SettingsRow title="Labs" showChevron onPress={() => {}} divider highlight={isHighlighted(targetPath, 'labs')} />
-            <SettingsRow title="Game Booster" showChevron onPress={() => {}} divider highlight={targetNode.includes('game booster') && !targetSubNode} />
+            <SettingsRow title="Game Booster" showChevron onPress={() => {}} divider highlight={targetNode.includes('game booster')} />
             
             {/* Thermal Management SUB-SECTION shown when path includes 'Thermal management' */}
             {targetNode.includes('game booster') && (
@@ -64,7 +65,7 @@ export function AdvancedFeatures({ targetPath, onNavigate }: Props) {
                   <IFlame style={{ width: '13px', height: '13px', verticalAlign: 'middle', marginRight: '4px' }} /> GAME BOOSTER
                 </div>
                 <SettingsRow title="Thermal management" toggle toggleValue={thermal} onToggleChange={setThermal} divider
-                  highlight={targetSubNode.includes('thermal')} />
+                  highlight={targetNode.includes('thermal') || targetSubNode.includes('thermal')} />
                 <SettingsRow title="Game performance mode" rightLabel="Standard" showChevron onPress={() => {}}
                   highlight={targetSubNode.includes('performance')} />
               </div>

@@ -31,17 +31,17 @@ export function BatteryScreen({ targetPath, onNavigate }: { targetPath: string[]
 
         {/* Group 1 */}
         <div style={{ margin: '0 16px 24px', background: 'var(--oneui-bg-card)', borderRadius: '24px', overflow: 'hidden' }}>
-          <SettingsRow title="Battery usage" showChevron onPress={() => onNavigate('settings/generic/Battery usage')} divider highlight={targetNode?.toLowerCase().includes('usage')} />
-          <SettingsRow title="Power saving" toggle toggleValue={powerSaving} onToggleChange={setPowerSaving} divider highlight={targetNode?.toLowerCase().includes('power')} />
-          <SettingsRow title="Background usage limits" showChevron onPress={() => onNavigate('settings/generic/Background usage limits')} divider highlight={targetNode?.toLowerCase().includes('background')} />
-          <SettingsRow title="Protect battery" toggle toggleValue={protectBattery} onToggleChange={setProtectBattery} highlight={targetNode?.toLowerCase().includes('protect')} />
+          <SettingsRow title="Battery usage" showChevron onPress={() => onNavigate('settings/generic/Battery usage')} divider highlight={targetNode?.toLowerCase() === 'battery usage'} />
+          <SettingsRow title="Power saving" toggle toggleValue={powerSaving} onToggleChange={setPowerSaving} divider highlight={targetNode?.toLowerCase() === 'power saving'} />
+          <SettingsRow title="Background usage limits" showChevron onPress={() => onNavigate('settings/generic/Background usage limits')} divider highlight={targetNode?.toLowerCase() === 'background usage limits'} />
+          <SettingsRow title="Protect battery" toggle toggleValue={protectBattery} onToggleChange={setProtectBattery} highlight={targetNode?.toLowerCase() === 'protect battery'} />
         </div>
 
         {/* Group 2 */}
         <div style={{ margin: '0 16px 24px', background: 'var(--oneui-bg-card)', borderRadius: '24px', overflow: 'hidden' }}>
           <SettingsRow title="Storage" rightLabel="32.4 GB / 256 GB" showChevron onPress={() => onNavigate('settings/generic/Storage')} divider highlight={targetNode?.toLowerCase() === 'storage'} />
           <SettingsRow title="Memory" rightLabel="4.2 GB / 12 GB" showChevron onPress={() => onNavigate('settings/generic/Memory')} divider highlight={targetNode?.toLowerCase() === 'memory'} />
-          <SettingsRow title="Device protection" rightLabel="No threats" showChevron onPress={() => onNavigate('settings/generic/Device protection')} highlight={targetNode?.toLowerCase().includes('protection')} />
+          <SettingsRow title="Device protection" rightLabel="No threats" showChevron onPress={() => onNavigate('settings/generic/Device protection')} highlight={targetNode?.toLowerCase() === 'device protection'} />
         </div>
 
       </div>

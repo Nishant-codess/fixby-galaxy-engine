@@ -44,8 +44,8 @@ export function DisplaySettings({ targetPath, onNavigate }: { targetPath: string
               <span style={{ color: 'var(--oneui-text-tertiary)', display: 'inline-flex', alignItems: 'center' }}><ISun /></span>
             </div>
           </div>
-          <SettingsRow title="Adaptive brightness" toggle toggleValue={adaptive} onToggleChange={setAdaptive} divider />
-          <SettingsRow title="Extra brightness" toggle toggleValue={extraBrightness} onToggleChange={setExtraBrightness} />
+          <SettingsRow title="Adaptive brightness" toggle toggleValue={adaptive} onToggleChange={setAdaptive} divider highlight={targetNode?.toLowerCase() === 'adaptive brightness'} />
+          <SettingsRow title="Extra brightness" toggle toggleValue={extraBrightness} onToggleChange={setExtraBrightness} highlight={targetNode?.toLowerCase() === 'extra brightness'} />
         </div>
 
         {/* Settings Group 2 */}
