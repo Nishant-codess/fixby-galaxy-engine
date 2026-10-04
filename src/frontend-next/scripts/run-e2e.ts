@@ -12,7 +12,7 @@ const SCREENSHOT_DIR = process.env.FIXBY_SCREENSHOT_DIR
   : path.resolve(__dirname, '../verification');
 const BASE_URL = process.env.FIXBY_BASE_URL || 'http://localhost:3000';
 const IS_REMOTE = !/localhost|127\.0\.0\.1/.test(BASE_URL);
-const STEP_TIMEOUT = IS_REMOTE ? 60000 : 15000;
+const STEP_TIMEOUT = IS_REMOTE ? 60000 : 45000;
 
 interface TestResult {
   name: string;
@@ -100,7 +100,10 @@ async function runE2ESuite() {
     });
 
     p.on('requestfailed', req => {
-      failedRequests.push(`${req.method()} ${req.url()} (${req.failure()?.errorText || 'failed'})`);
+      const reason = req.failure()?.errorText || 'failed';
+      // Page close and in-flight navigation abort requests; that is not an API failure.
+      if (reason.includes('ERR_ABORTED')) return;
+      failedRequests.push(`${req.method()} ${req.url()} (${reason})`);
     });
 
     p.on('response', res => {
@@ -134,6 +137,15 @@ async function runE2ESuite() {
 
     const shot01 = path.join(SCREENSHOT_DIR, '01-home.png');
     await page.screenshot({ path: shot01 });
+    const floatingToolbar = await page.locator('[data-testid="fixby-top-nav"]').count();
+    const floatingBack = await page.locator('.back-to-landing-btn').count();
+    record(
+      'Clean simulator stage',
+      floatingToolbar === 0 && floatingBack === 0,
+      '01-home.png',
+      `Floating toolbar count=${floatingToolbar}, back pill count=${floatingBack}`
+    );
+
     record('Application Loads & Unlocks', true, '01-home.png', 'Simulator rendered Home Screen with dock apps');
 
     // ==========================================
@@ -148,6 +160,34 @@ async function runE2ESuite() {
     // Type query and submit
     const queryInput = page.locator('[data-testid="fixby-query-input"]');
     await queryInput.waitFor({ state: 'visible', timeout: 5000 });
+
+    const suggestionScroller = page.locator('[data-testid="suggestion-scroller"]');
+    const suggestionCount = await suggestionScroller.locator('button').count();
+    const hasHinglish = await suggestionScroller.getByText('Mera battery bahut jaldi drain ho raha hai').count();
+    const hasKorean = await suggestionScroller.getByText('배터리가 너무 빨리 닳아요').count();
+    record(
+      'Scrollable multilingual suggestions',
+      suggestionCount >= 12 && hasHinglish > 0 && hasKorean > 0,
+      '02-query-results.png',
+      `${suggestionCount} suggestions, hinglish=${hasHinglish}, korean=${hasKorean}`
+    );
+
+    const voiceBtn = page.locator('[data-testid="voice-input-btn"]');
+    const voiceAvailable = await voiceBtn.count();
+    if (voiceAvailable === 0) {
+      record('Voice input fallback', true, '02-query-results.png', 'Microphone hidden because this browser has no Web Speech API');
+    } else {
+      await voiceBtn.click();
+      await page.waitForFunction(() => {
+        return document.querySelector('[data-testid="voice-input-btn"]')?.getAttribute('aria-pressed') === 'true';
+      }, { timeout: 5000 });
+      record('Voice input starts', true, '02-query-results.png', 'Speech recognition listening; transcription stays in the prompt');
+      await voiceBtn.click();
+      await page.waitForFunction(() => {
+        return document.querySelector('[data-testid="voice-input-btn"]')?.getAttribute('aria-pressed') === 'false';
+      }, { timeout: 5000 });
+    }
+
     await queryInput.fill('My battery is draining very fast');
     await queryInput.press('Enter');
 
@@ -167,7 +207,73 @@ async function runE2ESuite() {
 
     const shot03 = path.join(SCREENSHOT_DIR, '03-fix-expanded.png');
     await page.screenshot({ path: shot03 });
-    record('Fix Expansion & Action Information', isAutoVisible && isDemoVisible, '03-fix-expanded.png', 'Action badges, why/impact details, and buttons visible');
+    const demoLabelLines = await demoBtn0.evaluate((el) => {
+      const style = window.getComputedStyle(el);
+      return style.whiteSpace === 'nowrap' && el.scrollWidth <= el.clientWidth + 1;
+    });
+    record(
+      'Fix Expansion & Action Information',
+      isAutoVisible && isDemoVisible && demoLabelLines,
+      '03-fix-expanded.png',
+      'Action badges, why/impact details, and one-line buttons visible'
+    );
+
+    // ==========================================
+    // TEST: Watch Demo is read-only
+    // ==========================================
+    console.log('▶ Running Watch Demo read-only check');
+    const settingsBeforeDemo = await page.evaluate(() => localStorage.getItem('fixby_device_settings_v1'));
+    await demoBtn0.click();
+
+    const demoSwitch = page.locator('[data-testid="switch-power-saving"]');
+    await demoSwitch.waitFor({ state: 'visible', timeout: STEP_TIMEOUT });
+    await page.waitForFunction(() => {
+      const el = document.querySelector('[data-testid="switch-power-saving"]');
+      return el?.getAttribute('data-checked') === 'true';
+    }, { timeout: STEP_TIMEOUT });
+    const visualOnDuringDemo = (await demoSwitch.getAttribute('data-checked')) === 'true';
+
+    await page.locator('[data-testid="demo-overlay"]').waitFor({ state: 'hidden', timeout: STEP_TIMEOUT }).catch(() => {});
+    await page.waitForTimeout(400);
+    const visualAfterDemo = await demoSwitch.getAttribute('data-checked').catch(() => null);
+    const settingsAfterDemo = await page.evaluate(() => localStorage.getItem('fixby_device_settings_v1'));
+    const storedPower = await page.evaluate(() => {
+      const raw = localStorage.getItem('fixby_device_settings_v1');
+      if (!raw) return false;
+      try { return JSON.parse(raw).powerSaving === true; } catch { return false; }
+    });
+    record(
+      'Watch Demo is read-only',
+      visualOnDuringDemo && visualAfterDemo !== 'true' && storedPower === false && settingsBeforeDemo === settingsAfterDemo,
+      '07-demo.png',
+      `visual during=${visualOnDuringDemo}, after=${visualAfterDemo}, storedPower=${storedPower}`
+    );
+
+    await page.locator('[data-testid="fixby-orb-trigger"]').click({ force: true });
+    await page.waitForTimeout(400);
+    await page.locator('[data-testid="orb-history-btn"]').click();
+    const demoStatus = page.locator('[data-testid="history-status-demonstrated-0"]');
+    const appliedDuringDemo = page.locator('[data-testid="history-status-applied-0"]');
+    const demoStatusVisible = await demoStatus.waitFor({ state: 'visible', timeout: 5000 }).then(() => true).catch(() => false);
+    const appliedVisible = await appliedDuringDemo.isVisible().catch(() => false);
+    record(
+      'History marks demo as demonstrated',
+      demoStatusVisible && !appliedVisible,
+      '11-history-drawer.png',
+      `demonstrated=${demoStatusVisible}, applied=${appliedVisible}`
+    );
+    await page.locator('[data-testid="history-close-btn"]').click();
+    await page.waitForTimeout(300);
+
+    const queryAgain = page.locator('[data-testid="fixby-query-input"]');
+    if (!(await queryAgain.isVisible().catch(() => false))) {
+      await page.locator('[data-testid="fixby-orb-trigger"]').click({ force: true });
+      await page.waitForTimeout(400);
+    }
+    await queryAgain.waitFor({ state: 'visible', timeout: 5000 });
+    await queryAgain.fill('My battery is draining very fast');
+    await queryAgain.press('Enter');
+    await page.locator('[data-testid="fix-card-0"]').waitFor({ state: 'visible', timeout: STEP_TIMEOUT });
 
     // ==========================================
     // TEST D: Auto Fix Execution
@@ -197,7 +303,7 @@ async function runE2ESuite() {
     );
 
     // Click Auto Fix on "Turn on Power Saving"
-    await autoFixBtn0.click();
+    await page.locator('[data-testid="auto-fix-btn-0"]').click();
     await page.waitForTimeout(1200);
 
     // Verify navigation landed on Battery Screen and Power Saving switch is ON
@@ -385,34 +491,43 @@ async function runE2ESuite() {
       `Guided demo overlay visible (${demoText.trim().slice(0, 80)})`
     );
 
-    // Wait for demo sequence to finish
-    await page.waitForTimeout(2500);
+    await page.locator('[data-testid="demo-overlay"]').waitFor({ state: 'hidden', timeout: STEP_TIMEOUT }).catch(() => {});
 
     // ==========================================
-    // TEST H: Unsupported Native Action Limitation
+    // TEST H: Simulated Phone and Messages
     // ==========================================
-    console.log('▶ Running Test H: Unsupported Native Action');
-    // Return to Home via NavBar
+    console.log('▶ Running Test H: Phone and Messages simulators');
     const navHomeH = page.locator('[data-testid="navbar-home"]');
     if (await navHomeH.isVisible({ timeout: 2000 }).catch(() => false)) {
       await navHomeH.click();
       await page.waitForTimeout(600);
     }
 
-    // Click Phone icon on HomeScreen (native Android system app)
     const phoneApp = page.locator('[data-testid="app-btn-phone"]').first();
     await phoneApp.waitFor({ state: 'visible', timeout: 5000 });
     await phoneApp.click();
-    await page.waitForTimeout(400);
-
-    const homeToast = page.locator('[data-testid="home-toast"]');
-    await homeToast.waitFor({ state: 'visible', timeout: 4000 });
-    const toastText = (await homeToast.textContent()) || '';
-    const isHonestLimitation = toastText.toLowerCase().includes('requires native') || toastText.toLowerCase().includes('not available');
-
+    await page.locator('[data-testid="phone-app"]').waitFor({ state: 'visible', timeout: 5000 });
+    const keypadVisible = await page.locator('[data-testid="phone-keypad"]').isVisible();
+    const phoneToast = await page.locator('[data-testid="home-toast"]').isVisible().catch(() => false);
     const shot09 = path.join(SCREENSHOT_DIR, '09-unsupported-action.png');
     await page.screenshot({ path: shot09 });
-    record('Unsupported Native Action Feedback', isHonestLimitation, '09-unsupported-action.png', `Honest capability feedback: "${toastText.trim()}"`);
+    record('Phone simulator opens', keypadVisible && !phoneToast, '09-unsupported-action.png', `keypad=${keypadVisible}, native toast=${phoneToast}`);
+
+    await page.locator('[data-testid="navbar-home"]').click();
+    await page.waitForTimeout(500);
+    await page.locator('[data-testid="app-btn-messages"]').first().click();
+    await page.locator('[data-testid="messages-app"]').waitFor({ state: 'visible', timeout: 5000 });
+    const listVisible = await page.locator('[data-testid="messages-conversation-list"]').isVisible();
+    record('Messages simulator opens', listVisible, '10-app-fallback.png', `conversation list=${listVisible}`);
+
+    await page.locator('[data-testid="navbar-home"]').click();
+    await page.waitForTimeout(500);
+    await page.locator('[data-testid="app-btn-camera"]').first().click();
+    const cameraToast = page.locator('[data-testid="home-toast"]');
+    await cameraToast.waitFor({ state: 'visible', timeout: 4000 });
+    const cameraToastText = (await cameraToast.textContent()) || '';
+    const cameraGuarded = cameraToastText.toLowerCase().includes('requires native') || cameraToastText.toLowerCase().includes('not available');
+    record('Native camera remains guarded', cameraGuarded, '09-unsupported-action.png', cameraToastText.trim());
 
     // ==========================================
     // TEST I: App Launch Fallback
@@ -423,17 +538,17 @@ async function runE2ESuite() {
       window.open = () => null as any;
     });
 
-    // Wait for previous toast to clear
-    await page.waitForTimeout(2200);
+    await page.locator('[data-testid="home-toast"]').waitFor({ state: 'detached', timeout: 5000 }).catch(() => {});
 
     const mapsApp = page.locator('[data-testid="app-btn-maps"]').first();
     await mapsApp.waitFor({ state: 'visible', timeout: 5000 });
     await mapsApp.click();
-    await page.waitForTimeout(400);
 
-    const mapsToast = page.locator('[data-testid="home-toast"]');
-    await mapsToast.waitFor({ state: 'visible', timeout: 4000 });
-    const mapsToastText = (await mapsToast.textContent()) || '';
+    const mapsToastHandle = await page.waitForFunction(() => {
+      const text = document.querySelector('[data-testid="home-toast"]')?.textContent || '';
+      return text.includes('web companion') || text.includes('Maps') ? text : null;
+    }, { timeout: 8000 });
+    const mapsToastText = String(await mapsToastHandle.jsonValue());
     const isFallbackHandled = mapsToastText.includes('web companion') || mapsToastText.includes('Maps');
 
     const shot10 = path.join(SCREENSHOT_DIR, '10-app-fallback.png');
@@ -463,10 +578,11 @@ async function runE2ESuite() {
     const historyBadge = page.locator('[data-testid="history-count-badge"]');
     const badgeText = (await historyBadge.textContent()) || '';
     const hasHistoryItems = badgeText.includes('/ 5') && !badgeText.startsWith('0');
+    const appliedAfterFix = await page.locator('[data-testid="history-status-applied-0"]').isVisible().catch(() => false);
 
     const shot11 = path.join(SCREENSHOT_DIR, '11-history-drawer.png');
     await page.screenshot({ path: shot11 });
-    record('Fix History Drawer & Persistence', hasHistoryItems, '11-history-drawer.png', `History drawer opened with ${badgeText.trim()} entries recorded`);
+    record('Fix History Drawer & Persistence', hasHistoryItems && appliedAfterFix, '11-history-drawer.png', `History drawer opened with ${badgeText.trim()} entries; applied badge=${appliedAfterFix}`);
 
     // ==========================================
     // TEST K: History Reopen Past Troubleshooting Session

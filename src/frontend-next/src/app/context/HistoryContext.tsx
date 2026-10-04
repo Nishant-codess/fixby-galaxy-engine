@@ -141,12 +141,11 @@ export function HistoryProvider({ children }: { children: React.ReactNode }) {
     }));
   }, []);
 
-  const recordDemoViewed = useCallback((queryOrId: string, fixTitle: string) => {
+  const recordDemoViewed = useCallback((queryOrId: string, _fixTitle: string) => {
     setHistory(prev => prev.map(item => {
       if (item.id === queryOrId || item.query.toLowerCase() === queryOrId.toLowerCase()) {
         return {
           ...item,
-          appliedFix: item.appliedFix || fixTitle,
           status: item.status === 'applied' ? 'applied' : 'demonstrated',
         };
       }

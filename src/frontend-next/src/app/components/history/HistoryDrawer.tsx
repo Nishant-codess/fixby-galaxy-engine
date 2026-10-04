@@ -321,7 +321,9 @@ export function HistoryDrawer({ isOpen, onClose, onSelectHistoryItem }: HistoryD
                       )}
 
                       {!hasApplied && hasDemoed && (
-                        <span style={{
+                        <span
+                          data-testid={`history-status-demonstrated-${index}`}
+                          style={{
                           fontSize: '11px',
                           fontWeight: 700,
                           padding: '3px 8px',

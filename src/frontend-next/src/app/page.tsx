@@ -6,9 +6,7 @@ import PhoneSimulator from "@/app/components/PhoneSimulator";
 import DemoGuide from "@/app/components/DemoGuide";
 import "./transition.css";
 import { SettingsProvider } from "@/app/context/SettingsContext";
-import { HistoryProvider, useHistory } from "@/app/context/HistoryContext";
-import { FixbyTopNav } from "@/app/components/navigation/FixbyTopNav";
-import { DeviceCapabilitiesModal } from "@/app/components/navigation/DeviceCapabilitiesModal";
+import { HistoryProvider } from "@/app/context/HistoryContext";
 
 function ConsoleExperience({
   isFadingOut,
@@ -23,20 +21,8 @@ function ConsoleExperience({
   handleEnterConsole: () => void;
   handleExitConsole: () => void;
 }) {
-  const { setIsDrawerOpen } = useHistory();
-  const [isDeviceModalOpen, setIsDeviceModalOpen] = useState(false);
-
   return (
     <div className={`master-app-wrapper ${isFadingOut ? "fading-out" : ""} ${isConsoleMode ? "in-console" : ""} ${skipTransitions ? "skip-transitions" : ""}`}>
-      {/* Top Navigation Bar in Console Mode */}
-      {isConsoleMode && (
-        <FixbyTopNav
-          onOpenHistory={() => setIsDrawerOpen(true)}
-          onOpenDeviceModal={() => setIsDeviceModalOpen(true)}
-          onExitConsole={handleExitConsole}
-        />
-      )}
-
       <div className="cinematic-viewport">
         {/* Landing Page Content */}
         <div className="landing-layer">
@@ -45,26 +31,11 @@ function ConsoleExperience({
 
         {/* The Diagnostic App rendered inside the phone frame */}
         <div className="phone-app-layer" data-lenis-prevent="true">
-          <PhoneSimulator />
+          <PhoneSimulator onExitConsole={handleExitConsole} />
         </div>
       </div>
 
-      {/* Demo testing guide floats in beside the phone */}
       <DemoGuide isVisible={isConsoleMode} />
-      
-      {/* Back button floats in on the left side */}
-      <button 
-        className="back-to-landing-btn"
-        onClick={handleExitConsole}
-      >
-        ← Back to Landing
-      </button>
-
-      {/* Device Capabilities Modal */}
-      <DeviceCapabilitiesModal
-        isOpen={isDeviceModalOpen}
-        onClose={() => setIsDeviceModalOpen(false)}
-      />
     </div>
   );
 }

@@ -6,7 +6,7 @@
 
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef, ReactNode } from "react";
 import {
   DeviceSettingsState,
   DeviceSettingKey,
@@ -22,9 +22,12 @@ import {
 } from "../../settings/actions";
 
 interface SettingsContextType {
-  // Master reactive settings state
+  // Visible settings. During a Watch Demo this includes a temporary preview
+  // that is never written to localStorage.
   settings: DeviceSettingsState;
   setSetting: <K extends DeviceSettingKey>(key: K, value: DeviceSettingsState[K]) => void;
+  setDemoPreview: <K extends DeviceSettingKey>(key: K, value: DeviceSettingsState[K]) => void;
+  clearDemoPreview: () => void;
   resetAllSettings: () => void;
 
   // Central Action Engine Executor
@@ -51,7 +54,10 @@ const STORAGE_KEY = "fixby_device_settings_v1";
 
 export function SettingsProvider({ children }: { children: ReactNode }) {
   const [settings, setSettingsState] = useState<DeviceSettingsState>(INITIAL_SETTINGS_STATE);
+  const [demoPreview, setDemoPreviewState] = useState<Partial<DeviceSettingsState> | null>(null);
   const [lastActionResult, setLastActionResult] = useState<ActionResult | null>(null);
+  const settingsRef = useRef(settings);
+  settingsRef.current = settings;
 
   // Hydrate from localStorage once mounted on client
   useEffect(() => {
@@ -81,10 +87,24 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
   const resetAllSettings = useCallback(() => {
     setSettingsState(INITIAL_SETTINGS_STATE);
+    setDemoPreviewState(null);
     try {
       localStorage.removeItem(STORAGE_KEY);
     } catch (e) {}
   }, []);
+
+  const setDemoPreview = useCallback(<K extends DeviceSettingKey>(key: K, value: DeviceSettingsState[K]) => {
+    setDemoPreviewState(prev => ({ ...(prev || {}), [key]: value }));
+  }, []);
+
+  const clearDemoPreview = useCallback(() => {
+    setDemoPreviewState(null);
+  }, []);
+
+  const visibleSettings = useMemo(
+    () => (demoPreview ? { ...settings, ...demoPreview } : settings),
+    [settings, demoPreview]
+  );
 
   // Centralized Action Execution Engine
   const executeAction = useCallback(async (action: FixAction): Promise<ActionResult> => {
@@ -122,6 +142,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     // 2. Setting Modification Actions
     if (action.settingKey) {
       const key = action.settingKey;
+      const committed = settingsRef.current;
       const def = SETTING_DEFINITIONS[key];
       const settingTitle = def?.title || key;
 
@@ -132,7 +153,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       } else if (action.type === "TOGGLE_OFF") {
         newValue = false;
       } else if (action.type === "TOGGLE") {
-        newValue = !(settings as any)[key];
+        newValue = !(committed as any)[key];
       } else if (action.type === "CONFIG_CHANGE" && action.targetValue !== undefined) {
         newValue = action.targetValue;
       } else {
@@ -175,7 +196,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     };
     setLastActionResult(res);
     return res;
-  }, [settings, setSetting]);
+  }, [setSetting]);
 
   const clearLastActionResult = useCallback(() => {
     setLastActionResult(null);
@@ -184,23 +205,25 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   return (
     <SettingsContext.Provider
       value={{
-        settings,
+        settings: visibleSettings,
         setSetting,
+        setDemoPreview,
+        clearDemoPreview,
         resetAllSettings,
         executeAction,
         lastActionResult,
         clearLastActionResult,
 
         // Backward compatibility getters & setters
-        darkMode: settings.darkMode,
+        darkMode: visibleSettings.darkMode,
         setDarkMode: (val: boolean) => setSetting("darkMode", val),
-        brightness: settings.brightness,
+        brightness: visibleSettings.brightness,
         setBrightness: (val: number) => setSetting("brightness", val),
-        motionSmoothness: settings.motionSmoothness,
+        motionSmoothness: visibleSettings.motionSmoothness,
         setMotionSmoothness: (val: MotionSmoothnessMode) => setSetting("motionSmoothness", val),
-        extraBrightness: settings.extraBrightness,
+        extraBrightness: visibleSettings.extraBrightness,
         setExtraBrightness: (val: boolean) => setSetting("extraBrightness", val),
-        easyMode: settings.easyMode,
+        easyMode: visibleSettings.easyMode,
         setEasyMode: (val: boolean) => setSetting("easyMode", val),
       }}
     >

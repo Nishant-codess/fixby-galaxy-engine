@@ -3,6 +3,7 @@ import { IPhone, IMessages, IChrome, ICamera, IGallery, IYouTube, IMaps, ICalcul
 import { Ripple } from '../ui/Ripple';
 import { Screen } from '../../../hooks/usePhoneNavigation';
 import { openApp } from '../../../settings/actions';
+import { launchForApp } from '../../../apps/registry';
 
 const APPS = [
   { id: 'phone', packageName: 'com.samsung.android.dialer', icon: <IPhone />, color: 'var(--oneui-icon-green)', label: 'Phone' },
@@ -47,18 +48,22 @@ export function HomeScreen({ onNavigate, onFixbyOrb }: { onNavigate: (s: Screen)
   const [toast, setToast] = useState<string | null>(null);
 
   const handleAppClick = async (app: any) => {
-    if (app.isReal) {
+    const launch = launchForApp(app.id, app.label);
+    if (launch.type === 'settings') {
       onNavigate('settings');
-    } else if (app.isFixby) {
-      onFixbyOrb();
-    } else if (app.packageName) {
-      const res = await openApp({ packageName: app.packageName, appName: app.label });
-      setToast(res.message);
-      setTimeout(() => setToast(null), 3000);
-    } else {
-      setToast(`${app.label}: Requires native Android integration`);
-      setTimeout(() => setToast(null), 2500);
+      return;
     }
+    if (launch.type === 'assistant') {
+      onFixbyOrb();
+      return;
+    }
+    if (launch.type === 'screen') {
+      onNavigate(launch.screen);
+      return;
+    }
+    const res = await openApp({ packageName: launch.packageName, appName: launch.appName });
+    setToast(res.message);
+    setTimeout(() => setToast(null), 3000);
   };
 
   return (

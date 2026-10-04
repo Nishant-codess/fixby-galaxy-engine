@@ -100,11 +100,17 @@ export function SettingsRoot({
         <div style={{ margin: '0 16px 24px', background: 'var(--oneui-bg-card)', borderRadius: '24px', overflow: 'hidden' }}>
           <SettingsRow 
             avatar={
-              <img 
-                src="/assets/panda_avatar.jpg" 
-                alt="Fixby User" 
-                style={{ width: '42px', height: '42px', borderRadius: '50%', objectFit: 'cover', border: '1.5px solid rgba(255,255,255,0.15)' }} 
-              />
+              <div
+                aria-hidden
+                style={{
+                  width: '42px', height: '42px', borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #2075d6, #5b8def)',
+                  color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '14px', fontWeight: 700, letterSpacing: '-0.02em',
+                }}
+              >
+                FU
+              </div>
             }
             title="Fixby User"
             subtitle="Samsung account"

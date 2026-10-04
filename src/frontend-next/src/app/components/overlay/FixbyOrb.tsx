@@ -7,15 +7,29 @@ import { useFixbyQuery } from '../../../hooks/useFixbyQuery';
 import type { GoalData } from '../../../hooks/useFixbyQuery';
 import { OneUISlider } from '../ui/OneUISlider';
 import { ResolutionCards } from './ResolutionCards';
-import { IZap, ICheck, IClock, IChevronRight } from '../ui/Icons';
+import { IZap, ICheck, IClock, IChevronRight, ISettings } from '../ui/Icons';
 import { FixAction } from '../../../settings/actions';
+import { SPEECH_LANGUAGES, useSpeechInput } from '../../../hooks/useSpeechInput';
 
-// Curated intelligent suggestion chips per UX specifications
-const CURATED_SUGGESTIONS = [
-  { label: "Battery draining", query: "battery draining fast", icon: "🔋", testId: "preset-battery-draining-fast" },
-  { label: "Phone overheating", query: "bhai mera phone bohot garam ho raha hai", icon: "🔥", testId: "preset-bhai-mera-phone-bohot-garam-ho-raha-hai" },
-  { label: "Wi-Fi not working", query: "wifi keeps disconnecting", icon: "📶", testId: "preset-wifi-keeps-disconnecting" },
-  { label: "Storage full", query: "storage full clean up junk files", icon: "💾", testId: "preset-storage-full-clean-up-junk-files" },
+const SUGGESTIONS = [
+  { label: "Battery draining quickly", query: "My battery is draining very fast", testId: "preset-battery-draining-fast" },
+  { label: "Phone overheating", query: "Phone is overheating and getting hot" },
+  { label: "Wi-Fi keeps disconnecting", query: "Wi-Fi keeps disconnecting" },
+  { label: "Bluetooth won't connect", query: "Bluetooth won't connect" },
+  { label: "Storage is full", query: "Storage is full" },
+  { label: "Phone feels slow", query: "Phone feels slow" },
+  { label: "Notifications are delayed", query: "Notifications are delayed" },
+  { label: "Apps keep crashing", query: "Apps keep crashing" },
+  { label: "Charging is slow", query: "Charging is slow" },
+  { label: "Mera battery bahut jaldi drain ho raha hai", query: "Mera battery bahut jaldi drain ho raha hai" },
+  { label: "Phone bahut heat ho raha hai", query: "Phone bahut heat ho raha hai" },
+  { label: "Wi-Fi connect nahi ho raha", query: "Wi-Fi connect nahi ho raha" },
+  { label: "Storage full ho gayi hai", query: "Storage full ho gayi hai" },
+  { label: "Phone slow ho gaya hai", query: "Phone slow ho gaya hai" },
+  { label: "배터리가 너무 빨리 닳아요", query: "배터리가 너무 빨리 닳아요" },
+  { label: "휴대폰이 너무 뜨거워요", query: "휴대폰이 너무 뜨거워요" },
+  { label: "Wi-Fi가 연결되지 않아요", query: "Wi-Fi가 연결되지 않아요" },
+  { label: "저장 공간이 부족해요", query: "저장 공간이 부족해요" },
 ];
 
 export interface FixbyOrbProps {
@@ -28,6 +42,8 @@ export interface FixbyOrbProps {
   onPerformAuto?: (action: FixAction) => void;
   onPerformManual?: (action: FixAction) => void;
   onOpenHistory?: () => void;
+  onOpenDevice?: () => void;
+  onExitConsole?: () => void;
   restoredGoals?: GoalData[] | null;
   restoredQuery?: string;
   onClearRestored?: () => void;
@@ -35,7 +51,7 @@ export interface FixbyOrbProps {
 
 export function FixbyOrb({
   isOpen, onToggle, onResolved, initialQuery, onClearInitialQuery,
-  onWatchDemo, onPerformAuto, onPerformManual, onOpenHistory,
+  onWatchDemo, onPerformAuto, onPerformManual, onOpenHistory, onOpenDevice, onExitConsole,
   restoredGoals, restoredQuery, onClearRestored
 }: FixbyOrbProps) {
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -53,6 +69,7 @@ export function FixbyOrb({
   const { executeQuery, stages, isProcessing, reset } = useFixbyQuery();
   const { darkMode } = useSettings();
   const { addHistoryItem, recordAppliedFix, recordDemoViewed, history } = useHistory();
+  const speech = useSpeechInput((text) => setQuery(text));
   const orbRef = useRef<HTMLDivElement>(null);
   
   // Current goals and query for resolution cards
@@ -156,6 +173,7 @@ export function FixbyOrb({
         onWatchDemo={(action) => handleGoalAction(action, 'demo')}
         onPerformAuto={(action) => handleGoalAction(action, 'auto')}
         onPerformManual={(action) => handleGoalAction(action, 'manual')}
+        onOpenDevice={onOpenDevice}
         onClose={handleClose}
       />
     );
@@ -254,7 +272,37 @@ export function FixbyOrb({
                 </div>
               </div>
 
-              {/* History Drawer Trigger in Header */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              {onOpenDevice && (
+                <button
+                  data-testid="assistant-device-btn"
+                  onClick={onOpenDevice}
+                  aria-label="About device"
+                  style={{
+                    width: '32px', height: '32px', borderRadius: '12px',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+                    border: darkMode ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.06)',
+                    color: 'var(--oneui-text-primary)', cursor: 'pointer',
+                  }}
+                >
+                  <ISettings style={{ width: '15px', height: '15px' }} />
+                </button>
+              )}
+              {onExitConsole && (
+                <button
+                  data-testid="assistant-exit-btn"
+                  onClick={onExitConsole}
+                  style={{
+                    padding: '6px 10px', borderRadius: '12px',
+                    background: 'transparent', border: 'none',
+                    color: 'var(--oneui-text-secondary)',
+                    fontSize: '12px', fontWeight: 600, cursor: 'pointer',
+                  }}
+                >
+                  Exit
+                </button>
+              )}
               {onOpenHistory && (
                 <button
                   data-testid="orb-history-btn"
@@ -281,6 +329,7 @@ export function FixbyOrb({
                   )}
                 </button>
               )}
+              </div>
             </div>
 
             {!isProcessing && stages[0].status === 'pending' ? (
@@ -308,7 +357,7 @@ export function FixbyOrb({
                 </div>
 
                 {/* Main Query Input Box */}
-                <div style={{ position: 'relative', marginBottom: '16px' }}>
+                <div style={{ position: 'relative', marginBottom: '12px' }}>
                   <input 
                     data-testid="fixby-query-input"
                     value={query}
@@ -321,7 +370,7 @@ export function FixbyOrb({
                       background: darkMode ? 'rgba(0, 0, 0, 0.4)' : 'rgba(0, 0, 0, 0.03)',
                       border: darkMode ? '1.5px solid rgba(255, 255, 255, 0.12)' : '1.5px solid rgba(0, 0, 0, 0.1)',
                       borderRadius: '18px',
-                      padding: '16px 20px',
+                      padding: speech.supported ? '16px 52px 16px 20px' : '16px 20px',
                       color: 'var(--oneui-text-primary)',
                       fontSize: '15px',
                       outline: 'none',
@@ -337,61 +386,109 @@ export function FixbyOrb({
                       e.currentTarget.style.boxShadow = 'inset 0 2px 4px rgba(0,0,0,0.2)';
                     }}
                   />
+                  {speech.supported && (
+                    <button
+                      type="button"
+                      data-testid="voice-input-btn"
+                      aria-label={speech.listening ? "Stop listening" : "Say it"}
+                      aria-pressed={speech.listening}
+                      onClick={() => speech.listening ? speech.stop() : speech.start()}
+                      style={{
+                        position: 'absolute',
+                        right: '8px',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        width: '36px',
+                        height: '36px',
+                        borderRadius: '12px',
+                        border: 'none',
+                        cursor: 'pointer',
+                        background: speech.listening ? 'rgba(255, 69, 58, 0.18)' : 'rgba(32, 117, 214, 0.15)',
+                        color: speech.listening ? '#ff453a' : 'var(--oneui-accent)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                        <line x1="12" y1="19" x2="12" y2="23" />
+                      </svg>
+                    </button>
+                  )}
                 </div>
 
-                {/* Curated Intelligent Suggestion Chips */}
-                <div style={{ marginBottom: '20px' }}>
+                {speech.supported && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+                    <span style={{ fontSize: '11px', color: 'var(--oneui-text-secondary)' }}>
+                      {speech.listening ? "Listening… review the text before diagnosing" : "Say it, then edit"}
+                    </span>
+                    {SPEECH_LANGUAGES.map((lang) => (
+                      <button
+                        key={lang.id}
+                        type="button"
+                        onClick={() => speech.setLanguage(lang.id)}
+                        style={{
+                          border: 'none',
+                          borderRadius: '8px',
+                          padding: '2px 6px',
+                          fontSize: '10px',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          background: speech.language === lang.id ? 'rgba(32,117,214,0.2)' : 'transparent',
+                          color: speech.language === lang.id ? 'var(--oneui-accent)' : 'var(--oneui-text-secondary)',
+                        }}
+                      >
+                        {lang.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                <div style={{ marginBottom: '16px' }}>
                   <div style={{
                     fontSize: '11px',
                     fontWeight: 700,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em',
+                    letterSpacing: '0.04em',
                     color: 'var(--oneui-text-secondary)',
                     marginBottom: '8px',
                   }}>
-                    Quick Diagnostics
+                    Try asking…
                   </div>
-                  
-                  <div style={{ 
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    gap: '8px',
-                  }}>
-                    {CURATED_SUGGESTIONS.map(s => (
-                      <button 
-                        key={s.label}
-                        data-testid={s.testId}
+                  <div
+                    data-testid="suggestion-scroller"
+                    style={{
+                      display: 'flex',
+                      gap: '8px',
+                      overflowX: 'auto',
+                      paddingBottom: '4px',
+                      scrollbarWidth: 'thin',
+                    }}
+                  >
+                    {SUGGESTIONS.map((s) => (
+                      <button
+                        key={s.query}
+                        type="button"
+                        data-testid={s.testId || `suggestion-${s.query.slice(0, 18)}`}
                         onClick={() => {
                           setQuery(s.query);
                           handleSubmit(s.query);
                         }}
-                        style={{ 
-                          padding: '8px 14px',
-                          background: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)', 
-                          borderRadius: '14px',
-                          fontSize: '13px',
-                          fontWeight: 500,
-                          border: darkMode ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.08)', 
-                          cursor: 'pointer',
+                        style={{
+                          flex: '0 0 auto',
+                          whiteSpace: 'nowrap',
+                          padding: '7px 12px',
+                          borderRadius: '999px',
+                          border: darkMode ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.08)',
+                          background: darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
                           color: 'var(--oneui-text-primary)',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '6px',
-                          transition: 'all 0.15s ease',
-                        }}
-                        onMouseEnter={e => {
-                          e.currentTarget.style.background = 'rgba(32, 117, 214, 0.15)';
-                          e.currentTarget.style.borderColor = 'rgba(32, 117, 214, 0.3)';
-                          e.currentTarget.style.transform = 'translateY(-1px)';
-                        }}
-                        onMouseLeave={e => {
-                          e.currentTarget.style.background = darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)';
-                          e.currentTarget.style.borderColor = darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
-                          e.currentTarget.style.transform = 'translateY(0)';
+                          fontSize: '12px',
+                          fontWeight: 500,
+                          cursor: 'pointer',
                         }}
                       >
-                        <span>{s.icon}</span>
-                        <span>{s.label}</span>
+                        {s.label}
                       </button>
                     ))}
                   </div>

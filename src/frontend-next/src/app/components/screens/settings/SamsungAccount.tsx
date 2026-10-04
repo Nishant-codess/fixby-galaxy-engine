@@ -14,15 +14,17 @@ export function SamsungAccount({ targetPath, onNavigate }: { targetPath: string[
         
         {/* Profile Header */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '24px', gap: '12px' }}>
-          <img 
-            src="/assets/panda_avatar.jpg" 
-            alt="Fixby User" 
-            style={{ 
-              width: '84px', height: '84px', borderRadius: '50%', objectFit: 'cover', 
-              border: '2.5px solid rgba(255,255,255,0.2)', 
-              boxShadow: '0 8px 24px rgba(0,0,0,0.5)' 
-            }} 
-          />
+          <div
+            aria-hidden
+            style={{
+              width: '84px', height: '84px', borderRadius: '50%',
+              background: 'linear-gradient(135deg, #2075d6, #5b8def)',
+              color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '28px', fontWeight: 600,
+            }}
+          >
+            FU
+          </div>
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontSize: '24px', fontWeight: 500, marginBottom: '4px' }}>Fixby User</div>
             <div style={{ fontSize: '15px', color: 'var(--oneui-text-secondary)' }}>demo@samsung.com</div>

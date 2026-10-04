@@ -44,6 +44,9 @@ import { WellbeingSettings } from './screens/settings/WellbeingSettings';
 import { GeneralSettings } from './screens/settings/GeneralSettings';
 import { BatteryUsageScreen } from './screens/settings/BatteryUsageScreen';
 import { StorageScreen } from './screens/settings/StorageScreen';
+import { PhoneApp } from './apps/PhoneApp';
+import { MessagesApp } from './apps/MessagesApp';
+import { DeviceCapabilitiesModal } from './navigation/DeviceCapabilitiesModal';
 
 // Maps keywords from the API path to a Settings sub-screen
 const SETTINGS_SCREEN_MAP: { keywords: string[]; screen: Screen }[] = [
@@ -103,10 +106,11 @@ function resolveScreenSequence(path: string[]): Screen[] {
   return screens;
 }
 
-export default function PhoneSimulator() {
+export default function PhoneSimulator({ onExitConsole }: { onExitConsole?: () => void }) {
   const { currentScreen, push, pop, reset, pushMany } = usePhoneNavigation('lock');
   const { startDemo, startDemoSteps, cancelDemo, isAnimating, currentStep, totalSteps, highlightedTarget } = useAnimatedNavigation();
-  const { settings, setSetting, executeAction, darkMode } = useSettings();
+  const { executeAction, darkMode, setDemoPreview, clearDemoPreview } = useSettings();
+  const [deviceModalOpen, setDeviceModalOpen] = useState(false);
   
   const [orbOpen, setOrbOpen] = useState(false);
   const [targetPath, setTargetPath] = useState<string[]>([]);
@@ -205,7 +209,7 @@ export default function PhoneSimulator() {
           setTargetPath([target]);
         },
         executeDemoToggle: (targetKey: string, value: any) => {
-          setSetting(targetKey as any, value);
+          setDemoPreview(targetKey as any, value);
         },
         onMessage: (msg: string) => {
           setSuccessMessage(msg);
@@ -214,7 +218,7 @@ export default function PhoneSimulator() {
     } else {
       startDemo(sequence, push, reset, 650);
     }
-  }, [startDemoSteps, startDemo, push, reset, setSetting]);
+  }, [startDemoSteps, startDemo, push, reset, setDemoPreview]);
 
   const handlePerformAuto = useCallback(async (action: FixAction) => {
     setActiveMode('idle');
@@ -274,6 +278,7 @@ export default function PhoneSimulator() {
 
   const handleSkipDemo = useCallback(() => {
     cancelDemo();
+    clearDemoPreview();
     setActiveMode('idle');
     
     // Jump to final screen
@@ -289,22 +294,25 @@ export default function PhoneSimulator() {
       setShowSuccessToast(true);
       setActiveAction(null);
     }
-  }, [cancelDemo, activeAction, pushMany]);
+  }, [cancelDemo, clearDemoPreview, activeAction, pushMany]);
 
-  // When demo finishes naturally, show success
+  // When demo finishes naturally, drop the preview so real settings are unchanged
   React.useEffect(() => {
     if (activeMode === 'demo' && !isAnimating && currentStep === -1 && activeAction) {
+      clearDemoPreview();
       setActiveMode('idle');
       setSuccessMessage(`Demo complete — ${activeAction.title}`);
       setShowSuccessToast(true);
       setActiveAction(null);
     }
-  }, [isAnimating, currentStep, activeMode, activeAction]);
+  }, [isAnimating, currentStep, activeMode, activeAction, clearDemoPreview]);
 
   const renderScreen = () => {
     switch (currentScreen) {
       case 'lock':   return <LockScreen onUnlock={reset} />;
       case 'home':   return <HomeScreen onNavigate={push} onFixbyOrb={() => setOrbOpen(true)} />;
+      case 'app/phone': return <PhoneApp />;
+      case 'app/messages': return <MessagesApp />;
       case 'recents': return <RecentApps onNavigate={(s) => { pop(); push(s); }} onCloseAll={reset} />;
 
       // Settings Root
@@ -438,6 +446,8 @@ export default function PhoneSimulator() {
             onPerformAuto={handlePerformAuto}
             onPerformManual={handlePerformManual}
             onOpenHistory={() => setIsDrawerOpen(true)}
+            onOpenDevice={() => setDeviceModalOpen(true)}
+            onExitConsole={onExitConsole}
             restoredGoals={restoredGoals}
             restoredQuery={restoredQuery}
             onClearRestored={handleClearRestored}
@@ -456,6 +466,11 @@ export default function PhoneSimulator() {
           isOpen={isDrawerOpen}
           onClose={() => setIsDrawerOpen(false)}
           onSelectHistoryItem={handleSelectHistoryItem}
+        />
+
+        <DeviceCapabilitiesModal
+          isOpen={deviceModalOpen}
+          onClose={() => setDeviceModalOpen(false)}
         />
       </div>
       </div>

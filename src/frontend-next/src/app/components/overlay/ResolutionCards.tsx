@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useSettings } from '../../context/SettingsContext';
 import type { GoalData } from '../../../hooks/useFixbyQuery';
-import { ISearchMag, IStar, IClipboard, IChevronRight, IMapPin, IFilm, IZap, IWrench, IXClose } from '../ui/Icons';
+import { ISearchMag, IStar, IClipboard, IChevronRight, IMapPin, IFilm, IZap, IWrench, IXClose, ISettings } from '../ui/Icons';
 import { resolveGoalToAction, FixAction } from '../../../settings/actions';
 import { getHonestCapabilityLabel } from '../../../settings/capabilities';
 
@@ -12,6 +12,7 @@ export interface ResolutionCardsProps {
   onPerformAuto: (action: FixAction) => void;
   onPerformManual: (action: FixAction) => void;
   onClose: () => void;
+  onOpenDevice?: () => void;
   executingActionId?: string | null;
 }
 
@@ -22,6 +23,7 @@ export function ResolutionCards({
   onPerformAuto, 
   onPerformManual, 
   onClose,
+  onOpenDevice,
   executingActionId
 }: ResolutionCardsProps) {
   const [expandedIndex, setExpandedIndex] = useState(0); // Primary card expanded by default
@@ -71,6 +73,27 @@ export function ResolutionCards({
             </div>
           </div>
           <div style={{ fontSize: '13px', color: 'var(--oneui-text-secondary)', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {onOpenDevice && (
+              <button
+                data-testid="nav-device-btn"
+                onClick={onOpenDevice}
+                aria-label="About device"
+                style={{
+                  width: '28px',
+                  height: '28px',
+                  borderRadius: '50%',
+                  border: 'none',
+                  background: darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
+                  color: 'var(--oneui-text-primary)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                }}
+              >
+                <ISettings style={{ width: '14px', height: '14px' }} />
+              </button>
+            )}
             <span>{goals.length} solution{goals.length > 1 ? 's' : ''}</span>
             <button
               data-testid="resolution-cards-close-btn"
@@ -322,22 +345,22 @@ export function ResolutionCards({
                     </div>
 
                     {/* Action Buttons */}
-                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                       <button 
                         data-testid={`demo-btn-${idx}`}
                         onClick={() => onWatchDemo(action)} 
                         disabled={isExecuting}
                         style={{
-                          flex: 1, minWidth: '90px', padding: '12px 14px', borderRadius: '16px',
+                          flex: '1 0 auto', whiteSpace: 'nowrap', padding: '12px 16px', borderRadius: '16px',
                           background: 'rgba(255,255,255,0.06)',
                           border: '1px solid rgba(255,255,255,0.1)',
                           color: 'rgba(255,255,255,0.9)', fontSize: '13px', fontWeight: 600, cursor: 'pointer',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                          display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
                           transition: 'all 0.2s ease',
                           opacity: isExecuting ? 0.5 : 1
                         }}
                       >
-                        <IFilm style={{ width: '15px', height: '15px' }} /> Watch Demo
+                        <IFilm style={{ width: '15px', height: '15px', flexShrink: 0 }} /> Watch Demo
                       </button>
 
                       <button 
@@ -345,17 +368,17 @@ export function ResolutionCards({
                         onClick={() => onPerformAuto(action)} 
                         disabled={isExecuting}
                         style={{
-                          flex: 1.2, minWidth: '100px', padding: '12px 14px', borderRadius: '16px',
+                          flex: '1 0 auto', whiteSpace: 'nowrap', padding: '12px 16px', borderRadius: '16px',
                           background: 'linear-gradient(135deg, #2075d6 0%, #155bb5 100%)',
                           border: 'none',
                           boxShadow: '0 4px 14px rgba(32, 117, 214, 0.4)',
                           color: '#fff', fontSize: '13px', fontWeight: 600, cursor: 'pointer',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                          display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
                           transition: 'all 0.2s ease',
                           opacity: isExecuting ? 0.7 : 1
                         }}
                       >
-                        <IZap style={{ width: '15px', height: '15px' }} /> 
+                        <IZap style={{ width: '15px', height: '15px', flexShrink: 0 }} /> 
                         {isExecuting ? 'Applying...' : 'Apply Fix'}
                       </button>
 
@@ -363,16 +386,16 @@ export function ResolutionCards({
                         onClick={() => onPerformManual(action)} 
                         disabled={isExecuting}
                         style={{
-                          flex: 0.8, minWidth: '80px', padding: '12px 14px', borderRadius: '16px',
+                          flex: '1 0 auto', whiteSpace: 'nowrap', padding: '12px 16px', borderRadius: '16px',
                           background: darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
                           color: 'var(--oneui-text-primary)', fontSize: '13px', fontWeight: 600, cursor: 'pointer',
                           border: darkMode ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.1)',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                          display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
                           transition: 'all 0.2s ease',
                           opacity: isExecuting ? 0.5 : 1
                         }}
                       >
-                        <IWrench style={{ width: '15px', height: '15px' }} /> Manual
+                        <IWrench style={{ width: '15px', height: '15px', flexShrink: 0 }} /> Manual
                       </button>
                     </div>
                   </div>
