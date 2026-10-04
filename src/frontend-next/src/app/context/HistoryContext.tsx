@@ -115,10 +115,22 @@ export function HistoryProvider({ children }: { children: React.ReactNode }) {
     };
 
     setHistory(prev => {
-      // Deduplicate: if an entry with the exact same query exists, remove it first
+      const existing = prev.find(item => item.query.toLowerCase() === newItem.query.toLowerCase());
+      // Re-asking the same problem refreshes the cards but must not forget
+      // that the user already applied a fix or watched a demo.
+      const carried: TroubleshootHistoryItem = existing
+        ? {
+            ...newItem,
+            appliedFix: existing.appliedFix,
+            status: existing.status === 'applied'
+              ? 'applied'
+              : existing.status === 'demonstrated'
+                ? 'demonstrated'
+                : newItem.status,
+          }
+        : newItem;
       const filtered = prev.filter(item => item.query.toLowerCase() !== newItem.query.toLowerCase());
-      // Prepend newest item, strictly enforce 5 items maximum
-      return [newItem, ...filtered].slice(0, MAX_HISTORY_ITEMS);
+      return [carried, ...filtered].slice(0, MAX_HISTORY_ITEMS);
     });
 
     return newItem;

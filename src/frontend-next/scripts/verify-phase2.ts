@@ -66,10 +66,22 @@ class HistoryStoreSimulator {
       telemetry,
     };
 
+    const existing = this.history.find(item => item.query.toLowerCase() === newItem.query.toLowerCase());
+    const carried: TroubleshootHistoryItem = existing
+      ? {
+          ...newItem,
+          appliedFix: existing.appliedFix,
+          status: existing.status === 'applied'
+            ? 'applied'
+            : existing.status === 'demonstrated'
+              ? 'demonstrated'
+              : newItem.status,
+        }
+      : newItem;
     const filtered = this.history.filter(item => item.query.toLowerCase() !== newItem.query.toLowerCase());
-    this.history = [newItem, ...filtered].slice(0, MAX_HISTORY_ITEMS);
+    this.history = [carried, ...filtered].slice(0, MAX_HISTORY_ITEMS);
     this.save();
-    return newItem;
+    return carried;
   }
 
   recordAppliedFix(queryOrId: string, fixTitle: string) {
