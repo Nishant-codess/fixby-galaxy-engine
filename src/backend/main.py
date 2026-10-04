@@ -22,14 +22,36 @@ app = FastAPI(
     version="1.1.0"
 )
 
+def _allowed_origins() -> list[str]:
+    """Explicit browser origins. Same-origin production traffic does not need CORS;
+    localhost entries keep the Next.js dev server working against this API.
+    """
+    origins = [
+        "https://fixby-galaxy-engine.onrender.com",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
+    ]
+    render_url = os.getenv("RENDER_EXTERNAL_URL", "").strip().rstrip("/")
+    if render_url and render_url not in origins:
+        origins.append(render_url)
+    for origin in os.getenv("CORS_ORIGINS", "").split(","):
+        origin = origin.strip().rstrip("/")
+        if origin and origin != "*" and origin not in origins:
+            origins.append(origin)
+    return origins
+
+
 # CORS Configuration
-# Note: allow_credentials=False because this API uses no browser session cookies
+# allow_credentials=False because this API uses no browser session cookies.
+# Origins are explicit — production does not use a wildcard.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_allowed_origins(),
     allow_credentials=False,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Accept", "Content-Type", "X-API-Key"],
 )
 
 FIXBY_API_KEY = os.getenv("FIXBY_API_KEY", "test-api-key-123")
@@ -213,6 +235,10 @@ if os.path.exists(frontend_dir):
     @app.get("/demo", include_in_schema=False)
     @app.get("/demo.html", include_in_schema=False)
     async def serve_demo():
+        # The Next.js export is the product UI. Only the legacy frontend
+        # still has a separate demo.html console.
+        if os.path.exists(os.path.join(frontend_dir, "_next")):
+            return FileResponse(os.path.join(frontend_dir, "index.html"))
         legacy_demo = os.path.join(legacy_dir, "demo.html")
         if os.path.exists(legacy_demo):
             return FileResponse(legacy_demo)

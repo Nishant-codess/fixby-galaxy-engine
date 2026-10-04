@@ -3,7 +3,9 @@ services:
     name: fixby-galaxy-engine
     env: python
     plan: free
-    buildCommand: pip install -r requirements.txt
+    # Rebuilds the Next.js static export when Node is available.
+    # The Python runtime serves src/frontend-next/out (see scripts/render_build.sh).
+    buildCommand: bash scripts/render_build.sh
     startCommand: uvicorn src.backend.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHON_VERSION

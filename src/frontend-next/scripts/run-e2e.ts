@@ -3,12 +3,16 @@
  * Uses Playwright to drive real browser interactions and capture visual evidence.
  */
 
-import { chromium, Browser, Page } from '@playwright/test';
+import { chromium, type Browser, type Page } from '@playwright/test';
 import * as fs from 'fs';
 import * as path from 'path';
 
-const SCREENSHOT_DIR = path.resolve(__dirname, '../verification');
-const BASE_URL = 'http://localhost:3000';
+const SCREENSHOT_DIR = process.env.FIXBY_SCREENSHOT_DIR
+  ? path.resolve(process.env.FIXBY_SCREENSHOT_DIR)
+  : path.resolve(__dirname, '../verification');
+const BASE_URL = process.env.FIXBY_BASE_URL || 'http://localhost:3000';
+const IS_REMOTE = !/localhost|127\.0\.0\.1/.test(BASE_URL);
+const STEP_TIMEOUT = IS_REMOTE ? 60000 : 15000;
 
 interface TestResult {
   name: string;
@@ -35,19 +39,24 @@ async function ensureDir(dir: string) {
 
 async function runE2ESuite() {
   console.log('====================================================');
-  console.log('STARTING FIXBY ENGINE PHASE 1 BROWSER E2E TEST SUITE');
+  console.log('STARTING FIXBY ENGINE BROWSER E2E TEST SUITE');
+  console.log(`Target: ${BASE_URL}`);
   console.log('====================================================\n');
 
   await ensureDir(SCREENSHOT_DIR);
 
   let browser: Browser | null = null;
   let browserTypeUsed = 'Playwright Chromium';
+  const chromeArgs = ['--no-sandbox', '--disable-setuid-sandbox'];
+  if (process.env.FIXBY_HOST_RULE) {
+    chromeArgs.push(`--host-resolver-rules=${process.env.FIXBY_HOST_RULE}`);
+  }
 
   try {
     // Attempt standard Chromium launch
     browser = await chromium.launch({
       headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
+      args: chromeArgs
     });
   } catch (err: any) {
     console.warn(`Standard Chromium launch failed: ${err.message}. Trying installed Google Chrome channel...`);
@@ -55,7 +64,7 @@ async function runE2ESuite() {
       browser = await chromium.launch({
         headless: true,
         channel: 'chrome',
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
+        args: chromeArgs
       });
       browserTypeUsed = 'Google Chrome Channel';
     } catch (chromeErr: any) {
@@ -109,7 +118,7 @@ async function runE2ESuite() {
     // TEST A: Application Loads
     // ==========================================
     console.log('▶ Running Test A: Application loads cleanly');
-    await page.goto(BASE_URL, { waitUntil: 'domcontentloaded', timeout: 15000 });
+    await page.goto(BASE_URL, { waitUntil: 'domcontentloaded', timeout: STEP_TIMEOUT });
     await page.waitForTimeout(1000);
 
     const lockScreen = page.locator('[data-testid="lock-screen"]');
@@ -144,7 +153,7 @@ async function runE2ESuite() {
 
     // Wait for resolution cards to appear
     const firstCard = page.locator('[data-testid="fix-card-0"]');
-    await firstCard.waitFor({ state: 'visible', timeout: 15000 });
+    await firstCard.waitFor({ state: 'visible', timeout: STEP_TIMEOUT });
 
     const shot02 = path.join(SCREENSHOT_DIR, '02-query-results.png');
     await page.screenshot({ path: shot02 });
@@ -168,9 +177,24 @@ async function runE2ESuite() {
     // First, verify initial powerSaving state before fix
     // Close orb temporarily or check settings directly
     // Let's capture before-auto-fix
+    const powerSavingBefore = await page.evaluate(() => {
+      const raw = localStorage.getItem('fixby_device_settings_v1');
+      if (!raw) return false;
+      try {
+        return JSON.parse(raw).powerSaving === true;
+      } catch {
+        return false;
+      }
+    });
+
     const shot04 = path.join(SCREENSHOT_DIR, '04-before-auto-fix.png');
     await page.screenshot({ path: shot04 });
-    record('Before Auto Fix', true, '04-before-auto-fix.png', 'Initial state ready for automated application');
+    record(
+      'Before Auto Fix',
+      powerSavingBefore === false,
+      '04-before-auto-fix.png',
+      `Power saving was ${powerSavingBefore ? 'ON' : 'OFF'} before Apply Fix`
+    );
 
     // Click Auto Fix on "Turn on Power Saving"
     await autoFixBtn0.click();
@@ -186,7 +210,12 @@ async function runE2ESuite() {
 
     const shot05 = path.join(SCREENSHOT_DIR, '05-after-auto-fix.png');
     await page.screenshot({ path: shot05 });
-    record('Auto Fix Execution & Toggle Flip', toggleIsOn, '05-after-auto-fix.png', `Power saving switch visibly toggled to ON (data-checked=${isCheckedAfterAuto})`);
+    record(
+      'Auto Fix Execution & Toggle Flip',
+      powerSavingBefore === false && toggleIsOn,
+      '05-after-auto-fix.png',
+      `Power saving switch changed OFF → ON (data-checked=${isCheckedAfterAuto}, aria-checked=${ariaCheckedAfterAuto})`
+    );
 
     // ==========================================
     // TEST E: Alternate Fixes Execution
@@ -204,7 +233,7 @@ async function runE2ESuite() {
 
     // Check if alternate fix card exists
     const altCard = page.locator('[data-testid="fix-card-1"]');
-    await altCard.waitFor({ state: 'visible', timeout: 15000 });
+    await altCard.waitFor({ state: 'visible', timeout: STEP_TIMEOUT });
     
     // Expand alternate card
     await page.locator('[data-testid="fix-card-header-1"]').click();
@@ -222,9 +251,36 @@ async function runE2ESuite() {
       await page.waitForTimeout(800);
     }
 
+    const deepSleepLabel = page.getByText('8 apps').first();
+    await deepSleepLabel.waitFor({ state: 'visible', timeout: STEP_TIMEOUT });
+    const deepSleepCount = await page.evaluate(() => {
+      const raw = localStorage.getItem('fixby_device_settings_v1');
+      if (!raw) return null;
+      try {
+        return JSON.parse(raw).deepSleepingAppsCount;
+      } catch {
+        return null;
+      }
+    });
+    const powerSavingStillOn = await page.evaluate(() => {
+      const raw = localStorage.getItem('fixby_device_settings_v1');
+      if (!raw) return false;
+      try {
+        return JSON.parse(raw).powerSaving === true;
+      } catch {
+        return false;
+      }
+    });
+    const deepSleepVisible = await deepSleepLabel.isVisible();
+
     const shot06 = path.join(SCREENSHOT_DIR, '06-alternate-fix.png');
     await page.screenshot({ path: shot06 });
-    record('Alternate Fix Execution', true, '06-alternate-fix.png', 'Alternate solution executed its own distinct action and screen flow');
+    record(
+      'Alternate Fix Execution',
+      deepSleepCount === 8 && deepSleepVisible && powerSavingStillOn,
+      '06-alternate-fix.png',
+      `Deep sleeping apps changed to ${deepSleepCount} (visible "8 apps"=${deepSleepVisible}); power saving stayed ${powerSavingStillOn ? 'ON' : 'OFF'}`
+    );
 
     // ==========================================
     // TEST F: Navigation & LocalStorage Persistence
@@ -266,7 +322,7 @@ async function runE2ESuite() {
     await page.close();
     page = await context.newPage();
     attachListeners(page);
-    await page.goto(BASE_URL, { waitUntil: 'domcontentloaded', timeout: 15000 });
+    await page.goto(BASE_URL, { waitUntil: 'domcontentloaded', timeout: STEP_TIMEOUT });
     await page.waitForTimeout(1000);
 
     const lockScreenAgain = page.locator('[data-testid="lock-screen"]');
@@ -313,13 +369,21 @@ async function runE2ESuite() {
     await queryInputG.fill('My battery is draining very fast');
     await queryInputG.press('Enter');
 
-    await page.locator('[data-testid="demo-btn-0"]').waitFor({ state: 'visible', timeout: 15000 });
+    await page.locator('[data-testid="demo-btn-0"]').waitFor({ state: 'visible', timeout: STEP_TIMEOUT });
     await page.locator('[data-testid="demo-btn-0"]').click();
-    await page.waitForTimeout(1200);
+
+    const batteryDemoOverlay = page.locator('[data-testid="demo-overlay"]');
+    const demoVisible = await batteryDemoOverlay.isVisible({ timeout: STEP_TIMEOUT }).catch(() => false);
+    const demoText = demoVisible ? ((await batteryDemoOverlay.textContent()) || '') : '';
 
     const shot07 = path.join(SCREENSHOT_DIR, '07-demo.png');
     await page.screenshot({ path: shot07 });
-    record('Watch Demo Mode Walkthrough', true, '07-demo.png', 'Step-by-step guided animation demonstrates setting navigation and flip');
+    record(
+      'Watch Demo Mode Walkthrough',
+      demoVisible && demoText.trim().length > 0,
+      '07-demo.png',
+      `Guided demo overlay visible (${demoText.trim().slice(0, 80)})`
+    );
 
     // Wait for demo sequence to finish
     await page.waitForTimeout(2500);
@@ -498,7 +562,7 @@ async function runE2ESuite() {
 
     // Wait for resolution cards & diagnostic reasoning panel
     const diagPanelM = page.locator('[data-testid="diagnostic-reasoning-panel"]');
-    await diagPanelM.waitFor({ state: 'visible', timeout: 15000 });
+    await diagPanelM.waitFor({ state: 'visible', timeout: STEP_TIMEOUT });
     const isDiagVisible = await diagPanelM.isVisible();
     const diagText = (await diagPanelM.textContent()) || '';
     const hasCauses = diagText.includes('Likely causes') || diagText.includes('Diagnostic Reasoning');
@@ -534,7 +598,7 @@ async function runE2ESuite() {
     await queryInputN.press('Enter');
 
     const cardN0 = page.locator('[data-testid="fix-card-0"]');
-    await cardN0.waitFor({ state: 'visible', timeout: 15000 });
+    await cardN0.waitFor({ state: 'visible', timeout: STEP_TIMEOUT });
     const cardNTitle = (await cardN0.textContent()) || '';
     const isWhatsAppFix = cardNTitle.includes('WhatsApp');
 
@@ -564,7 +628,7 @@ async function runE2ESuite() {
     await queryInputO.press('Enter');
 
     const cardO0 = page.locator('[data-testid="fix-card-0"]');
-    await cardO0.waitFor({ state: 'visible', timeout: 15000 });
+    await cardO0.waitFor({ state: 'visible', timeout: STEP_TIMEOUT });
 
     const demoBtnO0 = page.locator('[data-testid="demo-btn-0"]');
     await demoBtnO0.click();
