@@ -11,6 +11,29 @@ import { IZap, ICheck, IClock, IChevronRight, ISettings } from '../ui/Icons';
 import { FixAction } from '../../../settings/actions';
 import { SPEECH_LANGUAGES, useSpeechInput } from '../../../hooks/useSpeechInput';
 
+/** Turn adjusted sensor readings into a real troubleshooting query. */
+function queryFromSiis(battery: number, storage: number, temp: number, signal: number): string {
+  const issues: string[] = [];
+  if (battery <= 30) issues.push("My battery is draining very fast");
+  if (storage >= 80) issues.push("Storage is full");
+  if (temp >= 40) issues.push("Phone is overheating and getting hot");
+  if (signal <= 30) issues.push("Wi-Fi keeps disconnecting");
+
+  if (issues.length === 0) {
+    const shifts: { delta: number; query: string }[] = [
+      { delta: 85 - battery, query: "My battery is draining very fast" },
+      { delta: storage - 60, query: "Storage is full" },
+      { delta: temp - 32, query: "Phone is overheating and getting hot" },
+      { delta: 80 - signal, query: "Wi-Fi keeps disconnecting" },
+    ];
+    shifts.sort((a, b) => b.delta - a.delta);
+    if (shifts[0].delta > 0) issues.push(shifts[0].query);
+  }
+
+  const snapshot = `Battery ${battery}%, storage ${storage}% full, temperature ${temp}°C, signal ${signal}%.`;
+  return issues.length > 0 ? `${issues.join(". ")}. ${snapshot}` : snapshot;
+}
+
 const SUGGESTIONS = [
   { label: "Battery draining quickly", query: "My battery is draining very fast", testId: "preset-battery-draining-fast" },
   { label: "Phone overheating", query: "Phone is overheating and getting hot" },
@@ -111,8 +134,12 @@ export function FixbyOrb({
     };
   }, [isDragging]);
 
-  const handleSubmit = async (q: string = query) => {
-    if (!q) return;
+  const sensorsAdjusted = siisBattery !== 85 || siisStorage !== 60 || siisTemp !== 32 || siisSignal !== 80;
+
+  const handleSubmit = async (raw?: string) => {
+    const typed = (raw ?? query).trim();
+    const q = typed || (sensorsAdjusted ? queryFromSiis(siisBattery, siisStorage, siisTemp, siisSignal) : "");
+    if (!q || isProcessing) return;
     onClearRestored?.();
     if (q !== query) setQuery(q);
     setShowResults(false);
