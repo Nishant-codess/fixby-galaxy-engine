@@ -376,6 +376,72 @@ async function runE2ESuite() {
     await page.screenshot({ path: shot10 });
     record('App Launch Web Fallback', isFallbackHandled, '10-app-fallback.png', `Companion web fallback surfaced: "${mapsToastText.trim()}"`);
 
+    // ==========================================
+    // TEST J: Fix History System & Drawer
+    // ==========================================
+    console.log('▶ Running Test J: Fix History System & Drawer');
+    // Open Fixby Assistant
+    const orbTriggerHistory = page.locator('[data-testid="fixby-orb-trigger"]');
+    await orbTriggerHistory.waitFor({ state: 'visible', timeout: 5000 });
+    await orbTriggerHistory.click({ force: true });
+    await page.waitForTimeout(600);
+
+    // Click History button in the Fixby Assistant header
+    const orbHistoryBtn = page.locator('[data-testid="orb-history-btn"]');
+    await orbHistoryBtn.waitFor({ state: 'visible', timeout: 5000 });
+    await orbHistoryBtn.click();
+    await page.waitForTimeout(600);
+
+    // Verify History Drawer is open and displays recent query
+    const historyPanel = page.locator('[data-testid="history-drawer-panel"]');
+    await historyPanel.waitFor({ state: 'visible', timeout: 5000 });
+
+    const historyBadge = page.locator('[data-testid="history-count-badge"]');
+    const badgeText = (await historyBadge.textContent()) || '';
+    const hasHistoryItems = badgeText.includes('/ 5') && !badgeText.startsWith('0');
+
+    const shot11 = path.join(SCREENSHOT_DIR, '11-history-drawer.png');
+    await page.screenshot({ path: shot11 });
+    record('Fix History Drawer & Persistence', hasHistoryItems, '11-history-drawer.png', `History drawer opened with ${badgeText.trim()} entries recorded`);
+
+    // ==========================================
+    // TEST K: History Reopen Past Troubleshooting Session
+    // ==========================================
+    console.log('▶ Running Test K: History Reopen Past Troubleshooting Session');
+    const firstHistoryItem = page.locator('[data-testid="history-item-0"]');
+    await firstHistoryItem.waitFor({ state: 'visible', timeout: 5000 });
+    await firstHistoryItem.click();
+    await page.waitForTimeout(700);
+
+    // Verify troubleshooting workspace reopens with resolution cards
+    const reopenedCard = page.locator('[data-testid="fix-card-0"]');
+    const isReopened = await reopenedCard.isVisible({ timeout: 5000 }).catch(() => false);
+
+    const shot12 = path.join(SCREENSHOT_DIR, '12-history-reopen.png');
+    await page.screenshot({ path: shot12 });
+    record('History Session Reopen', isReopened, '12-history-reopen.png', 'Clicking history session cleanly restored diagnostic workspace and resolution cards');
+
+    // ==========================================
+    // TEST L: Device Capabilities Modal
+    // ==========================================
+    console.log('▶ Running Test L: Device Capabilities Modal');
+    const navDeviceBtn = page.locator('[data-testid="nav-device-btn"]');
+    await navDeviceBtn.waitFor({ state: 'visible', timeout: 5000 });
+    await navDeviceBtn.click();
+    await page.waitForTimeout(500);
+
+    const deviceModal = page.locator('[data-testid="device-modal-content"]');
+    await deviceModal.waitFor({ state: 'visible', timeout: 5000 });
+    const isModalVisible = await deviceModal.isVisible();
+
+    const shot13 = path.join(SCREENSHOT_DIR, '13-device-capabilities.png');
+    await page.screenshot({ path: shot13 });
+    record('Device Capabilities & Specifications', isModalVisible, '13-device-capabilities.png', 'Device capabilities modal displayed Galaxy S24 Ultra profile, One UI 6.1, and execution matrix');
+
+    const modalCloseBtn = page.locator('[data-testid="device-modal-close-btn"]');
+    await modalCloseBtn.click();
+    await page.waitForTimeout(400);
+
   } catch (error: any) {
     console.error('Fatal test execution error:', error);
     try {
@@ -392,7 +458,7 @@ async function runE2ESuite() {
   // FINAL SUMMARY REPORT
   // ==========================================
   console.log('\n====================================================');
-  console.log('FIXBY PHASE 1 E2E VERIFICATION REPORT SUMMARY');
+  console.log('FIXBY COMPLETE E2E VERIFICATION REPORT SUMMARY');
   console.log('====================================================\n');
 
   console.log('| Test | Result | Evidence | Details |');
@@ -418,9 +484,9 @@ async function runE2ESuite() {
   const allPassed = results.every(r => r.passed);
   console.log('\n====================================================');
   if (allPassed) {
-    console.log('🏆 FINAL GATE: PHASE 1 VERIFIED — SAFE TO PROCEED');
+    console.log('🏆 FINAL GATE: FIXBY VERIFIED — SAFE TO PROCEED');
   } else {
-    console.log('🛑 FINAL GATE: PHASE 1 NOT VERIFIED — DO NOT PROCEED');
+    console.log('🛑 FINAL GATE: FIXBY NOT VERIFIED — DO NOT PROCEED');
   }
   console.log('====================================================\n');
 

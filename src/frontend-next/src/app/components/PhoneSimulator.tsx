@@ -11,6 +11,8 @@ import { GuidedBreadcrumb } from './overlay/GuidedBreadcrumb';
 import { SuccessToast } from './overlay/SuccessToast';
 import { ConfirmationDialog } from './ui/ConfirmationDialog';
 import { useSettings } from '../context/SettingsContext';
+import { useHistory, TroubleshootHistoryItem } from '../context/HistoryContext';
+import { HistoryDrawer } from './history/HistoryDrawer';
 import { FixAction, checkCapability } from '../../settings/actions';
 import { resolveSettingsPath } from '../../settings/navigation';
 import type { GoalData } from '../../hooks/useFixbyQuery';
@@ -120,6 +122,17 @@ export default function PhoneSimulator() {
   const [activeScreenSequence, setActiveScreenSequence] = useState<Screen[]>([]);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+
+  const { isDrawerOpen, setIsDrawerOpen } = useHistory();
+  const [restoredGoals, setRestoredGoals] = useState<GoalData[] | null>(null);
+  const [restoredQuery, setRestoredQuery] = useState<string>("");
+
+  const handleSelectHistoryItem = useCallback((item: TroubleshootHistoryItem) => {
+    setIsDrawerOpen(false);
+    setRestoredGoals(item.goals);
+    setRestoredQuery(item.query);
+    setOrbOpen(true);
+  }, [setIsDrawerOpen]);
 
   const handleFixbySearch = (q: string) => {
     setSearchQuery(q);
@@ -419,6 +432,9 @@ export default function PhoneSimulator() {
             onWatchDemo={handleWatchDemo}
             onPerformAuto={handlePerformAuto}
             onPerformManual={handlePerformManual}
+            onOpenHistory={() => setIsDrawerOpen(true)}
+            restoredGoals={restoredGoals}
+            restoredQuery={restoredQuery}
           />
         )}
 
@@ -427,6 +443,13 @@ export default function PhoneSimulator() {
           onBack={pop}
           onHome={reset}
           onRecents={() => push('recents')}
+        />
+
+        {/* Persistent History Drawer */}
+        <HistoryDrawer
+          isOpen={isDrawerOpen}
+          onClose={() => setIsDrawerOpen(false)}
+          onSelectHistoryItem={handleSelectHistoryItem}
         />
       </div>
       </div>
