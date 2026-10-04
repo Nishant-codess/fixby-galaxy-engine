@@ -41,10 +41,19 @@ export function LockScreen({ onUnlock }: { onUnlock: () => void }) {
     window.addEventListener('pointerup', onUp);
   };
 
+  const handleUnlockClick = () => {
+    if (!isUnlocking) {
+      setIsUnlocking(true);
+      setTimeout(onUnlock, 300);
+    }
+  };
+
   return (
     <div 
       ref={containerRef}
+      data-testid="lock-screen"
       onPointerDown={handlePointerDown}
+      onClick={handleUnlockClick}
       style={{
         position: 'absolute', inset: 0, zIndex: 50,
         display: 'flex', flexDirection: 'column', alignItems: 'center',

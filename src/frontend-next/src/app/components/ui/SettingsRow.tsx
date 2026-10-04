@@ -124,7 +124,14 @@ export function SettingsRow({
         {rightLabel && <span style={{ fontSize: '14px', color: 'var(--oneui-text-secondary)', flexShrink: 0, whiteSpace: 'nowrap' }}>{rightLabel}</span>}
         {/* Anchor div for tooltip positioning */}
         <div ref={anchorRef} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          {toggle && <OneUISwitch checked={!!toggleValue} onChange={onToggleChange} />}
+          {toggle && (
+            <OneUISwitch 
+              checked={!!toggleValue} 
+              onChange={onToggleChange} 
+              ariaLabel={title}
+              dataTestId={`switch-${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
+            />
+          )}
           {showChevron && <div style={{ color: 'var(--oneui-text-tertiary)', flexShrink: 0, display: 'flex', alignItems: 'center' }}><IChevron /></div>}
         </div>
       </div>
@@ -141,7 +148,7 @@ export function SettingsRow({
   };
 
   return (
-    <div style={{ position: 'relative' }}>
+    <div data-setting-row={title} style={{ position: 'relative' }}>
       {onPress && !toggle ? (
         <Ripple onClick={onPress} style={wrapperStyle}>
           {content}

@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { SettingsRow } from '../../ui/SettingsRow';
 import { Screen } from '../../../../hooks/usePhoneNavigation';
+import { useSettings } from '../../../context/SettingsContext';
 
 export function Connections({ targetPath, onNavigate }: { targetPath: string[]; onNavigate: (s: Screen) => void }) {
-  const [wifi, setWifi] = useState(true);
-  const [bluetooth, setBluetooth] = useState(true);
-  const [nfc, setNfc] = useState(true);
-  const [flight, setFlight] = useState(false);
+  const { settings, setSetting } = useSettings();
 
-  const targetNode = targetPath[2];
+  const isHighlighted = (node: string) => {
+    return targetPath.some(p => p.toLowerCase().includes(node.toLowerCase()));
+  };
 
   return (
     <div style={{ position: 'absolute', inset: 0, zIndex: 30, background: 'var(--oneui-bg-primary)' }}>
@@ -20,37 +20,92 @@ export function Connections({ targetPath, onNavigate }: { targetPath: string[]; 
         {/* Group 1 */}
         <div style={{ margin: '0 16px 24px', background: 'var(--oneui-bg-card)', borderRadius: '24px', overflow: 'hidden' }}>
           <SettingsRow 
-            title="Wi-Fi" subtitle={wifi ? "Fixby-5G" : "Turned off"}
-            toggle toggleValue={wifi} onToggleChange={setWifi} divider 
-            highlight={targetNode?.toLowerCase() === 'wi-fi' && !targetPath[3]}
+            title="Wi-Fi" 
+            subtitle={settings.wifi ? "Fixby-5G (Connected)" : "Turned off"}
+            toggle 
+            toggleValue={settings.wifi} 
+            onToggleChange={(v) => setSetting('wifi', v)} 
+            divider 
+            highlight={isHighlighted('wi-fi') && !isHighlighted('intelligent')}
           />
-          {targetNode?.toLowerCase() === 'wi-fi' && (
-            <div style={{ background: 'rgba(32,117,214,0.05)', borderLeft: '3px solid var(--oneui-accent)', paddingLeft: '8px' }}>
-              <SettingsRow 
-                title="Intelligent Wi-Fi" 
-                subtitle="Switch to mobile data when Wi-Fi is unstable" 
-                toggle toggleValue={true} divider 
-                highlight={targetPath[3]?.toLowerCase().includes('intelligent')}
-              />
-            </div>
-          )}
-          <SettingsRow title="Wi-Fi calling" subtitle="SIM 1" toggle toggleValue={true} divider />
-          <SettingsRow title="Bluetooth" subtitle={bluetooth ? "On" : "Off"} toggle toggleValue={bluetooth} onToggleChange={setBluetooth} divider highlight={targetNode?.toLowerCase() === 'bluetooth'} />
-          <SettingsRow title="NFC and contactless payments" toggle toggleValue={nfc} onToggleChange={setNfc} highlight={targetNode?.toLowerCase().includes('nfc')} />
+          {/* Intelligent Wi-Fi row */}
+          <div style={{ 
+            background: isHighlighted('intelligent') ? 'rgba(32,117,214,0.1)' : 'transparent', 
+            borderLeft: isHighlighted('intelligent') ? '3px solid var(--oneui-accent)' : 'none', 
+            paddingLeft: isHighlighted('intelligent') ? '8px' : '0' 
+          }}>
+            <SettingsRow 
+              title="Intelligent Wi-Fi" 
+              subtitle="Switch to mobile data when Wi-Fi is unstable" 
+              toggle 
+              toggleValue={settings.intelligentWifi} 
+              onToggleChange={(v) => setSetting('intelligentWifi', v)}
+              divider 
+              highlight={isHighlighted('intelligent')}
+            />
+          </div>
+          <SettingsRow 
+            title="Wi-Fi calling" 
+            subtitle="SIM 1" 
+            toggle 
+            toggleValue={settings.wifiCalling} 
+            onToggleChange={(v) => setSetting('wifiCalling', v)}
+            divider 
+          />
+          <SettingsRow 
+            title="Bluetooth" 
+            subtitle={settings.bluetooth ? "On (Galaxy Buds Pro)" : "Off"} 
+            toggle 
+            toggleValue={settings.bluetooth} 
+            onToggleChange={(v) => setSetting('bluetooth', v)} 
+            divider 
+            highlight={isHighlighted('bluetooth')} 
+          />
+          <SettingsRow 
+            title="NFC and contactless payments" 
+            subtitle={settings.nfc ? "On (Samsung Wallet ready)" : "Off"}
+            toggle 
+            toggleValue={settings.nfc} 
+            onToggleChange={(v) => setSetting('nfc', v)} 
+            highlight={isHighlighted('nfc')} 
+          />
         </div>
 
         {/* Group 2 */}
         <div style={{ margin: '0 16px 24px', background: 'var(--oneui-bg-card)', borderRadius: '24px', overflow: 'hidden' }}>
-          <SettingsRow title="Flight mode" toggle toggleValue={flight} onToggleChange={setFlight} divider highlight={targetNode?.toLowerCase().includes('flight')} />
-          <SettingsRow title="Mobile networks" showChevron onPress={() => {}} divider />
-          <SettingsRow title="Data usage" rightLabel="2.4 GB used" showChevron onPress={() => {}} divider />
-          <SettingsRow title="SIM manager" showChevron onPress={() => {}} />
-        </div>
-
-        {/* Group 3 */}
-        <div style={{ margin: '0 16px 24px', background: 'var(--oneui-bg-card)', borderRadius: '24px', overflow: 'hidden' }}>
-          <SettingsRow title="Mobile Hotspot and Tethering" showChevron onPress={() => {}} divider highlight={targetNode?.toLowerCase().includes('hotspot')} />
-          <SettingsRow title="More connection settings" showChevron onPress={() => {}} highlight={targetNode?.toLowerCase().includes('more')} />
+          <SettingsRow 
+            title="Flight mode" 
+            subtitle="Turn off calls, messages, and mobile data"
+            toggle 
+            toggleValue={settings.flightMode} 
+            onToggleChange={(v) => setSetting('flightMode', v)} 
+            divider 
+            highlight={isHighlighted('flight')} 
+          />
+          <SettingsRow 
+            title="Mobile networks" 
+            subtitle={settings.mobileData ? "5G / LTE Auto" : "Disabled"}
+            toggle
+            toggleValue={settings.mobileData}
+            onToggleChange={(v) => setSetting('mobileData', v)}
+            divider 
+            highlight={isHighlighted('mobile network') || isHighlighted('mobile data')}
+          />
+          <SettingsRow 
+            title="Mobile Hotspot and Tethering" 
+            subtitle={settings.hotspot ? "Sharing Fixby-AP" : "Off"}
+            toggle
+            toggleValue={settings.hotspot}
+            onToggleChange={(v) => setSetting('hotspot', v)}
+            divider 
+            highlight={isHighlighted('hotspot')} 
+          />
+          <SettingsRow 
+            title="Data usage" 
+            rightLabel="2.4 GB / 25 GB used" 
+            showChevron 
+            onPress={() => onNavigate('settings/generic/Data usage')} 
+          />
         </div>
 
       </div>

@@ -2,36 +2,36 @@ import React, { useState } from 'react';
 import { IPhone, IMessages, IChrome, ICamera, IGallery, IYouTube, IMaps, ICalculator, ICalendar, IClock, IContacts, ISettings } from '../ui/Icons';
 import { Ripple } from '../ui/Ripple';
 import { Screen } from '../../../hooks/usePhoneNavigation';
+import { openApp } from '../../../settings/actions';
 
 const APPS = [
-  { id: 'phone', icon: <IPhone />, color: 'var(--oneui-icon-green)', label: 'Phone' },
-  { id: 'messages', icon: <IMessages />, color: 'var(--oneui-icon-blue)', label: 'Messages' },
-  { id: 'chrome', icon: <IChrome />, color: '#fff', label: 'Chrome', customColor: '#4285F4' },
-  { id: 'camera', icon: <ICamera />, color: 'var(--oneui-icon-red)', label: 'Camera' },
+  { id: 'phone', packageName: 'com.samsung.android.dialer', icon: <IPhone />, color: 'var(--oneui-icon-green)', label: 'Phone' },
+  { id: 'messages', packageName: 'com.samsung.android.messaging', icon: <IMessages />, color: 'var(--oneui-icon-blue)', label: 'Messages' },
+  { id: 'chrome', packageName: 'com.android.chrome', icon: <IChrome />, color: '#fff', label: 'Chrome', customColor: '#4285F4' },
+  { id: 'camera', packageName: 'com.sec.android.app.camera', icon: <ICamera />, color: 'var(--oneui-icon-red)', label: 'Camera' },
   
-  { id: 'settings', icon: <ISettings />, color: '#8E8E93', label: 'Settings', isReal: true },
-  { id: 'gallery', icon: <IGallery />, color: 'var(--oneui-icon-purple)', label: 'Gallery' },
-  { id: 'youtube', icon: <IYouTube />, color: '#fff', label: 'YouTube', customColor: '#FF0000' },
-  { id: 'maps', icon: <IMaps />, color: '#fff', label: 'Maps', customColor: '#34A853' },
+  { id: 'settings', packageName: 'com.android.settings', icon: <ISettings />, color: '#8E8E93', label: 'Settings', isReal: true },
+  { id: 'gallery', packageName: 'com.sec.android.gallery3d', icon: <IGallery />, color: 'var(--oneui-icon-purple)', label: 'Gallery' },
+  { id: 'youtube', packageName: 'com.google.android.youtube', icon: <IYouTube />, color: '#fff', label: 'YouTube', customColor: '#FF0000' },
+  { id: 'maps', packageName: 'com.google.android.apps.maps', icon: <IMaps />, color: '#fff', label: 'Maps', customColor: '#34A853' },
   
-  { id: 'calculator', icon: <ICalculator />, color: 'var(--oneui-icon-teal)', label: 'Calculator' },
-  { id: 'calendar', icon: <ICalendar />, color: 'var(--oneui-icon-blue)', label: 'Calendar' },
-  { id: 'clock', icon: <IClock />, color: 'var(--oneui-icon-orange)', label: 'Clock' },
-  { id: 'contacts', icon: <IContacts />, color: 'var(--oneui-icon-orange)', label: 'Contacts' },
+  { id: 'calculator', packageName: 'com.sec.android.app.popupcalculator', icon: <ICalculator />, color: 'var(--oneui-icon-teal)', label: 'Calculator' },
+  { id: 'calendar', packageName: 'com.samsung.android.calendar', icon: <ICalendar />, color: 'var(--oneui-icon-blue)', label: 'Calendar' },
+  { id: 'clock', packageName: 'com.sec.android.app.clockpackage', icon: <IClock />, color: 'var(--oneui-icon-orange)', label: 'Clock' },
+  { id: 'contacts', packageName: 'com.samsung.android.app.contacts', icon: <IContacts />, color: 'var(--oneui-icon-orange)', label: 'Contacts' },
 ];
 
 const DOCK_APPS = [
-  { id: 'phone', icon: <IPhone />, color: 'var(--oneui-icon-green)', label: 'Phone' },
-  { id: 'messages', icon: <IMessages />, color: 'var(--oneui-icon-blue)', label: 'Messages' },
+  { id: 'phone', packageName: 'com.samsung.android.dialer', icon: <IPhone />, color: 'var(--oneui-icon-green)', label: 'Phone' },
+  { id: 'messages', packageName: 'com.samsung.android.messaging', icon: <IMessages />, color: 'var(--oneui-icon-blue)', label: 'Messages' },
   { id: 'fixby', icon: <span style={{fontSize: '24px', fontWeight: 800}}>F</span>, color: 'var(--oneui-accent)', label: 'Fixby', isFixby: true },
-  { id: 'settings', icon: <ISettings />, color: '#8E8E93', label: 'Settings', isReal: true },
+  { id: 'settings', packageName: 'com.android.settings', icon: <ISettings />, color: '#8E8E93', label: 'Settings', isReal: true },
 ];
 
- 
 function AppIcon({ app, onClick }: { app: any; onClick: () => void }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', width: '25%' }}>
-      <Ripple onClick={onClick} style={{ width: '56px', height: '56px', borderRadius: '24px', background: app.color, display: 'flex', alignItems: 'center', justifyContent: 'center', color: app.customColor || '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+    <div data-testid={`app-icon-${app.id}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', width: '25%' }}>
+      <Ripple data-testid={`app-btn-${app.id}`} onClick={onClick} style={{ width: '56px', height: '56px', borderRadius: '24px', background: app.color, display: 'flex', alignItems: 'center', justifyContent: 'center', color: app.customColor || '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
         <div style={{ transform: 'scale(1.2)' }}>
           {app.icon}
         </div>
@@ -46,14 +46,18 @@ function AppIcon({ app, onClick }: { app: any; onClick: () => void }) {
 export function HomeScreen({ onNavigate, onFixbyOrb }: { onNavigate: (s: Screen) => void; onFixbyOrb: () => void }) {
   const [toast, setToast] = useState<string | null>(null);
 
-  const handleAppClick = (app: any) => {
+  const handleAppClick = async (app: any) => {
     if (app.isReal) {
       onNavigate('settings');
     } else if (app.isFixby) {
       onFixbyOrb();
+    } else if (app.packageName) {
+      const res = await openApp({ packageName: app.packageName, appName: app.label });
+      setToast(res.message);
+      setTimeout(() => setToast(null), 3000);
     } else {
-      setToast(`Mock: ${app.label} would open here`);
-      setTimeout(() => setToast(null), 2000);
+      setToast(`${app.label}: Requires native Android integration`);
+      setTimeout(() => setToast(null), 2500);
     }
   };
 
@@ -90,10 +94,14 @@ export function HomeScreen({ onNavigate, onFixbyOrb }: { onNavigate: (s: Screen)
 
       {/* Toast Notification */}
       {toast && (
-        <div style={{
+        <div data-testid="home-toast" style={{
           position: 'absolute', bottom: '160px', left: '50%', transform: 'translateX(-50%)',
-          background: 'rgba(0,0,0,0.8)', color: '#fff', padding: '12px 24px', borderRadius: '24px',
-          fontSize: '14px', zIndex: 100, animation: 'popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)'
+          background: 'rgba(20,20,24,0.92)', backdropFilter: 'blur(20px)', color: '#fff',
+          padding: '12px 20px', borderRadius: '20px', width: '85%', maxWidth: '320px',
+          fontSize: '13px', lineHeight: 1.4, textAlign: 'center', zIndex: 100,
+          border: '1px solid rgba(255,255,255,0.15)',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
+          animation: 'fadeIn 0.3s ease-out'
         }}>
           {toast}
         </div>

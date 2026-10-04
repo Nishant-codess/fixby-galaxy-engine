@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { SettingsRow } from '../../ui/SettingsRow';
 import { Screen } from '../../../../hooks/usePhoneNavigation';
 import { IFlame } from '../../ui/Icons';
+import { useSettings } from '../../../context/SettingsContext';
 
 function isHighlighted(targetPath: string[], ...keywords: string[]): boolean {
   const combined = targetPath.join(' ').toLowerCase();
@@ -11,25 +12,14 @@ function isHighlighted(targetPath: string[], ...keywords: string[]): boolean {
 interface Props { targetPath: string[]; onNavigate: (s: Screen) => void; }
 
 export function AdvancedFeatures({ targetPath, onNavigate }: Props) {
+  const { settings, setSetting } = useSettings();
   const [callTextOnOtherDevices, setCallTextOnOtherDevices] = useState(false);
   const [continueAppsOnOtherDevices, setContinueAppsOnOtherDevices] = useState(false);
   const [linkToWindows, setLinkToWindows] = useState(false);
   const [samsungDex, setSamsungDex] = useState(false);
-  
-  const [androidAuto, setAndroidAuto] = useState(false);
-  const [quickShare, setQuickShare] = useState(false);
-
-  const [motionsAndGestures, setMotionsAndGestures] = useState(false);
   const [oneHandedMode, setOneHandedMode] = useState(false);
   const [smartSuggestions, setSmartSuggestions] = useState(true);
-  const [screenshotsAndScreenRecorder, setScreenshotsAndScreenRecorder] = useState(false);
-  const [showContactsWhenSharingContent, setShowContactsWhenSharingContent] = useState(true);
-  
-  const [videoCallEffects, setVideoCallEffects] = useState(false);
   const [dualMessenger, setDualMessenger] = useState(false);
-  
-  // Game Booster sub-section states
-  const [thermal, setThermal] = useState(false);
 
   const targetNode = targetPath[2]?.toLowerCase() ?? '';
   const targetSubNode = targetPath[3]?.toLowerCase() ?? '';
@@ -54,18 +44,25 @@ export function AdvancedFeatures({ targetPath, onNavigate }: Props) {
 
         {/* Labs and Game Booster */}
         <div style={{ margin: '0 16px 16px', background: 'var(--oneui-bg-card)', borderRadius: '24px', overflow: 'hidden' }}>
-            <SettingsRow title="Labs" showChevron onPress={() => {}} divider highlight={isHighlighted(targetPath, 'labs')} />
-            <SettingsRow title="Game Booster" showChevron onPress={() => {}} divider highlight={targetNode.includes('game booster')} />
+            <SettingsRow title="Labs" showChevron onPress={() => onNavigate('settings/generic/Labs')} divider highlight={isHighlighted(targetPath, 'labs')} />
+            <SettingsRow title="Game Booster" showChevron onPress={() => {}} divider highlight={targetNode.includes('game booster') || targetPath.join(' ').toLowerCase().includes('thermal')} />
             
-            {/* Thermal Management SUB-SECTION shown when path includes 'Thermal management' */}
-            {targetNode.includes('game booster') && (
+            {/* Thermal Management SUB-SECTION */}
+            {(targetNode.includes('game booster') || targetPath.join(' ').toLowerCase().includes('thermal')) && (
               <div style={{ margin: '0 16px 16px', background: 'rgba(255,100,0,0.1)', borderRadius: '16px', 
                             border: '1px solid rgba(255,100,0,0.4)', padding: '16px' }}>
                 <div style={{ color: '#ff6400', fontSize: '13px', fontWeight: 600, marginBottom: '12px' }}>
                   <IFlame style={{ width: '13px', height: '13px', verticalAlign: 'middle', marginRight: '4px' }} /> GAME BOOSTER
                 </div>
-                <SettingsRow title="Thermal management" toggle toggleValue={thermal} onToggleChange={setThermal} divider
-                  highlight={targetNode.includes('thermal') || targetSubNode.includes('thermal')} />
+                <SettingsRow 
+                  title="Thermal management" 
+                  subtitle="Limits extreme heat during gaming"
+                  toggle 
+                  toggleValue={settings.gameBoosterThermal} 
+                  onToggleChange={(v) => setSetting('gameBoosterThermal', v)} 
+                  divider
+                  highlight={targetNode.includes('thermal') || targetSubNode.includes('thermal') || targetPath.join(' ').toLowerCase().includes('thermal')} 
+                />
                 <SettingsRow title="Game performance mode" rightLabel="Standard" showChevron onPress={() => {}}
                   highlight={targetSubNode.includes('performance')} />
               </div>
@@ -74,18 +71,11 @@ export function AdvancedFeatures({ targetPath, onNavigate }: Props) {
         
         {/* Motions and Gestures */}
         <div style={{ margin: '0 16px 16px', background: 'var(--oneui-bg-card)', borderRadius: '24px', overflow: 'hidden' }}>
-            <SettingsRow title="Side key" showChevron onPress={() => {}} divider highlight={isHighlighted(targetPath, 'side key')} />
-            <SettingsRow title="Motions and gestures" showChevron onPress={() => {}} divider highlight={isHighlighted(targetPath, 'motions and gestures')} />
-            <SettingsRow title="One-handed mode" subtitle="Scale down the display size to use the phone with one hand." toggle toggleValue={oneHandedMode} onToggleChange={setOneHandedMode} divider highlight={isHighlighted(targetPath, 'one-handed mode')} />
-            <SettingsRow title="Smart suggestions" subtitle="Get suggestions for useful actions based on how you use your phone." toggle toggleValue={smartSuggestions} onToggleChange={setSmartSuggestions} divider highlight={isHighlighted(targetPath, 'smart suggestions')} />
-            <SettingsRow title="Screenshots and screen recorder" showChevron onPress={() => {}} divider highlight={isHighlighted(targetPath, 'screenshots and screen recorder')} />
-            <SettingsRow title="Show contacts when sharing content" toggle toggleValue={showContactsWhenSharingContent} onToggleChange={setShowContactsWhenSharingContent} highlight={isHighlighted(targetPath, 'show contacts when sharing content')} />
-        </div>
-        
-        {/* Others */}
-        <div style={{ margin: '0 16px 24px', background: 'var(--oneui-bg-card)', borderRadius: '24px', overflow: 'hidden' }}>
-            <SettingsRow title="Video call effects" subtitle="Apply background effects to video calls." toggle toggleValue={videoCallEffects} onToggleChange={setVideoCallEffects} divider highlight={isHighlighted(targetPath, 'video call effects')} />
-            <SettingsRow title="Dual Messenger" subtitle="Sign in to a second account in your favorite social apps." toggle toggleValue={dualMessenger} onToggleChange={setDualMessenger} highlight={isHighlighted(targetPath, 'dual messenger')} />
+            <SettingsRow title="Side key" showChevron onPress={() => onNavigate('settings/generic/Side key')} divider highlight={isHighlighted(targetPath, 'side key')} />
+            <SettingsRow title="Motions and gestures" showChevron onPress={() => onNavigate('settings/generic/Motions and gestures')} divider highlight={isHighlighted(targetPath, 'motions and gestures')} />
+            <SettingsRow title="One-handed mode" subtitle="Scale down the display size to use phone with one hand." toggle toggleValue={oneHandedMode} onToggleChange={setOneHandedMode} divider highlight={isHighlighted(targetPath, 'one-handed mode')} />
+            <SettingsRow title="Smart suggestions" subtitle="Get suggestions for useful actions based on phone use." toggle toggleValue={smartSuggestions} onToggleChange={setSmartSuggestions} divider highlight={isHighlighted(targetPath, 'smart suggestions')} />
+            <SettingsRow title="Dual Messenger" subtitle="Sign in to a second account in social apps." toggle toggleValue={dualMessenger} onToggleChange={setDualMessenger} highlight={isHighlighted(targetPath, 'dual messenger')} />
         </div>
 
       </div>

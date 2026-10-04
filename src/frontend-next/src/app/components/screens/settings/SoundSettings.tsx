@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { SettingsRow } from '../../ui/SettingsRow';
 import { OneUISlider } from '../../ui/OneUISlider';
 import { Screen } from '../../../../hooks/usePhoneNavigation';
+import { useSettings } from '../../../context/SettingsContext';
 
 function isHighlighted(targetPath: string[], ...keywords: string[]): boolean {
   const combined = targetPath.join(' ').toLowerCase();
@@ -11,10 +12,7 @@ function isHighlighted(targetPath: string[], ...keywords: string[]): boolean {
 interface Props { targetPath: string[]; onNavigate: (s: Screen) => void; }
 
 export function SoundSettings({ targetPath, onNavigate }: Props) {
-  const [dolby, setDolby] = useState(true);
-  const [volume, setVolume] = useState(70);
-  const [vibrationIntensity, setVibrationIntensity] = useState(50);
-  const [separateAppSound, setSeparateAppSound] = useState(false);
+  const { settings, setSetting } = useSettings();
 
   return (
     <div style={{ position: 'absolute', inset: 0, zIndex: 30, background: 'var(--oneui-bg-primary)' }}>
@@ -28,40 +26,60 @@ export function SoundSettings({ targetPath, onNavigate }: Props) {
         {/* Volume group with slider */}
         <div style={{ margin: '0 16px 24px', background: 'var(--oneui-bg-card)', borderRadius: '24px', overflow: 'hidden' }}>
           <div style={{ padding: '16px' }}>
-            <div style={{ fontSize: '16px', marginBottom: '12px' }}>Volume</div>
-            <OneUISlider value={volume} onChange={setVolume} />
+            <div style={{ fontSize: '16px', marginBottom: '12px', display: 'flex', justifyContent: 'space-between' }}>
+              <span>Media Volume</span>
+              <span style={{ fontSize: '14px', color: 'var(--oneui-text-secondary)' }}>{settings.mediaVolume}%</span>
+            </div>
+            <OneUISlider value={settings.mediaVolume} onChange={(v) => setSetting('mediaVolume', v)} />
           </div>
         </div>
 
         {/* Settings rows */}
         <div style={{ margin: '0 16px 24px', background: 'var(--oneui-bg-card)', borderRadius: '24px', overflow: 'hidden' }}>
-          <SettingsRow title="Sound mode" rightLabel="Sound" showChevron onPress={() => {}} divider 
-            highlight={isHighlighted(targetPath, 'sound mode')} />
-          <SettingsRow title="Ringtone" rightLabel="Over the Horizon" showChevron onPress={() => {}} divider 
+          <SettingsRow 
+            title="Sound mode" 
+            rightLabel={settings.soundMode.toUpperCase()} 
+            showChevron 
+            onPress={() => {
+              const nextMode = settings.soundMode === 'sound' ? 'vibrate' : settings.soundMode === 'vibrate' ? 'mute' : 'sound';
+              setSetting('soundMode', nextMode);
+            }} 
+            divider 
+            highlight={isHighlighted(targetPath, 'sound mode')} 
+          />
+          <SettingsRow 
+            title="Vibrate while ringing" 
+            toggle 
+            toggleValue={settings.vibrateWhileRinging} 
+            onToggleChange={(v) => setSetting('vibrateWhileRinging', v)} 
+            divider 
+            highlight={isHighlighted(targetPath, 'vibrate while ringing')} 
+          />
+          <SettingsRow title="Ringtone" rightLabel="Over the Horizon" showChevron onPress={() => onNavigate('settings/generic/Ringtone')} divider 
             highlight={isHighlighted(targetPath, 'ringtone')} />
-          <SettingsRow title="Notification sound" rightLabel="Spaceline" showChevron onPress={() => {}} divider 
+          <SettingsRow title="Notification sound" rightLabel="Spaceline" showChevron onPress={() => onNavigate('settings/generic/Notification sound')} divider 
             highlight={isHighlighted(targetPath, 'notification sound')} />
-          <SettingsRow title="System sound" rightLabel="Galaxy" showChevron onPress={() => {}} divider 
-            highlight={isHighlighted(targetPath, 'system sound')} />
-          <SettingsRow title="Volume" showChevron onPress={() => {}} divider 
-            highlight={isHighlighted(targetPath, 'volume')} />
-          <SettingsRow title="Call vibration pattern" rightLabel="Basic call" showChevron onPress={() => {}} divider 
-            highlight={isHighlighted(targetPath, 'call vibration pattern')} />
-          <SettingsRow title="Notification vibration pattern" rightLabel="Sync with notification sound" showChevron onPress={() => {}} divider 
-            highlight={isHighlighted(targetPath, 'notification vibration pattern')} />
-          <SettingsRow title="System vibration" showChevron onPress={() => {}} divider 
-            highlight={isHighlighted(targetPath, 'system vibration')} />
-          <SettingsRow title="Vibration intensity" showChevron onPress={() => {}} divider 
-            highlight={isHighlighted(targetPath, 'vibration intensity')} /></div>
+        </div>
         
-        {/* Settings group 2 */}
+        {/* Settings group 2: Effects */}
         <div style={{ margin: '0 16px 24px', background: 'var(--oneui-bg-card)', borderRadius: '24px', overflow: 'hidden' }}>
-          <SettingsRow title="Sound quality and effects" showChevron onPress={() => {}} divider 
-            highlight={isHighlighted(targetPath, 'sound quality')} />
-          <SettingsRow title="Dolby Atmos" toggle toggleValue={dolby} onToggleChange={setDolby} divider
-            highlight={isHighlighted(targetPath, 'dolby atmos')} />
-          <SettingsRow title="Separate app sound" toggle toggleValue={separateAppSound} onToggleChange={setSeparateAppSound}
-            highlight={isHighlighted(targetPath, 'separate app sound')} />
+          <SettingsRow 
+            title="Dolby Atmos" 
+            subtitle="Rich spatial surround audio"
+            toggle 
+            toggleValue={settings.dolbyAtmos} 
+            onToggleChange={(v) => setSetting('dolbyAtmos', v)} 
+            divider 
+            highlight={isHighlighted(targetPath, 'dolby')} 
+          />
+          <SettingsRow 
+            title="Separate app sound" 
+            subtitle="Play media from YouTube through Bluetooth speakers"
+            toggle 
+            toggleValue={false} 
+            onToggleChange={() => {}} 
+            highlight={isHighlighted(targetPath, 'separate app sound')} 
+          />
         </div>
       </div>
     </div>

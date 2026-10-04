@@ -18,6 +18,7 @@ export function NavBar({ currentScreen, onBack, onHome, onRecents }: {
       padding: "0 20px"
     }}>
       <Ripple 
+        data-testid="navbar-back"
         onClick={isHome ? undefined : onBack} 
         style={{ padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: isHome ? 0.3 : 1, cursor: isHome ? 'default' : 'pointer' }}
       >
@@ -27,6 +28,7 @@ export function NavBar({ currentScreen, onBack, onHome, onRecents }: {
       </Ripple>
 
       <Ripple 
+        data-testid="navbar-home"
         onClick={currentScreen === 'lock' ? undefined : onHome} 
         style={{ padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: currentScreen === 'lock' ? 0.3 : 1, cursor: currentScreen === 'lock' ? 'default' : 'pointer' }}
       >
@@ -36,6 +38,7 @@ export function NavBar({ currentScreen, onBack, onHome, onRecents }: {
       </Ripple>
 
       <Ripple 
+        data-testid="navbar-recents"
         onClick={currentScreen === 'lock' ? undefined : onRecents} 
         style={{ padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: currentScreen === 'lock' ? 0.3 : 1, cursor: currentScreen === 'lock' ? 'default' : 'pointer' }}
       >

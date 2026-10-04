@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ICheck } from '../../ui/Icons';
+import { useSettings } from '../../../context/SettingsContext';
 
 interface Props {
   onBack: () => void;
@@ -7,20 +8,24 @@ interface Props {
 }
 
 export function StorageScreen({ onBack, targetPath = [] }: Props) {
-  const [trashEmptied, setTrashEmptied] = useState(false);
+  const { settings, setSetting } = useSettings();
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const isHighlighted = targetPath.join(' ').toLowerCase().includes('storage') ||
                         targetPath.join(' ').toLowerCase().includes('junk') ||
                         targetPath.join(' ').toLowerCase().includes('trash');
 
+  const trashEmptied = settings.storageCleaned;
+
   const handleEmptyTrash = () => {
-    setTrashEmptied(true);
-    setToastMessage("Trash emptied! Freed 1.2 GB");
+    setSetting('storageCleaned', true);
+    setSetting('storageUsedGB', Math.max(20, settings.storageUsedGB - 1.2));
+    setToastMessage("Trash emptied! Freed 1.2 GB junk files");
     setTimeout(() => setToastMessage(null), 2500);
   };
 
-  const currentUsed = trashEmptied ? "31.2" : "32.4";
+  const currentUsed = settings.storageUsedGB.toFixed(1);
+  const usedPercent = Math.round((settings.storageUsedGB / settings.storageTotalGB) * 100);
 
   return (
     <div style={{ position: 'absolute', inset: 0, zIndex: 35, background: 'var(--oneui-bg-primary)', display: 'flex', flexDirection: 'column' }}>
@@ -50,17 +55,17 @@ export function StorageScreen({ onBack, targetPath = [] }: Props) {
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '12px' }}>
             <div style={{ fontSize: '28px', fontWeight: 300, color: '#fff' }}>
-              {currentUsed} <span style={{ fontSize: '16px', color: 'var(--oneui-text-secondary)' }}>GB / 256 GB</span>
+              {currentUsed} <span style={{ fontSize: '16px', color: 'var(--oneui-text-secondary)' }}>GB / {settings.storageTotalGB} GB</span>
             </div>
-            <div style={{ fontSize: '14px', color: 'var(--oneui-accent)', fontWeight: 600 }}>12% used</div>
+            <div style={{ fontSize: '14px', color: 'var(--oneui-accent)', fontWeight: 600 }}>{usedPercent}% used</div>
           </div>
 
           {/* Storage Bar */}
           <div style={{ height: '10px', background: 'rgba(255,255,255,0.1)', borderRadius: '5px', overflow: 'hidden', display: 'flex' }}>
-            <div style={{ width: '5%', background: '#2075d6' }} />
-            <div style={{ width: '4%', background: '#8e5ef5' }} />
-            <div style={{ width: '3%', background: '#34c759' }} />
-            {!trashEmptied && <div style={{ width: '1%', background: '#ff3b30' }} />}
+            <div style={{ width: '12%', background: '#2075d6' }} />
+            <div style={{ width: '8%', background: '#8e5ef5' }} />
+            <div style={{ width: '4%', background: '#34c759' }} />
+            {!trashEmptied && <div style={{ width: '2%', background: '#ff3b30' }} />}
           </div>
         </div>
 
@@ -124,7 +129,8 @@ export function StorageScreen({ onBack, targetPath = [] }: Props) {
               color: trashEmptied ? 'var(--oneui-text-tertiary)' : '#fff',
               border: 'none', borderRadius: '18px', padding: '10px 18px',
               fontSize: '13px', fontWeight: 600, cursor: trashEmptied ? 'default' : 'pointer',
-              flexShrink: 0
+              flexShrink: 0,
+              transition: 'all 0.2s ease'
             }}
           >
             {trashEmptied ? 'Cleaned' : 'Empty'}

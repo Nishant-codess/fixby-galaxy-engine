@@ -2,17 +2,27 @@ import React, { useState } from 'react';
 import { useSettings } from '../../context/SettingsContext';
 import type { GoalData } from '../../../hooks/useFixbyQuery';
 import { ISearchMag, IStar, IClipboard, IChevronRight, IMapPin, IFilm, IZap, IWrench } from '../ui/Icons';
+import { resolveGoalToAction, FixAction } from '../../../settings/actions';
 
 export interface ResolutionCardsProps {
   goals: GoalData[];
   query: string;
-  onWatchDemo: (goal: GoalData) => void;
-  onPerformAuto: (goal: GoalData) => void;
-  onPerformManual: (goal: GoalData) => void;
+  onWatchDemo: (action: FixAction) => void;
+  onPerformAuto: (action: FixAction) => void;
+  onPerformManual: (action: FixAction) => void;
   onClose: () => void;
+  executingActionId?: string | null;
 }
 
-export function ResolutionCards({ goals, query, onWatchDemo, onPerformAuto, onPerformManual, onClose }: ResolutionCardsProps) {
+export function ResolutionCards({ 
+  goals, 
+  query, 
+  onWatchDemo, 
+  onPerformAuto, 
+  onPerformManual, 
+  onClose,
+  executingActionId
+}: ResolutionCardsProps) {
   const [expandedIndex, setExpandedIndex] = useState(0); // Primary card expanded by default
   const { darkMode } = useSettings();
 
@@ -29,12 +39,12 @@ export function ResolutionCards({ goals, query, onWatchDemo, onPerformAuto, onPe
 
       {/* Bottom sheet */}
       <div style={{
-        background: darkMode ? 'rgba(28,28,30,0.65)' : 'rgba(255,255,255,0.7)',
+        background: darkMode ? 'rgba(24, 24, 28, 0.88)' : 'rgba(255,255,255,0.92)',
         backdropFilter: 'blur(40px) saturate(1.8)',
         borderTopLeftRadius: '32px', borderTopRightRadius: '32px',
-        animation: 'slideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)',
+        animation: 'slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
         boxShadow: darkMode ? '0 -24px 48px rgba(0,0,0,0.6), inset 0 1px 1px rgba(255,255,255,0.15)' : '0 -24px 48px rgba(0,0,0,0.1), inset 0 1px 2px rgba(255,255,255,0.8)',
-        borderTop: darkMode ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.05)',
+        borderTop: darkMode ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.06)',
         maxHeight: '88vh', overflowY: 'auto',
         paddingBottom: '24px',
       }}>
@@ -59,43 +69,43 @@ export function ResolutionCards({ goals, query, onWatchDemo, onPerformAuto, onPe
               &quot;{query}&quot;
             </div>
           </div>
-          <div style={{ fontSize: '13px', color: 'var(--oneui-text-secondary)' }}>
+          <div style={{ fontSize: '13px', color: 'var(--oneui-text-secondary)', fontWeight: 500 }}>
             {goals.length} solution{goals.length > 1 ? 's' : ''}
           </div>
         </div>
 
         {/* Resolution Cards */}
-        <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {goals.map((goal, idx) => {
             const isPrimary = idx === 0;
             const isExpanded = expandedIndex === idx;
             const matchPct = Math.round(goal.score * 100);
-            const steps = goal.actions?.[0]?.stepGroups?.[0]?.steps || [];
-            const pathSegments = goal.navigation_path || [];
-            const modes = goal.resolution_modes || ['auto', 'demo', 'manual'];
+            const action = resolveGoalToAction(goal);
+            const isExecuting = executingActionId === action.id;
 
             return (
               <div
-                key={idx}
+                key={action.id || idx}
+                data-testid={`fix-card-${idx}`}
                 style={{
                   background: isPrimary
-                    ? 'rgba(255,255,255,0.04)'
-                    : 'rgba(255,255,255,0.02)',
+                    ? (darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.03)')
+                    : (darkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.015)'),
                   backdropFilter: 'blur(20px)',
                   borderRadius: '24px',
                   border: isPrimary
-                    ? '1px solid rgba(255,255,255,0.12)'
-                    : '1px solid rgba(255,255,255,0.05)',
+                    ? '1.5px solid var(--oneui-accent)'
+                    : (darkMode ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.08)'),
                   boxShadow: isPrimary
-                    ? 'inset 0 1px 0 rgba(255,255,255,0.1), 0 8px 24px rgba(0,0,0,0.4)'
-                    : 'inset 0 1px 0 rgba(255,255,255,0.04)',
+                    ? '0 8px 24px rgba(32, 117, 214, 0.2)'
+                    : 'none',
                   overflow: 'hidden',
-                  transition: 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
-                  transform: isExpanded ? 'scale(1)' : 'scale(0.98)',
+                  transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
                 }}
               >
                 {/* Card Header — always visible */}
                 <div
+                  data-testid={`fix-card-header-${idx}`}
                   onClick={() => setExpandedIndex(isExpanded ? -1 : idx)}
                   style={{
                     padding: '14px 18px',
@@ -117,16 +127,15 @@ export function ResolutionCards({ goals, query, onWatchDemo, onPerformAuto, onPe
                     }}>
                       {isPrimary ? 'Recommended Fix' : `Alternative Fix ${idx}`}
                     </div>
-                    <div style={{ fontSize: '13px', color: 'var(--oneui-text-secondary)', marginTop: '2px' }}>
-                      {goal.title}
+                    <div style={{ fontSize: '13px', color: 'var(--oneui-text-secondary)', marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {action.title}
                     </div>
                   </div>
                   <div style={{
                     padding: '4px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: 700,
-                    background: 'rgba(255,255,255,0.06)',
-                    color: isPrimary ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.4)',
+                    background: isPrimary ? 'rgba(32, 117, 214, 0.15)' : 'rgba(255,255,255,0.06)',
+                    color: isPrimary ? 'var(--oneui-accent)' : 'var(--oneui-text-secondary)',
                     flexShrink: 0,
-                    border: isPrimary ? '1px solid rgba(255,255,255,0.15)' : '1px solid rgba(255,255,255,0.06)',
                   }}>
                     {matchPct}%
                   </div>
@@ -135,39 +144,70 @@ export function ResolutionCards({ goals, query, onWatchDemo, onPerformAuto, onPe
                     transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
                     transition: 'transform 0.2s',
                     flexShrink: 0,
-                  }}><IChevronRight style={{ width: '14px', height: '14px' }} /></div>
+                  }}>
+                    <IChevronRight style={{ width: '14px', height: '14px' }} />
+                  </div>
                 </div>
 
                 {/* Expanded Content */}
                 <div style={{
-                  maxHeight: isExpanded ? '600px' : '0px',
+                  maxHeight: isExpanded ? '700px' : '0px',
                   overflow: 'hidden',
                   transition: 'max-height 0.35s ease',
                 }}>
                   <div style={{ padding: '0 18px 16px' }}>
-                    {/* Description */}
+                    {/* Action Meta Badges */}
+                    <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
+                      <span style={{
+                        padding: '4px 8px', borderRadius: '8px', fontSize: '11px', fontWeight: 600,
+                        background: action.type.includes('TOGGLE') ? 'rgba(52, 199, 89, 0.15)' : 'rgba(32, 117, 214, 0.15)',
+                        color: action.type.includes('TOGGLE') ? '#34c759' : 'var(--oneui-accent)',
+                      }}>
+                        ⚡ {action.type.replace('_', ' ')}
+                      </span>
+                      <span style={{
+                        padding: '4px 8px', borderRadius: '8px', fontSize: '11px', fontWeight: 600,
+                        background: action.risk === 'high' ? 'rgba(255, 59, 48, 0.15)' : action.risk === 'medium' ? 'rgba(255, 149, 0, 0.15)' : 'rgba(255, 255, 255, 0.08)',
+                        color: action.risk === 'high' ? '#ff3b30' : action.risk === 'medium' ? '#ff9500' : 'var(--oneui-text-secondary)',
+                      }}>
+                        🛡️ {action.risk.toUpperCase()} RISK
+                      </span>
+                    </div>
+
+                    {/* Why this helps & Estimated impact */}
                     <div style={{
                       fontSize: '13px', color: 'var(--oneui-text-secondary)',
-                      padding: '8px 12px', borderRadius: '12px',
+                      padding: '10px 12px', borderRadius: '14px',
                       background: darkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)',
-                      marginBottom: '12px', lineHeight: 1.5
+                      marginBottom: '10px', lineHeight: 1.5,
+                      display: 'flex', flexDirection: 'column', gap: '6px'
                     }}>
-                      {goal.actions?.[0]?.description || 'Troubleshooting recommendation'}
+                      <div><strong>Why:</strong> {action.reason}</div>
+                      <div style={{ color: 'var(--oneui-success)', fontWeight: 500 }}>
+                        <strong>Impact:</strong> {action.estimatedImpact}
+                      </div>
                     </div>
 
                     {/* Navigation Path Breadcrumb */}
-                    {pathSegments.length > 0 && (
+                    {action.destinationPath && action.destinationPath.length > 0 && (
                       <div style={{
                         display: 'flex', alignItems: 'center', gap: '4px',
                         padding: '8px 12px', borderRadius: '12px',
-                        background: 'rgba(32, 117, 214, 0.06)',
+                        background: 'rgba(32, 117, 214, 0.08)',
                         marginBottom: '12px', flexWrap: 'wrap'
                       }}>
-                        <span style={{ marginRight: '4px', display: 'inline-flex', alignItems: 'center' }}><IMapPin style={{ width: '13px', height: '13px' }} /></span>
-                        {pathSegments.map((seg, si) => (
+                        <span style={{ marginRight: '4px', display: 'inline-flex', alignItems: 'center' }}>
+                          <IMapPin style={{ width: '13px', height: '13px', color: 'var(--oneui-accent)' }} />
+                        </span>
+                        {action.destinationPath.map((seg, si) => (
                           <span key={si} style={{ fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <span style={{ color: si === pathSegments.length - 1 ? 'var(--oneui-accent, #2075d6)' : 'var(--oneui-text-secondary)', fontWeight: si === pathSegments.length - 1 ? 600 : 400 }}>{seg}</span>
-                            {si < pathSegments.length - 1 && <span style={{ color: 'var(--oneui-text-tertiary)' }}>›</span>}
+                            <span style={{
+                              color: si === action.destinationPath.length - 1 ? 'var(--oneui-accent)' : 'var(--oneui-text-secondary)',
+                              fontWeight: si === action.destinationPath.length - 1 ? 600 : 400
+                            }}>
+                              {seg}
+                            </span>
+                            {si < action.destinationPath.length - 1 && <span style={{ color: 'var(--oneui-text-tertiary)' }}>›</span>}
                           </span>
                         ))}
                       </div>
@@ -175,64 +215,76 @@ export function ResolutionCards({ goals, query, onWatchDemo, onPerformAuto, onPe
 
                     {/* Steps */}
                     <div style={{ marginBottom: '16px' }}>
-                      {steps.map((step, si) => (
+                      {action.steps.map((step, si) => (
                         <div key={si} style={{
                           display: 'flex', alignItems: 'flex-start', gap: '10px',
-                          padding: '6px 0',
+                          padding: '5px 0',
                         }}>
                           <div style={{
                             width: '20px', height: '20px', borderRadius: '50%',
-                            background: 'rgba(32, 117, 214, 0.1)',
-                            color: 'var(--oneui-accent, #2075d6)',
+                            background: 'rgba(32, 117, 214, 0.12)',
+                            color: 'var(--oneui-accent)',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontSize: '10px', fontWeight: 700, flexShrink: 0, marginTop: '1px'
+                            fontSize: '11px', fontWeight: 700, flexShrink: 0, marginTop: '1px'
                           }}>{si + 1}</div>
-                          <div style={{ fontSize: '13px', color: 'var(--oneui-text-primary)', lineHeight: 1.5 }}>{step}</div>
+                          <div style={{ fontSize: '13px', color: 'var(--oneui-text-primary)', lineHeight: 1.4 }}>{step}</div>
                         </div>
                       ))}
                     </div>
 
                     {/* Action Buttons */}
                     <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                      {modes.includes('demo') && (
-                        <button onClick={() => onWatchDemo(goal)} style={{
-                          flex: 1, minWidth: '80px', padding: '12px 16px', border: 'none', borderRadius: '16px',
-                          background: 'rgba(255,255,255,0.07)',
-                          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.15), 0 4px 12px rgba(0,0,0,0.3)',
+                      <button 
+                        data-testid={`demo-btn-${idx}`}
+                        onClick={() => onWatchDemo(action)} 
+                        disabled={isExecuting}
+                        style={{
+                          flex: 1, minWidth: '90px', padding: '12px 14px', borderRadius: '16px',
+                          background: 'rgba(255,255,255,0.06)',
                           border: '1px solid rgba(255,255,255,0.1)',
-                          color: 'rgba(255,255,255,0.85)', fontSize: '13px', fontWeight: 600, cursor: 'pointer',
+                          color: 'rgba(255,255,255,0.9)', fontSize: '13px', fontWeight: 600, cursor: 'pointer',
                           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
-                          transition: 'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
-                        }}>
-                          <IFilm style={{ width: '16px', height: '16px' }} /> Watch Demo
-                        </button>
-                      )}
-                      {modes.includes('auto') && (
-                        <button onClick={() => onPerformAuto(goal)} style={{
-                          flex: 1, minWidth: '80px', padding: '12px 16px', border: 'none', borderRadius: '16px',
-                          background: 'rgba(255,255,255,0.05)',
-                          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1)',
-                          border: '1px solid rgba(255,255,255,0.08)',
-                          color: 'rgba(255,255,255,0.75)', fontSize: '13px', fontWeight: 600, cursor: 'pointer',
+                          transition: 'all 0.2s ease',
+                          opacity: isExecuting ? 0.5 : 1
+                        }}
+                      >
+                        <IFilm style={{ width: '15px', height: '15px' }} /> Watch Demo
+                      </button>
+
+                      <button 
+                        data-testid={`auto-fix-btn-${idx}`}
+                        onClick={() => onPerformAuto(action)} 
+                        disabled={isExecuting}
+                        style={{
+                          flex: 1.2, minWidth: '100px', padding: '12px 14px', borderRadius: '16px',
+                          background: 'linear-gradient(135deg, #2075d6 0%, #155bb5 100%)',
+                          border: 'none',
+                          boxShadow: '0 4px 14px rgba(32, 117, 214, 0.4)',
+                          color: '#fff', fontSize: '13px', fontWeight: 600, cursor: 'pointer',
                           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
-                          transition: 'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
-                        }}>
-                          <IZap style={{ width: '16px', height: '16px' }} /> Auto Fix
-                        </button>
-                      )}
-                      {modes.includes('manual') && (
-                        <button onClick={() => onPerformManual(goal)} style={{
-                          flex: 1, minWidth: '80px', padding: '12px 16px', borderRadius: '16px',
-                          background: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
+                          transition: 'all 0.2s ease',
+                          opacity: isExecuting ? 0.7 : 1
+                        }}
+                      >
+                        <IZap style={{ width: '15px', height: '15px' }} /> 
+                        {isExecuting ? 'Applying...' : 'Apply Fix'}
+                      </button>
+
+                      <button 
+                        onClick={() => onPerformManual(action)} 
+                        disabled={isExecuting}
+                        style={{
+                          flex: 0.8, minWidth: '80px', padding: '12px 14px', borderRadius: '16px',
+                          background: darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
                           color: 'var(--oneui-text-primary)', fontSize: '13px', fontWeight: 600, cursor: 'pointer',
-                          border: darkMode ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.1)',
-                          boxShadow: darkMode ? 'inset 0 1px 1px rgba(255,255,255,0.05)' : 'none',
+                          border: darkMode ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.1)',
                           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
-                          transition: 'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
-                        }}>
-                          <IWrench style={{ width: '16px', height: '16px' }} /> Manual
-                        </button>
-                      )}
+                          transition: 'all 0.2s ease',
+                          opacity: isExecuting ? 0.5 : 1
+                        }}
+                      >
+                        <IWrench style={{ width: '15px', height: '15px' }} /> Manual
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -241,7 +293,7 @@ export function ResolutionCards({ goals, query, onWatchDemo, onPerformAuto, onPe
           })}
         </div>
 
-        {/* Bottom spacing for safe area */}
+        {/* Bottom spacing */}
         <div style={{ height: '16px' }} />
       </div>
 

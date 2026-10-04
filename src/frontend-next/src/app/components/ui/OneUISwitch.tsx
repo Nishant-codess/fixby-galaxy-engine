@@ -1,8 +1,13 @@
 import React from 'react';
 
-export function OneUISwitch({ checked, onChange }: { checked: boolean; onChange?: (v: boolean) => void }) {
+export function OneUISwitch({ checked, onChange, ariaLabel, dataTestId }: { checked: boolean; onChange?: (v: boolean) => void; ariaLabel?: string; dataTestId?: string }) {
   return (
     <div 
+      role="switch"
+      aria-checked={checked}
+      aria-label={ariaLabel}
+      data-checked={checked ? "true" : "false"}
+      data-testid={dataTestId || "oneui-switch"}
       onClick={(e) => { e.stopPropagation(); onChange?.(!checked); }}
       style={{
         width: "48px", height: "28px", borderRadius: "14px",

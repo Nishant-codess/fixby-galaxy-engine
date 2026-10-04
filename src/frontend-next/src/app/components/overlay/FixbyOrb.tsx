@@ -17,15 +17,17 @@ const PRESETS = [
   "camera keeps crashing when opening"
 ];
 
+import { FixAction } from '../../../settings/actions';
+
 export interface FixbyOrbProps {
   isOpen: boolean;
   onToggle: (v: boolean) => void;
   onResolved: (path: string[], escalation?: string) => void;
   initialQuery?: string;
   onClearInitialQuery?: () => void;
-  onWatchDemo?: (goal: GoalData) => void;
-  onPerformAuto?: (goal: GoalData) => void;
-  onPerformManual?: (goal: GoalData) => void;
+  onWatchDemo?: (action: FixAction) => void;
+  onPerformAuto?: (action: FixAction) => void;
+  onPerformManual?: (action: FixAction) => void;
 }
 
 export function FixbyOrb({
@@ -111,20 +113,15 @@ export function FixbyOrb({
     setResolvedGoals([]);
   };
 
-  const handleGoalAction = (goal: GoalData, mode: 'demo' | 'auto' | 'manual') => {
-    // Extract path for navigation
-    const pathStr = goal.actions?.[0]?.stepGroups?.[0]?.actionableDeeplink?.classes?.path;
-    const path = pathStr ? pathStr.split(">").map((s: string) => s.trim()).filter(Boolean) : [];
-
+  const handleGoalAction = (action: FixAction, mode: 'demo' | 'auto' | 'manual') => {
     if (mode === 'demo' && onWatchDemo) {
-      onWatchDemo(goal);
+      onWatchDemo(action);
     } else if (mode === 'auto' && onPerformAuto) {
-      onPerformAuto(goal);
+      onPerformAuto(action);
     } else if (mode === 'manual' && onPerformManual) {
-      onPerformManual(goal);
+      onPerformManual(action);
     } else {
-      // Fallback: just navigate
-      onResolved(path);
+      onResolved(action.destinationPath);
     }
 
     handleClose();
@@ -137,9 +134,9 @@ export function FixbyOrb({
         <ResolutionCards
           goals={resolvedGoals}
           query={resolvedQuery}
-          onWatchDemo={(g) => handleGoalAction(g, 'demo')}
-          onPerformAuto={(g) => handleGoalAction(g, 'auto')}
-          onPerformManual={(g) => handleGoalAction(g, 'manual')}
+          onWatchDemo={(action) => handleGoalAction(action, 'demo')}
+          onPerformAuto={(action) => handleGoalAction(action, 'auto')}
+          onPerformManual={(action) => handleGoalAction(action, 'manual')}
           onClose={handleClose}
         />
       </>
@@ -151,6 +148,8 @@ export function FixbyOrb({
       {/* Orb */}
       <div 
         ref={orbRef}
+        data-testid="fixby-orb-trigger"
+        onClick={() => onToggle(true)}
         onPointerDown={(e) => {
           if (!isOpen) {
             // Distinguish click from drag
@@ -221,6 +220,7 @@ export function FixbyOrb({
           {!isProcessing && stages[0].status === 'pending' ? (
             <>
               <input 
+                data-testid="fixby-query-input"
                 value={query}
                 onChange={e => setQuery(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleSubmit()}
@@ -239,7 +239,7 @@ export function FixbyOrb({
                 WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' 
               }}>
                 {PRESETS.map(p => (
-                  <div key={p} onClick={() => handleSubmit(p)} style={{ 
+                  <div key={p} data-testid={`preset-${p.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`} onClick={() => handleSubmit(p)} style={{ 
                     whiteSpace: 'nowrap', padding: '8px 16px', background: darkMode ? 'var(--oneui-bg-primary)' : 'rgba(0,0,0,0.03)', 
                     borderRadius: '16px', fontSize: '14px', border: darkMode ? '1px solid var(--oneui-separator)' : '1px solid rgba(0,0,0,0.1)', 
                     cursor: 'pointer', color: 'var(--oneui-text-primary)' 
@@ -249,13 +249,13 @@ export function FixbyOrb({
                 ))}
               </div>
 
-              <div onClick={() => handleSubmit()} style={{ 
+              <div data-testid="fixby-diagnose-btn" onClick={() => handleSubmit()} style={{ 
                 width: '100%', padding: '16px', 
                 background: (siisBattery !== 85 || siisStorage !== 60 || siisTemp !== 32 || siisSignal !== 80) 
                   ? 'linear-gradient(135deg, #FF453A 0%, #FF9F0A 100%)' 
                   : 'linear-gradient(135deg, #2075D6 0%, #6C47FF 100%)',
-                boxShadow: (siisBattery !== 85 || siisStorage !== 60 || siisTemp !== 32 || siisSignal !== 80)
-                  ? '0 12px 24px rgba(255, 69, 58, 0.4), inset 0 2px 4px rgba(255,255,255,0.4)'
+                boxShadow: (siisBattery !== 85 || siisStorage !== 60 || siisTemp !== 32 || siisSignal !== 80) 
+                  ? '0 12px 24px rgba(255, 69, 58, 0.4), inset 0 2px 4px rgba(255,255,255,0.4)' 
                   : '0 12px 24px rgba(32, 117, 214, 0.4), inset 0 2px 4px rgba(255,255,255,0.4)',
                 color: '#fff', borderRadius: '16px', textAlign: 'center', fontWeight: 700, fontSize: '16px', cursor: 'pointer', marginBottom: '24px',
                 transition: 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',

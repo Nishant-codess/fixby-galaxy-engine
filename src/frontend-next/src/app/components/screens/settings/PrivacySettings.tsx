@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { SettingsRow } from '../../ui/SettingsRow';
 import { Screen } from '../../../../hooks/usePhoneNavigation';
+import { useSettings } from '../../../context/SettingsContext';
 
 function isHighlighted(targetPath: string[], ...keywords: string[]): boolean {
   const combined = targetPath.join(' ').toLowerCase();
@@ -10,7 +11,7 @@ function isHighlighted(targetPath: string[], ...keywords: string[]): boolean {
 interface Props { targetPath: string[]; onNavigate: (s: Screen) => void; }
 
 export function PrivacySettings({ targetPath, onNavigate }: Props) {
-  const [sendDiagnosticData, setSendDiagnosticData] = useState(true);
+  const { settings, setSetting } = useSettings();
 
   return (
     <div style={{ position: 'absolute', inset: 0, zIndex: 30, background: 'var(--oneui-bg-primary)' }}>
@@ -23,30 +24,50 @@ export function PrivacySettings({ targetPath, onNavigate }: Props) {
 
         {/* Security Status */}
         <div style={{ margin: '0 16px 24px', background: 'var(--oneui-bg-card)', borderRadius: '24px', overflow: 'hidden' }}>
-          <SettingsRow title="Lock screen" rightLabel="PIN, Fingerprints" showChevron onPress={() => {}} divider highlight={isHighlighted(targetPath, 'lock screen', 'screen lock type')} />
-          <SettingsRow title="Accounts" rightLabel="Samsung account, Google" showChevron onPress={() => {}} divider highlight={isHighlighted(targetPath, 'accounts')} />
-          <SettingsRow title="Find My Mobile" rightLabel="On" showChevron onPress={() => {}} divider highlight={isHighlighted(targetPath, 'find my mobile')} />
-          <SettingsRow title="App security" rightLabel="Play Protect" showChevron onPress={() => {}} highlight={isHighlighted(targetPath, 'app security')} />
-        </div>
-
-        {/* Biometrics */}
-        <div style={{ margin: '0 16px 24px' }}>
-            <div style={{ fontSize: '14px', color: 'var(--oneui-accent)', fontWeight: 600, paddingLeft: '16px', marginBottom: '8px' }}>Security</div>
-            <div style={{ background: 'var(--oneui-bg-card)', borderRadius: '24px', overflow: 'hidden' }}>
-                <SettingsRow title="Biometrics" subtitle="Fingerprints, Face recognition" showChevron onPress={() => {}} divider highlight={isHighlighted(targetPath, 'biometrics', 'fingerprint', 'face recognition')} />
-                <SettingsRow title="Samsung Pass" showChevron onPress={() => {}} divider highlight={isHighlighted(targetPath, 'samsung pass')} />
-                <SettingsRow title="Secure Folder" showChevron onPress={() => {}} highlight={isHighlighted(targetPath, 'secure folder')} />
-            </div>
+          <SettingsRow title="Lock screen" rightLabel="PIN, Fingerprints" showChevron onPress={() => onNavigate('settings/generic/Lock screen and AOD')} divider highlight={isHighlighted(targetPath, 'lock screen', 'screen lock type')} />
+          <SettingsRow title="Biometrics" subtitle="Fingerprints, Face recognition" showChevron onPress={() => onNavigate('settings/generic/Biometrics')} divider highlight={isHighlighted(targetPath, 'biometrics', 'fingerprint')} />
+          <SettingsRow title="App security" rightLabel="Play Protect active" showChevron onPress={() => {}} highlight={isHighlighted(targetPath, 'app security')} />
         </div>
         
-        {/* Privacy */}
+        {/* Privacy Controls */}
         <div style={{ margin: '0 16px 24px' }}>
-            <div style={{ fontSize: '14px', color: 'var(--oneui-accent)', fontWeight: 600, paddingLeft: '16px', marginBottom: '8px' }}>Privacy</div>
+            <div style={{ fontSize: '14px', color: 'var(--oneui-accent)', fontWeight: 600, paddingLeft: '16px', marginBottom: '8px' }}>Privacy toggles</div>
             <div style={{ background: 'var(--oneui-bg-card)', borderRadius: '24px', overflow: 'hidden' }}>
-                <SettingsRow title="Permission manager" showChevron onPress={() => {}} divider highlight={isHighlighted(targetPath, 'permission manager', 'permissions')} />
-                <SettingsRow title="Controls and alerts" showChevron onPress={() => {}} divider highlight={isHighlighted(targetPath, 'controls and alerts')} />
-                <SettingsRow title="Samsung Privacy" showChevron onPress={() => {}} divider highlight={isHighlighted(targetPath, 'samsung privacy')} />
-                <SettingsRow title="Send diagnostic data" toggle toggleValue={sendDiagnosticData} onToggleChange={setSendDiagnosticData} highlight={isHighlighted(targetPath, 'send diagnostic data')} />
+                <SettingsRow 
+                  title="Camera access" 
+                  subtitle="Allow apps to use camera hardware"
+                  toggle 
+                  toggleValue={settings.cameraAccess} 
+                  onToggleChange={(v) => setSetting('cameraAccess', v)} 
+                  divider 
+                  highlight={isHighlighted(targetPath, 'camera access')} 
+                />
+                <SettingsRow 
+                  title="Microphone access" 
+                  subtitle="Allow apps to use microphone hardware"
+                  toggle 
+                  toggleValue={settings.microphoneAccess} 
+                  onToggleChange={(v) => setSetting('microphoneAccess', v)} 
+                  divider 
+                  highlight={isHighlighted(targetPath, 'microphone access')} 
+                />
+                <SettingsRow 
+                  title="Location access" 
+                  subtitle="Allow apps with permission to locate device"
+                  toggle 
+                  toggleValue={settings.locationAccess} 
+                  onToggleChange={(v) => setSetting('locationAccess', v)} 
+                  divider 
+                  highlight={isHighlighted(targetPath, 'location')} 
+                />
+                <SettingsRow 
+                  title="Send diagnostic data" 
+                  subtitle="Send anonymous usage data to Samsung"
+                  toggle 
+                  toggleValue={settings.sendDiagnosticData} 
+                  onToggleChange={(v) => setSetting('sendDiagnosticData', v)} 
+                  highlight={isHighlighted(targetPath, 'send diagnostic data')} 
+                />
             </div>
         </div>
 

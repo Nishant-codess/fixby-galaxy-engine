@@ -65,7 +65,7 @@ export function useFixbyQuery() {
 
     try {
       const backendUrl = process.env.NEXT_PUBLIC_API_URL || 
-        (typeof window !== "undefined" && window.location.port !== "3000"
+        (typeof window !== "undefined" && !["localhost", "127.0.0.1"].includes(window.location.hostname)
           ? `${window.location.origin}/v1/troubleshoot`
           : "http://127.0.0.1:8000/v1/troubleshoot");
 
@@ -86,9 +86,43 @@ export function useFixbyQuery() {
         const d = await res.json();
         apiTelemetry = d.meta;
         
-        // Store ALL goals from the response
-        goals = (d.response?.contexts || []) as GoalData[];
-        
+        const rawContexts = (d.response?.contexts || []) as GoalData[];
+        const extractedGoals: GoalData[] = [];
+        const seenActionTitles = new Set<string>();
+
+        // Flatten all actions across contexts so all actionable fixes appear as individual cards
+        for (const ctx of rawContexts) {
+          const acts = ctx.actions || [];
+          if (acts.length > 0) {
+            for (const act of acts) {
+              const actName = act.actionName || ctx.title;
+              if (!seenActionTitles.has(actName.toLowerCase())) {
+                seenActionTitles.add(actName.toLowerCase());
+                extractedGoals.push({
+                  ...ctx,
+                  title: actName,
+                  actions: [act],
+                });
+              }
+            }
+          } else {
+            extractedGoals.push(ctx);
+          }
+        }
+
+        // Prioritize direct toggle/setting fixes (such as Power saving)
+        extractedGoals.sort((a, b) => {
+          const aTitle = a.title.toLowerCase();
+          const bTitle = b.title.toLowerCase();
+          const aIsDirectFix = aTitle.includes('power saving') || aTitle.includes('protect');
+          const bIsDirectFix = bTitle.includes('power saving') || bTitle.includes('protect');
+          if (aIsDirectFix && !bIsDirectFix) return -1;
+          if (!aIsDirectFix && bIsDirectFix) return 1;
+          return 0;
+        });
+
+        goals = extractedGoals;
+
         // Extract primary path from first goal for backward compat
         const pathStr = goals[0]?.actions?.[0]?.stepGroups?.[0]?.actionableDeeplink?.classes?.path;
         if (pathStr) {

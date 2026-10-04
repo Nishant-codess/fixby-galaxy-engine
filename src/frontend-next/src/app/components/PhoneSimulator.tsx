@@ -9,7 +9,10 @@ import { FixbyOrb } from './overlay/FixbyOrb';
 import { DemoOverlay } from './overlay/DemoOverlay';
 import { GuidedBreadcrumb } from './overlay/GuidedBreadcrumb';
 import { SuccessToast } from './overlay/SuccessToast';
+import { ConfirmationDialog } from './ui/ConfirmationDialog';
 import { useSettings } from '../context/SettingsContext';
+import { FixAction, checkCapability } from '../../settings/actions';
+import { resolveSettingsPath } from '../../settings/navigation';
 import type { GoalData } from '../../hooks/useFixbyQuery';
 
 import { LockScreen } from './screens/LockScreen';
@@ -42,11 +45,14 @@ import { StorageScreen } from './screens/settings/StorageScreen';
 
 // Maps keywords from the API path to a Settings sub-screen
 const SETTINGS_SCREEN_MAP: { keywords: string[]; screen: Screen }[] = [
-  { keywords: ['display', 'brightness', 'dark mode', 'screen mode', 'eye comfort', 'motion smoothness', 'screen timeout', 'navigation bar'], screen: 'settings/display' },
+  { keywords: ['motion smoothness', 'refresh rate', '120hz', 'adaptive refresh'], screen: 'settings/motion-smoothness' },
+  { keywords: ['battery usage', 'background usage', 'deep sleep', 'sleeping apps', 'background limit'], screen: 'settings/battery-usage' },
+  { keywords: ['storage', 'clean storage', 'internal storage', 'clean now'], screen: 'settings/storage' },
+  { keywords: ['display', 'brightness', 'dark mode', 'screen mode', 'eye comfort', 'screen timeout', 'navigation bar'], screen: 'settings/display' },
   { keywords: ['samsung account', 'cloud', 'find my mobile', 'samsung pass'], screen: 'settings/samsung-account' },
   { keywords: ['connection', 'wifi', 'wi-fi', 'bluetooth', 'nfc', 'mobile network', 'hotspot', 'flight', 'data usage', 'airplane'], screen: 'settings/connections' },
-  { keywords: ['battery', 'power saving', 'background usage', 'protect battery', 'charging', 'wireless power'], screen: 'settings/battery' },
-  { keywords: ['device care', 'storage', 'memory', 'ram plus', 'performance profile', 'app protection', 'optimize'], screen: 'settings/device-care' },
+  { keywords: ['battery', 'power saving', 'protect battery', 'charging', 'wireless power'], screen: 'settings/battery' },
+  { keywords: ['device care', 'memory', 'ram plus', 'performance profile', 'app protection', 'optimize'], screen: 'settings/device-care' },
   { keywords: ['notification', 'alert', 'do not disturb', 'dnd', 'edge lighting', 'brief popup'], screen: 'settings/notifications' },
   { keywords: ['lock screen', 'aod', 'always on display', 'wallpaper', 'clock style'], screen: 'settings/lock-screen' },
   { keywords: ['security', 'biometric', 'fingerprint', 'face recognition', 'screen lock', 'secure folder'], screen: 'settings/privacy' },
@@ -63,8 +69,6 @@ const SETTINGS_SCREEN_MAP: { keywords: string[]; screen: Screen }[] = [
 ];
 
 function resolveSettingsScreen(path: string[]): Screen | null {
-  // path is like: ["Settings", "Display", "Brightness"] or ["Settings > Connections > Wi-Fi"]
-  // Flatten and normalize for matching
   const combined = path.join(' ').toLowerCase();
   
   let bestMatch: Screen | null = null;
@@ -83,12 +87,8 @@ function resolveSettingsScreen(path: string[]): Screen | null {
   return bestMatch;
 }
 
-/**
- * Converts a full navigation path into a sequence of screens for animated demo.
- * e.g. ["Settings", "Battery", "Power saving"] → ["settings", "settings/battery"]
- */
 function resolveScreenSequence(path: string[]): Screen[] {
-  const screens: Screen[] = ['settings']; // always start at Settings root
+  const screens: Screen[] = ['settings'];
   
   for (let i = 1; i < path.length; i++) {
     const subPath = path.slice(0, i + 1);
@@ -101,23 +101,10 @@ function resolveScreenSequence(path: string[]): Screen[] {
   return screens;
 }
 
-/**
- * Extract path segments from a goal's deeplink classes.path
- */
-function extractGoalPath(goal: GoalData): string[] {
-  if (goal.navigation_path && goal.navigation_path.length > 0) {
-    return goal.navigation_path;
-  }
-  const pathStr = goal.actions?.[0]?.stepGroups?.[0]?.actionableDeeplink?.classes?.path;
-  if (pathStr) {
-    return pathStr.split(">").map((s: string) => s.trim()).filter(Boolean);
-  }
-  return [];
-}
-
 export default function PhoneSimulator() {
   const { currentScreen, push, pop, reset, pushMany } = usePhoneNavigation('lock');
-  const { startDemo, cancelDemo, isAnimating, currentStep, totalSteps } = useAnimatedNavigation();
+  const { startDemo, startDemoSteps, cancelDemo, isAnimating, currentStep, totalSteps, highlightedTarget } = useAnimatedNavigation();
+  const { settings, setSetting, executeAction, darkMode } = useSettings();
   
   const [orbOpen, setOrbOpen] = useState(false);
   const [targetPath, setTargetPath] = useState<string[]>([]);
@@ -126,7 +113,9 @@ export default function PhoneSimulator() {
 
   // Resolution mode states
   const [activeMode, setActiveMode] = useState<'idle' | 'demo' | 'manual'>('idle');
-  const [activeGoal, setActiveGoal] = useState<GoalData | null>(null);
+  const [activeAction, setActiveAction] = useState<FixAction | null>(null);
+  const [pendingAction, setPendingAction] = useState<FixAction | null>(null);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [activePath, setActivePath] = useState<string[]>([]);
   const [activeScreenSequence, setActiveScreenSequence] = useState<Screen[]>([]);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
@@ -142,62 +131,115 @@ export default function PhoneSimulator() {
     setEscalation(escalationLevel || null);
 
     if (path.length === 0) {
-      // No specific path — just open Settings root
       pushMany(['home', 'settings']);
       return;
     }
 
     const subScreen = resolveSettingsScreen(path);
     if (subScreen) {
-      // Atomically jump to: home → settings → subScreen
       pushMany(['home', 'settings', subScreen]);
     } else {
-      // Fall back to settings root with the path highlighted
       pushMany(['home', 'settings']);
     }
   };
 
-  // ── Resolution Mode Handlers ──
-  
-  const handleWatchDemo = useCallback((goal: GoalData) => {
-    const path = extractGoalPath(goal);
-    const sequence = resolveScreenSequence(path);
+  // ── Central Action Execution Core ──
+
+  const applyAction = useCallback(async (action: FixAction) => {
+    // 1. Centralized action execution
+    const result = await executeAction(action);
+
+    // 2. Navigation to relevant screen
+    const resolvedNav = resolveSettingsPath(action.destinationPath);
+    const subScreen = resolvedNav.screen !== 'settings' ? resolvedNav.screen : resolveSettingsScreen(action.destinationPath);
     
-    setActiveMode('demo');
-    setActiveGoal(goal);
-    setActivePath(path);
-    setActiveScreenSequence(sequence);
-    setTargetPath(path);
-
-    // Start animated walkthrough
-    startDemo(sequence, push, reset, 600);
-  }, [startDemo, push, reset]);
-
-  const handlePerformAuto = useCallback((goal: GoalData) => {
-    const path = extractGoalPath(goal);
-    const subScreen = resolveSettingsScreen(path);
-    
-    setActiveMode('idle');
-    setActiveGoal(null);
-    setTargetPath(path);
-
-    if (subScreen) {
+    if (subScreen && subScreen !== 'settings') {
       pushMany(['home', 'settings', subScreen]);
     } else {
       pushMany(['home', 'settings']);
     }
 
-    // Show success toast
-    setSuccessMessage(`Navigated to ${goal.title}`);
-    setShowSuccessToast(true);
-  }, [pushMany]);
+    // 3. Highlight target setting
+    setTargetPath(action.destinationPath);
 
-  const handlePerformManual = useCallback((goal: GoalData) => {
-    const path = extractGoalPath(goal);
+    // 4. Result message
+    setSuccessMessage(result.message);
+    setShowSuccessToast(true);
+  }, [executeAction, pushMany]);
+
+  // ── Resolution Mode Handlers ──
+  
+  const handleWatchDemo = useCallback((action: FixAction) => {
+    const path = action.destinationPath;
+    const sequence = resolveScreenSequence(path);
+    
+    setActiveMode('demo');
+    setActiveAction(action);
+    setActivePath(path);
+    setActiveScreenSequence(sequence);
+    setTargetPath(path);
+
+    if (action.demoSequence && action.demoSequence.length > 0) {
+      startDemoSteps(action.demoSequence, {
+        push,
+        reset,
+        setHighlight: (target: string) => {
+          setTargetPath([target]);
+        },
+        executeDemoToggle: (targetKey: string, value: any) => {
+          setSetting(targetKey as any, value);
+        },
+        onMessage: (msg: string) => {
+          setSuccessMessage(msg);
+        }
+      });
+    } else {
+      startDemo(sequence, push, reset, 650);
+    }
+  }, [startDemoSteps, startDemo, push, reset, setSetting]);
+
+  const handlePerformAuto = useCallback(async (action: FixAction) => {
+    setActiveMode('idle');
+    setActiveAction(action);
+
+    // 1. Check capability
+    const capability = checkCapability(action);
+    if (capability.mode === 'UNSUPPORTED') {
+      setSuccessMessage(capability.reason || 'This action is not supported in the current environment.');
+      setShowSuccessToast(true);
+      return;
+    }
+
+    // 2. Check confirmation requirement
+    if (action.requiresConfirmation) {
+      setPendingAction(action);
+      setShowConfirmDialog(true);
+      return;
+    }
+
+    await applyAction(action);
+  }, [applyAction]);
+
+  const handleConfirmAction = useCallback(async () => {
+    if (pendingAction) {
+      const act = pendingAction;
+      setPendingAction(null);
+      setShowConfirmDialog(false);
+      await applyAction(act);
+    }
+  }, [pendingAction, applyAction]);
+
+  const handleCancelAction = useCallback(() => {
+    setPendingAction(null);
+    setShowConfirmDialog(false);
+  }, []);
+
+  const handlePerformManual = useCallback((action: FixAction) => {
+    const path = action.destinationPath;
     const sequence = resolveScreenSequence(path);
     
     setActiveMode('manual');
-    setActiveGoal(goal);
+    setActiveAction(action);
     setActivePath(path);
     setActiveScreenSequence(sequence);
     setTargetPath(path);
@@ -208,34 +250,38 @@ export default function PhoneSimulator() {
 
   const handleDismissManual = useCallback(() => {
     setActiveMode('idle');
-    setActiveGoal(null);
+    setActiveAction(null);
     setActivePath([]);
   }, []);
 
   const handleSkipDemo = useCallback(() => {
     cancelDemo();
     setActiveMode('idle');
-    setActiveGoal(null);
     
     // Jump to final screen
-    if (activeScreenSequence.length > 0) {
-      const finalScreen = activeScreenSequence[activeScreenSequence.length - 1];
-      pushMany(['home', 'settings', finalScreen]);
+    if (activeAction) {
+      const resolvedNav = resolveSettingsPath(activeAction.destinationPath);
+      const subScreen = resolvedNav.screen !== 'settings' ? resolvedNav.screen : resolveSettingsScreen(activeAction.destinationPath);
+      if (subScreen && subScreen !== 'settings') {
+        pushMany(['home', 'settings', subScreen]);
+      } else {
+        pushMany(['home', 'settings']);
+      }
+      setSuccessMessage(`Demo finished — ${activeAction.title}`);
+      setShowSuccessToast(true);
+      setActiveAction(null);
     }
-    
-    setSuccessMessage(`Demo complete — ${activeGoal?.title || 'Setting'}`);
-    setShowSuccessToast(true);
-  }, [cancelDemo, activeScreenSequence, activeGoal, pushMany]);
+  }, [cancelDemo, activeAction, pushMany]);
 
   // When demo finishes naturally, show success
   React.useEffect(() => {
-    if (activeMode === 'demo' && !isAnimating && currentStep === -1 && activeGoal) {
+    if (activeMode === 'demo' && !isAnimating && currentStep === -1 && activeAction) {
       setActiveMode('idle');
-      setSuccessMessage(`Demo complete — ${activeGoal.title}`);
+      setSuccessMessage(`Demo complete — ${activeAction.title}`);
       setShowSuccessToast(true);
-      setActiveGoal(null);
+      setActiveAction(null);
     }
-  }, [isAnimating, currentStep, activeMode, activeGoal]);
+  }, [isAnimating, currentStep, activeMode, activeAction]);
 
   const renderScreen = () => {
     switch (currentScreen) {
@@ -264,9 +310,13 @@ export default function PhoneSimulator() {
       case 'settings/general':         return <GeneralSettings targetPath={targetPath} onNavigate={push} />;
 
       // Interactive Sub-screens
-      case 'settings/motion-smoothness': return <MotionSmoothnessScreen targetPath={targetPath} onBack={pop} />;
-      case 'settings/battery-usage':     return <BatteryUsageScreen targetPath={targetPath} onBack={pop} />;
-      case 'settings/storage':           return <StorageScreen targetPath={targetPath} onBack={pop} />;
+      case 'settings/motion-smoothness':
+      case 'settings/display/motion-smoothness':
+        return <MotionSmoothnessScreen targetPath={targetPath} onBack={pop} />;
+      case 'settings/battery-usage':
+        return <BatteryUsageScreen targetPath={targetPath} onBack={pop} />;
+      case 'settings/storage':
+        return <StorageScreen targetPath={targetPath} onBack={pop} />;
 
       // Generic Mock Settings
       case 'settings/lock-screen':     return <LockScreenSettings targetPath={targetPath} onBack={pop} />;
@@ -285,8 +335,6 @@ export default function PhoneSimulator() {
 
   const isWallpaperScreen = currentScreen === 'lock' || currentScreen === 'home' || currentScreen === 'recents';
   const isDarkScreen = !isWallpaperScreen;
-
-  const { darkMode } = useSettings();
 
   const lightModeVars = {
     '--oneui-bg-primary': '#f2f2f7',
@@ -322,7 +370,7 @@ export default function PhoneSimulator() {
         {/* Demo Overlay — shows during animated walkthrough */}
         {activeMode === 'demo' && isAnimating && (
           <DemoOverlay
-            title={activeGoal?.title || 'Setting'}
+            title={activeAction?.title || 'Setting'}
             pathSegments={activePath}
             currentStep={currentStep}
             totalSteps={totalSteps}
@@ -331,7 +379,7 @@ export default function PhoneSimulator() {
         )}
 
         {/* Guided Breadcrumb — shows during manual navigation */}
-        {activeMode === 'manual' && activeGoal && (
+        {activeMode === 'manual' && activeAction && (
           <GuidedBreadcrumb
             pathSegments={activePath}
             currentScreen={currentScreen}
@@ -348,6 +396,18 @@ export default function PhoneSimulator() {
           />
         )}
 
+        {/* Confirmation Dialog for actions requiring confirmation */}
+        <ConfirmationDialog
+          isOpen={showConfirmDialog}
+          title={pendingAction?.title || 'Confirm Setting Change'}
+          message={`Are you sure you want to apply "${pendingAction?.title}"? This will modify your device settings.`}
+          confirmLabel="Apply Fix"
+          cancelLabel="Cancel"
+          isDestructive={pendingAction?.risk === 'high'}
+          onConfirm={handleConfirmAction}
+          onCancel={handleCancelAction}
+        />
+
         {/* Fixby Orb — overlay on every screen except lock */}
         {currentScreen !== 'lock' && (
           <FixbyOrb
@@ -361,8 +421,6 @@ export default function PhoneSimulator() {
             onPerformManual={handlePerformManual}
           />
         )}
-
-
 
         <NavBar
           currentScreen={currentScreen}

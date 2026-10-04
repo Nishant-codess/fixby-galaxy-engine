@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { SettingsRow } from '../../ui/SettingsRow';
 import { Screen } from '../../../../hooks/usePhoneNavigation';
+import { useSettings } from '../../../context/SettingsContext';
 
 export function BatteryScreen({ targetPath, onNavigate }: { targetPath: string[]; onNavigate: (s: Screen) => void }) {
-  const [powerSaving, setPowerSaving] = useState(false);
-  const [protectBattery, setProtectBattery] = useState(false);
+  const { settings, setSetting } = useSettings();
 
-  const targetNode = targetPath[2];
+  const isHighlighted = (node: string) => {
+    return targetPath.some(p => p.toLowerCase().includes(node.toLowerCase()));
+  };
 
   return (
     <div style={{ position: 'absolute', inset: 0, zIndex: 30, background: 'var(--oneui-bg-primary)' }}>
@@ -20,28 +22,94 @@ export function BatteryScreen({ targetPath, onNavigate }: { targetPath: string[]
           <div style={{ position: 'relative', width: '120px', height: '120px' }}>
             <svg viewBox="0 0 100 100" style={{ transform: 'rotate(-90deg)' }}>
               <circle cx="50" cy="50" r="40" stroke="var(--oneui-separator)" strokeWidth="8" fill="none" />
-              <circle cx="50" cy="50" r="40" stroke="#34c759" strokeWidth="8" fill="none" strokeDasharray="251.2" strokeDashoffset={251.2 * 0.22} />
+              <circle 
+                cx="50" cy="50" r="40" 
+                stroke={settings.powerSaving ? '#ff9500' : '#34c759'} 
+                strokeWidth="8" fill="none" 
+                strokeDasharray="251.2" 
+                strokeDashoffset={251.2 * (1 - settings.batteryPercentage / 100)} 
+              />
             </svg>
             <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-              <div style={{ fontSize: '28px', fontWeight: 300, color: 'var(--oneui-text-primary)' }}>78%</div>
+              <div style={{ fontSize: '28px', fontWeight: 300, color: 'var(--oneui-text-primary)' }}>{settings.batteryPercentage}%</div>
             </div>
           </div>
-          <div style={{ color: 'var(--oneui-success)' }}>12 h 35 m left</div>
+          <div style={{ color: settings.powerSaving ? 'var(--oneui-accent)' : 'var(--oneui-success)', fontWeight: 500, fontSize: '14px' }}>
+            {settings.powerSaving ? '18 h 45 m left (Power saving active)' : '12 h 35 m left'}
+          </div>
         </div>
 
         {/* Group 1 */}
         <div style={{ margin: '0 16px 24px', background: 'var(--oneui-bg-card)', borderRadius: '24px', overflow: 'hidden' }}>
-          <SettingsRow title="Battery usage" showChevron onPress={() => onNavigate('settings/generic/Battery usage')} divider highlight={targetNode?.toLowerCase() === 'battery usage'} />
-          <SettingsRow title="Power saving" toggle toggleValue={powerSaving} onToggleChange={setPowerSaving} divider highlight={targetNode?.toLowerCase() === 'power saving'} />
-          <SettingsRow title="Background usage limits" showChevron onPress={() => onNavigate('settings/generic/Background usage limits')} divider highlight={targetNode?.toLowerCase() === 'background usage limits'} />
-          <SettingsRow title="Protect battery" toggle toggleValue={protectBattery} onToggleChange={setProtectBattery} highlight={targetNode?.toLowerCase() === 'protect battery'} />
+          <SettingsRow 
+            title="Battery usage" 
+            subtitle="View app battery drain and activity"
+            showChevron 
+            onPress={() => onNavigate('settings/battery-usage')} 
+            divider 
+            highlight={isHighlighted('battery usage')} 
+          />
+          <SettingsRow 
+            title="Power saving" 
+            subtitle={settings.powerSaving ? 'Limits CPU to 70% and background network' : 'Off'}
+            toggle 
+            toggleValue={settings.powerSaving} 
+            onToggleChange={(v) => setSetting('powerSaving', v)} 
+            divider 
+            highlight={isHighlighted('power saving')} 
+          />
+          <SettingsRow 
+            title="Background usage limits" 
+            subtitle={`${settings.deepSleepingAppsCount} apps in deep sleep`}
+            showChevron 
+            onPress={() => onNavigate('settings/battery-usage')} 
+            divider 
+            highlight={isHighlighted('background usage limits') || isHighlighted('deep sleep')} 
+          />
+          <SettingsRow 
+            title="Protect battery" 
+            subtitle={settings.protectBattery ? 'Charge capped at 85% to preserve lifespan' : 'Off'}
+            toggle 
+            toggleValue={settings.protectBattery} 
+            onToggleChange={(v) => setSetting('protectBattery', v)} 
+            divider
+            highlight={isHighlighted('protect battery')} 
+          />
+          <SettingsRow 
+            title="Wireless power sharing" 
+            subtitle={settings.wirelessPowerSharing ? 'Ready to charge accessories on back' : 'Off'}
+            toggle 
+            toggleValue={settings.wirelessPowerSharing} 
+            onToggleChange={(v) => setSetting('wirelessPowerSharing', v)} 
+            highlight={isHighlighted('wireless power sharing')} 
+          />
         </div>
 
         {/* Group 2 */}
         <div style={{ margin: '0 16px 24px', background: 'var(--oneui-bg-card)', borderRadius: '24px', overflow: 'hidden' }}>
-          <SettingsRow title="Storage" rightLabel="32.4 GB / 256 GB" showChevron onPress={() => onNavigate('settings/generic/Storage')} divider highlight={targetNode?.toLowerCase() === 'storage'} />
-          <SettingsRow title="Memory" rightLabel="4.2 GB / 12 GB" showChevron onPress={() => onNavigate('settings/generic/Memory')} divider highlight={targetNode?.toLowerCase() === 'memory'} />
-          <SettingsRow title="Device protection" rightLabel="No threats" showChevron onPress={() => onNavigate('settings/generic/Device protection')} highlight={targetNode?.toLowerCase() === 'device protection'} />
+          <SettingsRow 
+            title="Storage" 
+            rightLabel={`${settings.storageUsedGB.toFixed(1)} GB / ${settings.storageTotalGB} GB`} 
+            showChevron 
+            onPress={() => onNavigate('settings/storage')} 
+            divider 
+            highlight={isHighlighted('storage')} 
+          />
+          <SettingsRow 
+            title="Memory" 
+            rightLabel={`${settings.ramPlusGB} GB RAM Plus`} 
+            showChevron 
+            onPress={() => onNavigate('settings/device-care')} 
+            divider 
+            highlight={isHighlighted('memory')} 
+          />
+          <SettingsRow 
+            title="Performance profile" 
+            rightLabel={settings.performanceProfile} 
+            showChevron 
+            onPress={() => onNavigate('settings/device-care')} 
+            highlight={isHighlighted('performance profile')} 
+          />
         </div>
 
       </div>

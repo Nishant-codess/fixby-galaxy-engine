@@ -11,15 +11,19 @@ export function useRipple() {
   return { ripples, createRipple };
 }
 
-export function Ripple({ onClick, style, children, className }: {
+export function Ripple({ onClick, style, children, className, dataTestId, ...rest }: {
   onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
   style?: React.CSSProperties;
   className?: string;
   children: React.ReactNode;
+  dataTestId?: string;
+  [key: string]: any;
 }) {
   const { ripples, createRipple } = useRipple();
+  const testId = dataTestId || rest['data-testid'];
   return (
     <div
+      data-testid={testId}
       className={className}
       onClick={e => { createRipple(e); onClick?.(e); }}
       style={{ position: "relative", overflow: "hidden", cursor: "pointer", ...style }}
