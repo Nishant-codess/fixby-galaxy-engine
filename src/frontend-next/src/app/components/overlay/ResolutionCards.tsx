@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useSettings } from '../../context/SettingsContext';
 import type { GoalData } from '../../../hooks/useFixbyQuery';
-import { ISearchMag, IStar, IClipboard, IChevronRight, IMapPin, IFilm, IZap, IWrench } from '../ui/Icons';
+import { ISearchMag, IStar, IClipboard, IChevronRight, IMapPin, IFilm, IZap, IWrench, IXClose } from '../ui/Icons';
 import { resolveGoalToAction, FixAction } from '../../../settings/actions';
+import { getHonestCapabilityLabel } from '../../../settings/capabilities';
 
 export interface ResolutionCardsProps {
   goals: GoalData[];
@@ -35,7 +36,7 @@ export function ResolutionCards({
       background: 'rgba(0,0,0,0.55)',
     }}>
       {/* Tap backdrop to close */}
-      <div style={{ flex: 1 }} onClick={onClose} />
+      <div data-testid="resolution-cards-backdrop" style={{ flex: 1 }} onClick={onClose} />
 
       {/* Bottom sheet */}
       <div style={{
@@ -69,10 +70,90 @@ export function ResolutionCards({
               &quot;{query}&quot;
             </div>
           </div>
-          <div style={{ fontSize: '13px', color: 'var(--oneui-text-secondary)', fontWeight: 500 }}>
-            {goals.length} solution{goals.length > 1 ? 's' : ''}
+          <div style={{ fontSize: '13px', color: 'var(--oneui-text-secondary)', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span>{goals.length} solution{goals.length > 1 ? 's' : ''}</span>
+            <button
+              data-testid="resolution-cards-close-btn"
+              onClick={onClose}
+              style={{
+                width: '28px',
+                height: '28px',
+                borderRadius: '50%',
+                background: darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)',
+                border: 'none',
+                color: 'var(--oneui-text-primary)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+              }}
+            >
+              <IXClose style={{ width: '14px', height: '14px' }} />
+            </button>
           </div>
         </div>
+
+        {/* Diagnostic Reasoning Section */}
+        {(() => {
+          const primaryGoal = goals[0];
+          const diagnosisText = primaryGoal?.diagnosis;
+          const likelyCauses = primaryGoal?.likelyCauses;
+          if (!diagnosisText && (!likelyCauses || likelyCauses.length === 0)) return null;
+
+          return (
+            <div
+              data-testid="diagnostic-reasoning-panel"
+              style={{
+                margin: '0 16px 14px',
+                padding: '14px 18px',
+                borderRadius: '20px',
+                background: darkMode ? 'rgba(32, 117, 214, 0.12)' : 'rgba(32, 117, 214, 0.06)',
+                border: darkMode ? '1px solid rgba(32, 117, 214, 0.25)' : '1px solid rgba(32, 117, 214, 0.15)',
+                display: 'flex', flexDirection: 'column', gap: '8px'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{
+                  width: '7px', height: '7px', borderRadius: '50%',
+                  background: 'var(--oneui-accent)',
+                  boxShadow: '0 0 8px var(--oneui-accent)'
+                }} />
+                <span style={{
+                  fontSize: '12px', fontWeight: 700,
+                  color: 'var(--oneui-accent)',
+                  letterSpacing: '0.6px', textTransform: 'uppercase'
+                }}>
+                  Diagnostic Reasoning
+                </span>
+              </div>
+
+              {diagnosisText && (
+                <div style={{
+                  fontSize: '13px', color: 'var(--oneui-text-primary)',
+                  lineHeight: 1.45, fontWeight: 500
+                }}>
+                  {diagnosisText}
+                </div>
+              )}
+
+              {likelyCauses && likelyCauses.length > 0 && (
+                <div style={{ marginTop: '4px' }}>
+                  <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--oneui-text-secondary)', marginBottom: '4px' }}>
+                    Likely causes:
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                    {likelyCauses.map((cause, ci) => (
+                      <div key={ci} style={{ display: 'flex', alignItems: 'flex-start', gap: '6px', fontSize: '12px', color: 'var(--oneui-text-secondary)', lineHeight: 1.4 }}>
+                        <span style={{ color: 'var(--oneui-accent)', fontWeight: 800 }}>•</span>
+                        <span>{cause}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })()}
 
         {/* Resolution Cards */}
         <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -82,10 +163,11 @@ export function ResolutionCards({
             const matchPct = Math.round(goal.score * 100);
             const action = resolveGoalToAction(goal);
             const isExecuting = executingActionId === action.id;
+            const capLabel = getHonestCapabilityLabel(goal.capabilityId);
 
             return (
               <div
-                key={action.id || idx}
+                key={`${action.id || 'fix'}-${idx}`}
                 data-testid={`fix-card-${idx}`}
                 style={{
                   background: isPrimary
@@ -172,6 +254,13 @@ export function ResolutionCards({
                       }}>
                         🛡️ {action.risk.toUpperCase()} RISK
                       </span>
+                      <span style={{
+                        padding: '4px 8px', borderRadius: '8px', fontSize: '11px', fontWeight: 600,
+                        background: capLabel.requiresNative ? 'rgba(255, 149, 0, 0.15)' : 'rgba(32, 117, 214, 0.15)',
+                        color: capLabel.requiresNative ? '#ff9500' : 'var(--oneui-accent)',
+                      }}>
+                        📱 {capLabel.badgeText}
+                      </span>
                     </div>
 
                     {/* Why this helps & Estimated impact */}
@@ -182,9 +271,9 @@ export function ResolutionCards({
                       marginBottom: '10px', lineHeight: 1.5,
                       display: 'flex', flexDirection: 'column', gap: '6px'
                     }}>
-                      <div><strong>Why:</strong> {action.reason}</div>
+                      <div><strong>Why:</strong> {goal.whyItHelps || action.reason}</div>
                       <div style={{ color: 'var(--oneui-success)', fontWeight: 500 }}>
-                        <strong>Impact:</strong> {action.estimatedImpact}
+                        <strong>Impact:</strong> {goal.expectedImpact || action.estimatedImpact}
                       </div>
                     </div>
 

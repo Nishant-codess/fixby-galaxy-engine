@@ -7,6 +7,8 @@
 import { Screen } from '../hooks/usePhoneNavigation';
 import { DeviceSettingKey, SETTING_DEFINITIONS } from './definitions';
 import type { GoalData } from '../hooks/useFixbyQuery';
+import { CAPABILITY_MATRIX } from './capabilities';
+import { TROUBLESHOOTING_CATALOG } from './catalog';
 
 export type ActionType =
   | 'TOGGLE_ON'
@@ -219,6 +221,19 @@ export function resolveGoalToAction(goal: GoalData): FixAction {
 
   const rawSteps = goal.actions?.[0]?.stepGroups?.[0]?.steps || [];
   const actionName = goal.actions?.[0]?.actionName || goal.title;
+
+  // 0. Catalog Exact Fix Resolution
+  for (const plan of TROUBLESHOOTING_CATALOG) {
+    for (const fix of plan.fixes) {
+      if (fix.action && (
+        fix.title.toLowerCase() === titleLower ||
+        fix.id.toLowerCase() === titleLower ||
+        (actionName && fix.title.toLowerCase() === actionName.toLowerCase())
+      )) {
+        return fix.action;
+      }
+    }
+  }
 
   // 1. Power Saving
   if (titleLower.includes('power saving') || descLower.includes('power saving') || pathStr.toLowerCase().includes('power_saving')) {
@@ -468,7 +483,323 @@ export function resolveGoalToAction(goal: GoalData): FixAction {
     };
   }
 
-  // 10. General Destination Fallback
+  // 10. Wi-Fi Toggle / Cycle
+  if (titleLower.includes('cycle wi-fi') || titleLower.includes('restart wi-fi') || titleLower.includes('turn on wi-fi')) {
+    return {
+      id: 'fix-toggle-wifi-radio',
+      title: 'Cycle Wi-Fi Radio',
+      type: 'TOGGLE_ON',
+      settingKey: 'wifi',
+      targetValue: true,
+      destination: 'settings/connections',
+      destinationPath: ['Settings', 'Connections', 'Wi-Fi'],
+      highlightNode: 'Wi-Fi',
+      requiresConfirmation: false,
+      canAutoApply: true,
+      risk: 'low',
+      estimatedImpact: 'Re-establishes router handshake',
+      reason: 'Restarts the local 802.11 receiver to clear stale gateway socket state.',
+      steps: rawSteps.length > 0 ? rawSteps : ['Open Settings', 'Tap Connections', 'Toggle Wi-Fi off and back on'],
+      demoSequence: [
+        { type: 'NAVIGATE', screen: 'settings', durationMs: 400 },
+        { type: 'NAVIGATE', screen: 'settings/connections', durationMs: 600 },
+        { type: 'TOGGLE', target: 'wifi', value: false, durationMs: 400 },
+        { type: 'WAIT', durationMs: 300 },
+        { type: 'TOGGLE', target: 'wifi', value: true, durationMs: 500 },
+        { type: 'COMPLETE', message: 'Wi-Fi radio cycled and reconnected' },
+      ],
+    };
+  }
+
+  // 11. Bluetooth Cycle
+  if (titleLower.includes('bluetooth')) {
+    return {
+      id: 'fix-cycle-bluetooth',
+      title: 'Cycle Bluetooth Radio',
+      type: 'TOGGLE_ON',
+      settingKey: 'bluetooth',
+      targetValue: true,
+      destination: 'settings/connections',
+      destinationPath: ['Settings', 'Connections', 'Bluetooth'],
+      highlightNode: 'Bluetooth',
+      requiresConfirmation: false,
+      canAutoApply: true,
+      risk: 'low',
+      estimatedImpact: 'Restarts Bluetooth subsystem',
+      reason: 'Turns Bluetooth off and on to restart device discovery.',
+      steps: rawSteps.length > 0 ? rawSteps : ['Open Settings', 'Tap Connections', 'Toggle Bluetooth off and back on'],
+      demoSequence: [
+        { type: 'NAVIGATE', screen: 'settings', durationMs: 400 },
+        { type: 'NAVIGATE', screen: 'settings/connections', durationMs: 600 },
+        { type: 'TOGGLE', target: 'bluetooth', value: false, durationMs: 400 },
+        { type: 'WAIT', durationMs: 300 },
+        { type: 'TOGGLE', target: 'bluetooth', value: true, durationMs: 500 },
+        { type: 'COMPLETE', message: 'Bluetooth radio cycled' },
+      ],
+    };
+  }
+
+  // 12. Mobile Data
+  if (titleLower.includes('mobile data') || descLower.includes('cellular data')) {
+    return {
+      id: 'fix-toggle-mobile-data',
+      title: 'Turn on Mobile Data',
+      type: 'TOGGLE_ON',
+      settingKey: 'mobileData',
+      targetValue: true,
+      destination: 'settings/connections',
+      destinationPath: ['Settings', 'Connections', 'Data usage', 'Mobile data'],
+      highlightNode: 'Mobile data',
+      requiresConfirmation: false,
+      canAutoApply: true,
+      risk: 'low',
+      estimatedImpact: 'Restores 5G/LTE internet access',
+      reason: 'Ensures cellular data toggle is active.',
+      steps: rawSteps.length > 0 ? rawSteps : ['Open Settings', 'Tap Connections', 'Tap Data usage', 'Turn on Mobile data'],
+      demoSequence: [
+        { type: 'NAVIGATE', screen: 'settings', durationMs: 400 },
+        { type: 'NAVIGATE', screen: 'settings/connections', durationMs: 600 },
+        { type: 'HIGHLIGHT', target: 'Mobile data', durationMs: 600 },
+        { type: 'TOGGLE', target: 'mobileData', value: true, durationMs: 500 },
+        { type: 'COMPLETE', message: 'Mobile data enabled' },
+      ],
+    };
+  }
+
+  // 13. Adaptive Brightness
+  if (titleLower.includes('adaptive brightness') || titleLower.includes('auto brightness') || descLower.includes('auto brightness')) {
+    return {
+      id: 'fix-adaptive-brightness',
+      title: 'Enable Adaptive Brightness',
+      type: 'TOGGLE_ON',
+      settingKey: 'autoBrightness',
+      targetValue: true,
+      destination: 'settings/display',
+      destinationPath: ['Settings', 'Display', 'Adaptive brightness'],
+      highlightNode: 'Adaptive brightness',
+      requiresConfirmation: false,
+      canAutoApply: true,
+      risk: 'low',
+      estimatedImpact: 'Optimal lumen output anywhere',
+      reason: 'Allows the ambient sensor to calibrate screen brightness dynamically.',
+      steps: rawSteps.length > 0 ? rawSteps : ['Open Settings', 'Tap Display', 'Toggle Adaptive brightness to ON'],
+      demoSequence: [
+        { type: 'NAVIGATE', screen: 'settings', durationMs: 400 },
+        { type: 'NAVIGATE', screen: 'settings/display', durationMs: 600 },
+        { type: 'HIGHLIGHT', target: 'Adaptive brightness', durationMs: 700 },
+        { type: 'TOGGLE', target: 'autoBrightness', value: true, durationMs: 500 },
+        { type: 'COMPLETE', message: 'Adaptive brightness enabled' },
+      ],
+    };
+  }
+
+  // 14. Eye Comfort Shield
+  if (titleLower.includes('eye comfort') || descLower.includes('blue light') || descLower.includes('eye strain')) {
+    return {
+      id: 'fix-eye-comfort-shield',
+      title: 'Turn on Eye Comfort Shield',
+      type: 'TOGGLE_ON',
+      settingKey: 'eyeComfortShield',
+      targetValue: true,
+      destination: 'settings/display',
+      destinationPath: ['Settings', 'Display', 'Eye comfort shield'],
+      highlightNode: 'Eye comfort shield',
+      requiresConfirmation: false,
+      canAutoApply: true,
+      risk: 'low',
+      estimatedImpact: 'Reduces blue light strain by 70%',
+      reason: 'Shifts display color balance toward warm spectrum.',
+      steps: rawSteps.length > 0 ? rawSteps : ['Open Settings', 'Tap Display', 'Toggle Eye comfort shield to ON'],
+      demoSequence: [
+        { type: 'NAVIGATE', screen: 'settings', durationMs: 400 },
+        { type: 'NAVIGATE', screen: 'settings/display', durationMs: 600 },
+        { type: 'HIGHLIGHT', target: 'Eye comfort shield', durationMs: 700 },
+        { type: 'TOGGLE', target: 'eyeComfortShield', value: true, durationMs: 500 },
+        { type: 'COMPLETE', message: 'Eye Comfort Shield enabled' },
+      ],
+    };
+  }
+
+  // 15. Accidental Touch Protection
+  if (titleLower.includes('accidental') || descLower.includes('pocket') || titleLower.includes('pocket')) {
+    return {
+      id: 'fix-accidental-touch-protection',
+      title: 'Turn on Accidental Touch Protection',
+      type: 'TOGGLE_ON',
+      settingKey: 'accidentalTouchProtection',
+      targetValue: true,
+      destination: 'settings/display',
+      destinationPath: ['Settings', 'Display', 'Accidental touch protection'],
+      highlightNode: 'Accidental touch protection',
+      requiresConfirmation: false,
+      canAutoApply: true,
+      risk: 'low',
+      estimatedImpact: 'Zero pocket dialing',
+      reason: 'Blocks phantom screen touches when proximity sensor is obscured.',
+      steps: rawSteps.length > 0 ? rawSteps : ['Open Settings', 'Tap Display', 'Toggle Accidental touch protection to ON'],
+      demoSequence: [
+        { type: 'NAVIGATE', screen: 'settings', durationMs: 400 },
+        { type: 'NAVIGATE', screen: 'settings/display', durationMs: 600 },
+        { type: 'HIGHLIGHT', target: 'Accidental touch protection', durationMs: 700 },
+        { type: 'TOGGLE', target: 'accidentalTouchProtection', value: true, durationMs: 500 },
+        { type: 'COMPLETE', message: 'Accidental touch protection enabled' },
+      ],
+    };
+  }
+
+  // 16. Auto Optimization (Device Care)
+  if (titleLower.includes('auto optimization') || descLower.includes('auto restart') || titleLower.includes('optimize')) {
+    return {
+      id: 'fix-device-care-optimize',
+      title: 'Enable Auto Optimization',
+      type: 'TOGGLE_ON',
+      settingKey: 'autoOptimization',
+      targetValue: true,
+      destination: 'settings/device-care',
+      destinationPath: ['Settings', 'Device care', 'Auto optimization'],
+      highlightNode: 'Auto optimization',
+      requiresConfirmation: false,
+      canAutoApply: true,
+      risk: 'low',
+      estimatedImpact: 'Reclaims up to 2.5 GB of active RAM',
+      reason: 'Automatically closes background tasks and optimizes memory when phone is idle.',
+      steps: rawSteps.length > 0 ? rawSteps : ['Open Settings', 'Tap Device care', 'Turn on Auto optimization'],
+      demoSequence: [
+        { type: 'NAVIGATE', screen: 'settings', durationMs: 400 },
+        { type: 'NAVIGATE', screen: 'settings/device-care', durationMs: 600 },
+        { type: 'HIGHLIGHT', target: 'Auto optimization', durationMs: 700 },
+        { type: 'TOGGLE', target: 'autoOptimization', value: true, durationMs: 500 },
+        { type: 'COMPLETE', message: 'Auto optimization enabled' },
+      ],
+    };
+  }
+
+  // 17. WhatsApp / App Notifications
+  if (titleLower.includes('whatsapp notification') || titleLower.includes('enable whatsapp') || descLower.includes('whatsapp notification')) {
+    return {
+      id: 'fix-whatsapp-notification-permission',
+      title: 'Enable WhatsApp Notifications',
+      type: 'TOGGLE_ON',
+      settingKey: 'appNotifications',
+      targetValue: true,
+      destination: 'settings/apps',
+      destinationPath: ['Settings', 'Apps', 'WhatsApp', 'Notifications'],
+      highlightNode: 'Allow notifications',
+      requiresConfirmation: false,
+      canAutoApply: true,
+      risk: 'low',
+      estimatedImpact: 'Immediate delivery of WhatsApp messages',
+      reason: 'Restores push notification permissions for the WhatsApp messaging service.',
+      steps: rawSteps.length > 0 ? rawSteps : ['Open Settings', 'Tap Apps', 'Select WhatsApp', 'Tap Notifications', 'Turn on Allow notifications'],
+      demoSequence: [
+        { type: 'NAVIGATE', screen: 'settings', durationMs: 400 },
+        { type: 'NAVIGATE', screen: 'settings/apps', durationMs: 600 },
+        { type: 'HIGHLIGHT', target: 'WhatsApp', durationMs: 700 },
+        { type: 'TOGGLE', target: 'appNotifications', value: true, durationMs: 500 },
+        { type: 'COMPLETE', message: 'WhatsApp notifications enabled' },
+      ],
+    };
+  }
+
+  // 18. Do Not Disturb
+  if (titleLower.includes('do not disturb') || titleLower.includes('dnd') || descLower.includes('do not disturb')) {
+    return {
+      id: 'fix-disable-dnd',
+      title: 'Turn off Do Not Disturb',
+      type: 'TOGGLE_OFF',
+      settingKey: 'doNotDisturb',
+      targetValue: false,
+      destination: 'settings/generic/Notifications',
+      destinationPath: ['Settings', 'Notifications', 'Do not disturb'],
+      highlightNode: 'Do not disturb',
+      requiresConfirmation: false,
+      canAutoApply: true,
+      risk: 'low',
+      estimatedImpact: 'Unmutes all notification pop-ups',
+      reason: 'Turns off Do Not Disturb to let alerts through.',
+      steps: rawSteps.length > 0 ? rawSteps : ['Open Settings', 'Tap Notifications', 'Toggle Do not disturb to OFF'],
+      demoSequence: [
+        { type: 'NAVIGATE', screen: 'settings', durationMs: 400 },
+        { type: 'NAVIGATE', screen: 'settings/generic/Notifications', durationMs: 600 },
+        { type: 'HIGHLIGHT', target: 'Do not disturb', durationMs: 700 },
+        { type: 'TOGGLE', target: 'doNotDisturb', value: false, durationMs: 500 },
+        { type: 'COMPLETE', message: 'Do Not Disturb turned off' },
+      ],
+    };
+  }
+
+  // 19. Reset Network Settings (Requires confirmation)
+  if (titleLower.includes('reset network') || descLower.includes('reset network')) {
+    return {
+      id: 'fix-reset-network-settings',
+      title: 'Reset Network Settings',
+      type: 'NAVIGATE',
+      destination: 'settings/general',
+      destinationPath: ['Settings', 'General management', 'Reset', 'Reset network settings'],
+      highlightNode: 'Reset network settings',
+      requiresConfirmation: true,
+      confirmationTitle: 'Reset Network Settings?',
+      confirmationMessage: 'This will reset all network settings, including Wi-Fi, Mobile data, and Bluetooth. You will need to reconnect to Wi-Fi networks.',
+      canAutoApply: false,
+      risk: 'medium',
+      estimatedImpact: 'Restores factory network drivers',
+      reason: 'Requires native Android integration to purge system Wi-Fi credentials.',
+      steps: rawSteps.length > 0 ? rawSteps : ['Open Settings', 'Tap General management', 'Tap Reset', 'Tap Reset network settings'],
+      demoSequence: [
+        { type: 'NAVIGATE', screen: 'settings', durationMs: 400 },
+        { type: 'NAVIGATE', screen: 'settings/general', durationMs: 600 },
+        { type: 'HIGHLIGHT', target: 'Reset network settings', durationMs: 700 },
+        { type: 'COMPLETE', message: 'Navigated to Network Reset' },
+      ],
+    };
+  }
+
+  // 20. App Launching Actions
+  if (titleLower.includes('youtube') || descLower.includes('youtube')) {
+    return {
+      id: 'fix-launch-youtube',
+      title: 'Launch YouTube',
+      type: 'OPEN_APP',
+      appPackage: 'com.google.android.youtube',
+      appName: 'YouTube',
+      destination: 'home',
+      destinationPath: ['Home', 'YouTube'],
+      requiresConfirmation: false,
+      canAutoApply: true,
+      risk: 'low',
+      estimatedImpact: 'Direct app or web fallback launch',
+      reason: 'Opens YouTube to resume video streaming.',
+      steps: ['Open YouTube'],
+      demoSequence: [
+        { type: 'NAVIGATE', screen: 'home', durationMs: 500 },
+        { type: 'COMPLETE', message: 'YouTube launched via web fallback' },
+      ],
+    };
+  }
+
+  if (titleLower.includes('google maps') || titleLower.includes('maps') || descLower.includes('maps')) {
+    return {
+      id: 'fix-launch-google-maps',
+      title: 'Launch Google Maps',
+      type: 'OPEN_APP',
+      appPackage: 'com.google.android.apps.maps',
+      appName: 'Google Maps',
+      destination: 'home',
+      destinationPath: ['Home', 'Google Maps'],
+      requiresConfirmation: false,
+      canAutoApply: true,
+      risk: 'low',
+      estimatedImpact: 'Instant GPS map navigation',
+      reason: 'Launches Google Maps navigation service.',
+      steps: ['Open Google Maps'],
+      demoSequence: [
+        { type: 'NAVIGATE', screen: 'home', durationMs: 500 },
+        { type: 'COMPLETE', message: 'Google Maps launched via web fallback' },
+      ],
+    };
+  }
+
+  // 21. General Destination Fallback
   let matchedScreen: Screen = 'settings';
   if (pathStr.toLowerCase().includes('battery')) matchedScreen = 'settings/battery';
   else if (pathStr.toLowerCase().includes('display')) matchedScreen = 'settings/display';

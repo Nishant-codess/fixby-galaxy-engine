@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { findTroubleshootingPlan } from '../settings/catalog';
 
 export interface PipelineStage {
   id: string;
@@ -29,6 +30,13 @@ export interface GoalData {
   resolution_modes: string[];
   navigation_path: string[] | null;
   actions: GoalAction[];
+  diagnosis?: string;
+  likelyCauses?: string[];
+  whyItHelps?: string;
+  expectedImpact?: string;
+  risk?: 'low' | 'medium' | 'high';
+  samsungPath?: string[];
+  capabilityId?: string;
 }
 
 export const PIPELINE_STAGES: PipelineStage[] = [
@@ -62,6 +70,42 @@ export function useFixbyQuery() {
     let apiTelemetry: any = null;
     let dynamicPath: string[] = [];
     let goals: GoalData[] = [];
+
+    // Pre-resolve catalog plan if available
+    const matchedPlan = findTroubleshootingPlan(query);
+    const catalogGoals: GoalData[] = matchedPlan
+      ? matchedPlan.fixes.map((fix, idx) => ({
+          goal: fix.title,
+          title: fix.title,
+          score: Math.max(0.98 - idx * 0.05, 0.75),
+          resolution_modes: [fix.canAutoApply ? 'auto' : 'manual', fix.canDemo ? 'demo' : 'manual'],
+          navigation_path: fix.samsungPath,
+          diagnosis: matchedPlan.diagnosis,
+          likelyCauses: matchedPlan.likelyCauses,
+          whyItHelps: fix.whyItHelps,
+          expectedImpact: fix.expectedImpact,
+          risk: fix.risk,
+          samsungPath: fix.samsungPath,
+          capabilityId: fix.capabilityId,
+          actions: [{
+            actionName: fix.title,
+            description: fix.description,
+            category: matchedPlan.category.toLowerCase(),
+            stepGroups: [{
+              steps: fix.action?.steps || [
+                'Open Settings',
+                ...fix.samsungPath.slice(1).map(p => `Tap ${p}`),
+                `Select ${fix.title}`
+              ],
+              actionableDeeplink: {
+                deeplink: `bixby://${fix.samsungPath.map(s => s.toLowerCase().replace(/\s+/g, '_')).join('/')}`,
+                description: fix.title,
+                classes: { path: fix.samsungPath.join(' > ') }
+              }
+            }]
+          }]
+        }))
+      : [];
 
     try {
       const backendUrl = process.env.NEXT_PUBLIC_API_URL || 
@@ -102,35 +146,61 @@ export function useFixbyQuery() {
                   ...ctx,
                   title: actName,
                   actions: [act],
+                  diagnosis: matchedPlan?.diagnosis || ctx.diagnosis,
+                  likelyCauses: matchedPlan?.likelyCauses || ctx.likelyCauses,
                 });
               }
             }
           } else {
-            extractedGoals.push(ctx);
+            extractedGoals.push({
+              ...ctx,
+              diagnosis: matchedPlan?.diagnosis || ctx.diagnosis,
+              likelyCauses: matchedPlan?.likelyCauses || ctx.likelyCauses,
+            });
           }
         }
 
-        // Prioritize direct toggle/setting fixes (such as Power saving)
-        extractedGoals.sort((a, b) => {
-          const aTitle = a.title.toLowerCase();
-          const bTitle = b.title.toLowerCase();
-          const aIsDirectFix = aTitle.includes('power saving') || aTitle.includes('protect');
-          const bIsDirectFix = bTitle.includes('power saving') || bTitle.includes('protect');
-          if (aIsDirectFix && !bIsDirectFix) return -1;
-          if (!aIsDirectFix && bIsDirectFix) return 1;
-          return 0;
-        });
-
-        goals = extractedGoals;
+        // If we have verified catalog fixes, prioritize them at the front
+        if (catalogGoals.length > 0) {
+          const seen = new Set(catalogGoals.map(g => g.title.toLowerCase()));
+          for (const eg of extractedGoals) {
+            if (!seen.has(eg.title.toLowerCase())) {
+              seen.add(eg.title.toLowerCase());
+              catalogGoals.push(eg);
+            }
+          }
+          goals = catalogGoals;
+        } else {
+          // Prioritize direct toggle/setting fixes (such as Power saving)
+          extractedGoals.sort((a, b) => {
+            const aTitle = a.title.toLowerCase();
+            const bTitle = b.title.toLowerCase();
+            const aIsDirectFix = aTitle.includes('power saving') || aTitle.includes('protect');
+            const bIsDirectFix = bTitle.includes('power saving') || bTitle.includes('protect');
+            if (aIsDirectFix && !bIsDirectFix) return -1;
+            if (!aIsDirectFix && bIsDirectFix) return 1;
+            return 0;
+          });
+          goals = extractedGoals;
+        }
 
         // Extract primary path from first goal for backward compat
         const pathStr = goals[0]?.actions?.[0]?.stepGroups?.[0]?.actionableDeeplink?.classes?.path;
         if (pathStr) {
           dynamicPath = (pathStr as string).split(">").map((s: string) => s.trim()).filter(Boolean);
+        } else if (goals[0]?.navigation_path) {
+          dynamicPath = goals[0].navigation_path;
         }
+      } else if (catalogGoals.length > 0) {
+        goals = catalogGoals;
+        dynamicPath = goals[0]?.navigation_path || [];
       }
     } catch (e) {
       console.warn("Fixby API unavailable, using fallback.", e);
+      if (catalogGoals.length > 0) {
+        goals = catalogGoals;
+        dynamicPath = goals[0]?.navigation_path || [];
+      }
     }
 
     sc[1].status = "done"; sc[1].ms = 42; 

@@ -90,6 +90,18 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const executeAction = useCallback(async (action: FixAction): Promise<ActionResult> => {
     const capability = checkCapability(action);
 
+    if (!capability.supported) {
+      const res: ActionResult = {
+        success: false,
+        actionId: action.id,
+        message: capability.reason || `${action.title} requires native Samsung Android One UI integration.`,
+        mode: "SIMULATED",
+        requiresNativeAndroid: true,
+      };
+      setLastActionResult(res);
+      return res;
+    }
+
     // 1. App Launching Action
     if (action.type === "OPEN_APP") {
       if (!action.appPackage) {
@@ -135,7 +147,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         actionId: action.id,
         settingKey: key,
         newValue,
-        message: `${settingTitle} ${typeof newValue === "boolean" ? (newValue ? "turned ON" : "turned OFF") : `set to ${newValue}`}`,
+        message: `${settingTitle} ${typeof newValue === "boolean" ? (newValue ? "enabled" : "disabled") : `set to ${newValue}`} in the Fixby simulator`,
         mode: capability.mode === "NATIVE" ? "NATIVE" : "SIMULATED",
       };
       setLastActionResult(res);

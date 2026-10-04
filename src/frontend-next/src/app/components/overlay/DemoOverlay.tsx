@@ -13,8 +13,10 @@ export function DemoOverlay({ title, pathSegments, currentStep, totalSteps, onSk
   const progress = totalSteps > 0 ? ((currentStep + 1) / totalSteps) * 100 : 0;
 
   return (
-    <div style={{
-      position: 'absolute', top: '28px', left: '12px', right: '12px', zIndex: 250,
+    <div
+      data-testid="demo-overlay"
+      style={{
+        position: 'absolute', top: '28px', left: '12px', right: '12px', zIndex: 250,
       background: 'rgba(0, 0, 0, 0.85)',
       backdropFilter: 'blur(20px)',
       borderRadius: '20px',
@@ -72,6 +74,7 @@ export function DemoOverlay({ title, pathSegments, currentStep, totalSteps, onSk
 
       {/* Skip button */}
       <div
+        data-testid="demo-skip-btn"
         onClick={onSkip}
         style={{
           textAlign: 'center', fontSize: '12px', fontWeight: 600,

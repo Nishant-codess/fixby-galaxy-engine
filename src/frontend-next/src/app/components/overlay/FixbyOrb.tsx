@@ -30,12 +30,13 @@ export interface FixbyOrbProps {
   onOpenHistory?: () => void;
   restoredGoals?: GoalData[] | null;
   restoredQuery?: string;
+  onClearRestored?: () => void;
 }
 
 export function FixbyOrb({
   isOpen, onToggle, onResolved, initialQuery, onClearInitialQuery,
   onWatchDemo, onPerformAuto, onPerformManual, onOpenHistory,
-  restoredGoals, restoredQuery
+  restoredGoals, restoredQuery, onClearRestored
 }: FixbyOrbProps) {
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
@@ -95,6 +96,7 @@ export function FixbyOrb({
 
   const handleSubmit = async (q: string = query) => {
     if (!q) return;
+    onClearRestored?.();
     if (q !== query) setQuery(q);
     setShowResults(false);
     setResolvedQuery(q);
@@ -126,6 +128,7 @@ export function FixbyOrb({
     setQuery("");
     setShowResults(false);
     setResolvedGoals([]);
+    onClearRestored?.();
   };
 
   const handleGoalAction = (action: FixAction, mode: 'demo' | 'auto' | 'manual') => {

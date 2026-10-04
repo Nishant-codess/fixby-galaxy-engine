@@ -134,6 +134,11 @@ export default function PhoneSimulator() {
     setOrbOpen(true);
   }, [setIsDrawerOpen]);
 
+  const handleClearRestored = useCallback(() => {
+    setRestoredGoals(null);
+    setRestoredQuery("");
+  }, []);
+
   const handleFixbySearch = (q: string) => {
     setSearchQuery(q);
     setOrbOpen(true);
@@ -435,6 +440,7 @@ export default function PhoneSimulator() {
             onOpenHistory={() => setIsDrawerOpen(true)}
             restoredGoals={restoredGoals}
             restoredQuery={restoredQuery}
+            onClearRestored={handleClearRestored}
           />
         )}
 

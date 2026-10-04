@@ -442,6 +442,149 @@ async function runE2ESuite() {
     await modalCloseBtn.click();
     await page.waitForTimeout(400);
 
+    const ensureFixbyOrbOpen = async () => {
+      // 1. If history drawer is open, close it
+      const historyCloseBtn = page.locator('[data-testid="history-close-btn"]');
+      if (await historyCloseBtn.isVisible().catch(() => false)) {
+        await historyCloseBtn.click();
+        await page.waitForTimeout(350);
+      }
+
+      // 2. If device modal is open, close it
+      const devCloseBtn = page.locator('[data-testid="device-modal-close-btn"]');
+      if (await devCloseBtn.isVisible().catch(() => false)) {
+        await devCloseBtn.click();
+        await page.waitForTimeout(350);
+      }
+
+      // 3. If resolution cards close button is visible, close it
+      const resCloseBtn = page.locator('[data-testid="resolution-cards-close-btn"]');
+      if (await resCloseBtn.isVisible().catch(() => false)) {
+        await resCloseBtn.click();
+        await page.waitForTimeout(350);
+      }
+
+      // 4. If query input is already visible and ready, we are done
+      const queryInput = page.locator('[data-testid="fixby-query-input"]');
+      if (await queryInput.isVisible().catch(() => false)) return;
+
+      // 5. If floating orb trigger is visible, click it
+      const orbTrigger = page.locator('[data-testid="fixby-orb-trigger"]');
+      if (await orbTrigger.isVisible().catch(() => false)) {
+        await orbTrigger.click({ force: true });
+        await page.waitForTimeout(600);
+      } else {
+        const homeBtn = page.locator('[data-testid="navbar-home"]');
+        if (await homeBtn.isVisible().catch(() => false)) {
+          await homeBtn.click();
+          await page.waitForTimeout(500);
+          await orbTrigger.waitFor({ state: 'visible', timeout: 5000 });
+          await orbTrigger.click({ force: true });
+          await page.waitForTimeout(600);
+        }
+      }
+    };
+
+    // ==========================================
+    // TEST M: Phase 3 — Phone Overheating & Diagnostic Reasoning
+    // ==========================================
+    console.log('▶ Running Test M: Phase 3 — Phone Overheating & Diagnostic Reasoning');
+    await ensureFixbyOrbOpen();
+
+    const queryInputM = page.locator('[data-testid="fixby-query-input"]');
+    await queryInputM.waitFor({ state: 'visible', timeout: 5000 });
+    await queryInputM.fill('Phone is overheating and getting hot');
+    await queryInputM.press('Enter');
+
+    // Wait for resolution cards & diagnostic reasoning panel
+    const diagPanelM = page.locator('[data-testid="diagnostic-reasoning-panel"]');
+    await diagPanelM.waitFor({ state: 'visible', timeout: 15000 });
+    const isDiagVisible = await diagPanelM.isVisible();
+    const diagText = (await diagPanelM.textContent()) || '';
+    const hasCauses = diagText.includes('Likely causes') || diagText.includes('Diagnostic Reasoning');
+
+    // Check multiple fixes returned
+    const cardM0 = page.locator('[data-testid="fix-card-0"]');
+    const cardM1 = page.locator('[data-testid="fix-card-1"]');
+    const hasMultipleFixes = (await cardM0.isVisible()) && (await cardM1.isVisible());
+
+    const shot14 = path.join(SCREENSHOT_DIR, '14-phase3-overheating-diagnosis.png');
+    await page.screenshot({ path: shot14 });
+    record('Phone Overheating Diagnostic Reasoning', isDiagVisible && hasCauses && hasMultipleFixes, '14-phase3-overheating-diagnosis.png', 'Diagnostic reasoning panel displayed technical explanation and likely causes with multiple ranked fixes');
+
+    // Apply first fix (Light Performance Profile)
+    const autoFixBtnM0 = page.locator('[data-testid="auto-fix-btn-0"]');
+    await autoFixBtnM0.click();
+    await page.waitForTimeout(1200);
+
+    if (await navHome.isVisible().catch(() => false)) {
+      await navHome.click();
+      await page.waitForTimeout(500);
+    }
+
+    // ==========================================
+    // TEST N: Phase 3 — WhatsApp Notifications & Deep Fix Coverage
+    // ==========================================
+    console.log('▶ Running Test N: Phase 3 — WhatsApp Notifications & Deep Fix Coverage');
+    await ensureFixbyOrbOpen();
+
+    const queryInputN = page.locator('[data-testid="fixby-query-input"]');
+    await queryInputN.waitFor({ state: 'visible', timeout: 5000 });
+    await queryInputN.fill('WhatsApp notifications not working');
+    await queryInputN.press('Enter');
+
+    const cardN0 = page.locator('[data-testid="fix-card-0"]');
+    await cardN0.waitFor({ state: 'visible', timeout: 15000 });
+    const cardNTitle = (await cardN0.textContent()) || '';
+    const isWhatsAppFix = cardNTitle.includes('WhatsApp');
+
+    const shot15 = path.join(SCREENSHOT_DIR, '15-phase3-whatsapp-notifications.png');
+    await page.screenshot({ path: shot15 });
+    record('WhatsApp Notification Troubleshooting', isWhatsAppFix, '15-phase3-whatsapp-notifications.png', 'App-specific WhatsApp troubleshooting identified notification channel permissions and background limits');
+
+    // Apply WhatsApp notification fix
+    const autoFixBtnN0 = page.locator('[data-testid="auto-fix-btn-0"]');
+    await autoFixBtnN0.click();
+    await page.waitForTimeout(1200);
+
+    if (await navHome.isVisible().catch(() => false)) {
+      await navHome.click();
+      await page.waitForTimeout(500);
+    }
+
+    // ==========================================
+    // TEST O: Phase 3 — Wi-Fi Disconnecting & Demo Flow
+    // ==========================================
+    console.log('▶ Running Test O: Phase 3 — Wi-Fi Disconnecting & Demo Flow');
+    await ensureFixbyOrbOpen();
+
+    const queryInputO = page.locator('[data-testid="fixby-query-input"]');
+    await queryInputO.waitFor({ state: 'visible', timeout: 5000 });
+    await queryInputO.fill('Wi-Fi keeps dropping');
+    await queryInputO.press('Enter');
+
+    const cardO0 = page.locator('[data-testid="fix-card-0"]');
+    await cardO0.waitFor({ state: 'visible', timeout: 15000 });
+
+    const demoBtnO0 = page.locator('[data-testid="demo-btn-0"]');
+    await demoBtnO0.click();
+    await page.waitForTimeout(1200);
+
+    // Verify demo overlay is visible
+    const demoOverlay = page.locator('[data-testid="demo-overlay"]');
+    const isDemoActive = await demoOverlay.isVisible({ timeout: 5000 }).catch(() => false);
+
+    const shot16 = path.join(SCREENSHOT_DIR, '16-phase3-wifi-demo.png');
+    await page.screenshot({ path: shot16 });
+    record('Intelligent Wi-Fi Realistic Demo', isDemoActive, '16-phase3-wifi-demo.png', 'Animated guided demo walkthrough navigated to Connections > Intelligent Wi-Fi');
+
+    // Skip demo to complete
+    const skipBtn = page.locator('[data-testid="demo-skip-btn"]');
+    if (await skipBtn.isVisible({ timeout: 1000 }).catch(() => false)) {
+      await skipBtn.click();
+      await page.waitForTimeout(600);
+    }
+
   } catch (error: any) {
     console.error('Fatal test execution error:', error);
     try {
