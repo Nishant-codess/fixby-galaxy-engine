@@ -159,7 +159,7 @@ async function runE2ESuite() {
 
     // Type query and submit
     const queryInput = page.locator('[data-testid="fixby-query-input"]');
-    await queryInput.waitFor({ state: 'visible', timeout: 5000 });
+    await queryInput.waitFor({ state: 'visible', timeout: STEP_TIMEOUT });
 
     const suggestionScroller = page.locator('[data-testid="suggestion-scroller"]');
     const suggestionCount = await suggestionScroller.locator('button').count();
@@ -223,14 +223,14 @@ async function runE2ESuite() {
     // ==========================================
     console.log('▶ Running Watch Demo read-only check');
     const settingsBeforeDemo = await page.evaluate(() => localStorage.getItem('fixby_device_settings_v1'));
+    const sawVisualOn = page.waitForFunction(() => {
+      const el = document.querySelector('[data-testid="switch-power-saving"]');
+      return el?.getAttribute('data-checked') === 'true';
+    }, undefined, { timeout: STEP_TIMEOUT, polling: 100 });
     await demoBtn0.click();
 
     const demoSwitch = page.locator('[data-testid="switch-power-saving"]');
-    await demoSwitch.waitFor({ state: 'visible', timeout: STEP_TIMEOUT });
-    await page.waitForFunction(() => {
-      const el = document.querySelector('[data-testid="switch-power-saving"]');
-      return el?.getAttribute('data-checked') === 'true';
-    }, { timeout: STEP_TIMEOUT });
+    await sawVisualOn;
     const visualOnDuringDemo = (await demoSwitch.getAttribute('data-checked')) === 'true';
 
     await page.locator('[data-testid="demo-overlay"]').waitFor({ state: 'hidden', timeout: STEP_TIMEOUT }).catch(() => {});
