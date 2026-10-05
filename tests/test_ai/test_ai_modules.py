@@ -119,6 +119,8 @@ class TestExtractor:
 
 class TestPipelineIntegration:
     def test_full_pipeline_run(self):
+        from src.core.cache import cache
+        cache.clear()
         response = run_troubleshoot_pipeline("phone battery drains too fast")
         assert response.query == "phone battery drains too fast"
         assert response.meta is not None

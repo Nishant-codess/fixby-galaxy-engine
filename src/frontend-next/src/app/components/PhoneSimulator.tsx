@@ -74,22 +74,22 @@ const SETTINGS_SCREEN_MAP: { keywords: string[]; screen: Screen }[] = [
 ];
 
 function resolveSettingsScreen(path: string[]): Screen | null {
-  const combined = path.join(' ').toLowerCase();
-  
-  let bestMatch: Screen | null = null;
-  let maxKeywordLen = 0;
-
-  for (const entry of SETTINGS_SCREEN_MAP) {
-    for (const kw of entry.keywords) {
-      if (combined.includes(kw)) {
-        if (kw.length > maxKeywordLen) {
+  // Walk from the leaf upward so "Storage" beats a parent "Device care".
+  for (let i = path.length - 1; i >= 0; i--) {
+    const segment = path[i].toLowerCase();
+    let bestMatch: Screen | null = null;
+    let maxKeywordLen = 0;
+    for (const entry of SETTINGS_SCREEN_MAP) {
+      for (const kw of entry.keywords) {
+        if (segment.includes(kw) && kw.length > maxKeywordLen) {
           maxKeywordLen = kw.length;
           bestMatch = entry.screen;
         }
       }
     }
+    if (bestMatch) return bestMatch;
   }
-  return bestMatch;
+  return null;
 }
 
 function resolveScreenSequence(path: string[]): Screen[] {
@@ -183,6 +183,9 @@ export default function PhoneSimulator({ onExitConsole }: { onExitConsole?: () =
 
     // 3. Highlight target setting
     setTargetPath(action.destinationPath);
+    window.setTimeout(() => {
+      setTargetPath(current => (current === action.destinationPath ? [] : current));
+    }, 6000);
 
     // 4. Result message
     setSuccessMessage(result.message);
@@ -274,12 +277,15 @@ export default function PhoneSimulator({ onExitConsole }: { onExitConsole?: () =
     setActiveMode('idle');
     setActiveAction(null);
     setActivePath([]);
+    setTargetPath([]);
   }, []);
 
   const handleSkipDemo = useCallback(() => {
     cancelDemo();
     clearDemoPreview();
     setActiveMode('idle');
+    setActivePath([]);
+    setTargetPath([]);
     
     // Jump to final screen
     if (activeAction) {
@@ -301,6 +307,8 @@ export default function PhoneSimulator({ onExitConsole }: { onExitConsole?: () =
     if (activeMode === 'demo' && !isAnimating && currentStep === -1 && activeAction) {
       clearDemoPreview();
       setActiveMode('idle');
+      setActivePath([]);
+      setTargetPath([]);
       setSuccessMessage(`Demo complete — ${activeAction.title}`);
       setShowSuccessToast(true);
       setActiveAction(null);

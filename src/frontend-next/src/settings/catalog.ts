@@ -1465,40 +1465,36 @@ export const TROUBLESHOOTING_CATALOG: TroubleshootingPlan[] = [
   },
 ];
 
+function containsTerm(haystack: string, term: string): boolean {
+  const escaped = term.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp(`(?:^|[^a-z0-9])${escaped}(?:$|[^a-z0-9])`, 'i').test(haystack);
+}
+
 /**
- * Deterministically finds the best matching TroubleshootingPlan for a user query or goal title
+ * Offline fallback matcher. Whole words only, and longer phrases outrank short ones.
+ * The live answer comes from the backend; this runs when that request fails.
  */
 export function findTroubleshootingPlan(query: string, goalTitle?: string): TroubleshootingPlan | null {
   const combined = `${query} ${goalTitle || ''}`.toLowerCase();
 
-  // Priority exact matching based on catalog keywords
   let bestPlan: TroubleshootingPlan | null = null;
   let highestScore = 0;
 
   for (const plan of TROUBLESHOOTING_CATALOG) {
     let score = 0;
 
-    // Check problemId direct mention
-    if (combined.includes(plan.problemId.replace(/-/g, ' '))) {
+    if (containsTerm(combined, plan.problemId.replace(/-/g, ' '))) {
       score += 10;
     }
 
-    // Check title keywords
-    const titleWords = plan.title.toLowerCase().split(/\s+/);
-    for (const tw of titleWords) {
-      if (tw.length > 3 && combined.includes(tw)) {
-        score += 2;
-      }
-    }
-
-    // Check catalog keywords
     for (const kw of plan.keywords) {
-      if (combined.includes(kw.toLowerCase())) {
-        score += 5;
+      const term = kw.toLowerCase();
+      if (containsTerm(combined, term)) {
+        score += term.length <= 4 ? 2 : 5 + Math.min(term.length, 24);
       }
     }
 
-    if (score > highestScore && score >= 4) {
+    if (score > highestScore && score >= 8) {
       highestScore = score;
       bestPlan = plan;
     }

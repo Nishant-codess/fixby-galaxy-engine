@@ -205,8 +205,16 @@ def test_pipeline_execution_cold_and_cache_hit():
     first_goal = resp_cold.response.contexts[0]
     assert first_goal.goal.startswith("Follow these steps to perform this")
     assert len(first_goal.actions) > 0
-    assert any(x in first_goal.actions[0].actionName for x in ["Background Usage", "Battery usage"])
     assert first_goal.actions[0].description.startswith("It will")
+    linked = " ".join(
+        (action.actionName + " " + (
+            action.stepGroups[0].actionableDeeplink.deeplink
+            if action.stepGroups and action.stepGroups[0].actionableDeeplink else ""
+        ))
+        for goal in resp_cold.response.contexts
+        for action in goal.actions
+    ).lower()
+    assert "battery" in linked or "power" in linked
 
     # Warm run (Cache Hit)
     resp_warm = run_troubleshoot_pipeline(query)

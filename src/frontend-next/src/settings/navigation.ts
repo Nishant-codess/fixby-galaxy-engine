@@ -5,7 +5,7 @@
  */
 
 import { Screen } from '../hooks/usePhoneNavigation';
-import { DeviceSettingKey, SETTING_DEFINITIONS } from './definitions';
+import { DeviceSettingKey } from './definitions';
 
 export interface ResolvedNavigation {
   screen: Screen;
@@ -31,114 +31,76 @@ export function resolveSettingsPath(pathOrDeeplink: string | string[]): Resolved
   const pathStr = pathSegments.join(' > ').toLowerCase();
   const leafNode = pathSegments[pathSegments.length - 1] || 'Settings';
 
-  // 1. Battery & Power
-  if (pathStr.includes('battery usage') || pathStr.includes('deep sleeping') || pathStr.includes('background limits') || pathStr.includes('background usage')) {
-    return {
-      screen: 'settings/battery-usage',
-      targetNode: leafNode,
-      settingKey: pathStr.includes('deep') ? 'deepSleepingAppsCount' : 'batteryOptimized',
-      path: pathSegments,
-    };
-  }
-  if (pathStr.includes('battery') || pathStr.includes('power saving') || pathStr.includes('protect battery')) {
-    return {
-      screen: 'settings/battery',
-      targetNode: leafNode,
-      settingKey: pathStr.includes('power saving') ? 'powerSaving' : pathStr.includes('protect') ? 'protectBattery' : undefined,
-      path: pathSegments,
-    };
+  // Deepest path segment wins, and the longest phrase inside that segment wins.
+  // A parent such as "Device care" cannot override a leaf such as "Storage".
+  const rules: { phrase: string; screen: Screen; settingKey?: DeviceSettingKey }[] = [
+    { phrase: 'battery usage', screen: 'settings/battery-usage', settingKey: 'batteryOptimized' },
+    { phrase: 'deep sleeping', screen: 'settings/battery-usage', settingKey: 'deepSleepingAppsCount' },
+    { phrase: 'background usage', screen: 'settings/battery-usage', settingKey: 'batteryOptimized' },
+    { phrase: 'background limits', screen: 'settings/battery-usage', settingKey: 'batteryOptimized' },
+    { phrase: 'power saving', screen: 'settings/battery', settingKey: 'powerSaving' },
+    { phrase: 'battery protection', screen: 'settings/battery', settingKey: 'protectBattery' },
+    { phrase: 'protect battery', screen: 'settings/battery', settingKey: 'protectBattery' },
+    { phrase: 'charging', screen: 'settings/battery' },
+    { phrase: 'wireless power', screen: 'settings/battery' },
+    { phrase: 'battery', screen: 'settings/battery' },
+    { phrase: 'motion smoothness', screen: 'settings/motion-smoothness', settingKey: 'motionSmoothness' },
+    { phrase: 'refresh rate', screen: 'settings/motion-smoothness', settingKey: 'motionSmoothness' },
+    { phrase: 'dark mode', screen: 'settings/display', settingKey: 'darkMode' },
+    { phrase: 'eye comfort', screen: 'settings/display' },
+    { phrase: 'brightness', screen: 'settings/display', settingKey: 'brightness' },
+    { phrase: 'navigation bar', screen: 'settings/display' },
+    { phrase: 'display', screen: 'settings/display' },
+    { phrase: 'wi-fi', screen: 'settings/connections', settingKey: 'wifi' },
+    { phrase: 'wifi', screen: 'settings/connections', settingKey: 'wifi' },
+    { phrase: 'bluetooth', screen: 'settings/connections', settingKey: 'bluetooth' },
+    { phrase: 'mobile data', screen: 'settings/connections' },
+    { phrase: 'nfc', screen: 'settings/connections', settingKey: 'nfc' },
+    { phrase: 'flight mode', screen: 'settings/connections' },
+    { phrase: 'hotspot', screen: 'settings/connections' },
+    { phrase: 'connection', screen: 'settings/connections' },
+    { phrase: 'dolby', screen: 'settings/sound', settingKey: 'dolbyAtmos' },
+    { phrase: 'ringtone', screen: 'settings/sound' },
+    { phrase: 'vibration', screen: 'settings/sound', settingKey: 'soundMode' },
+    { phrase: 'volume', screen: 'settings/sound' },
+    { phrase: 'sound', screen: 'settings/sound', settingKey: 'soundMode' },
+    { phrase: 'scene optimizer', screen: 'settings/camera', settingKey: 'sceneOptimizer' },
+    { phrase: 'camera', screen: 'settings/camera', settingKey: pathStr.includes('hdr') ? 'autoHdr' : undefined },
+    { phrase: 'storage', screen: 'settings/storage', settingKey: 'storageCleaned' },
+    { phrase: 'performance profile', screen: 'settings/device-care', settingKey: 'performanceProfile' },
+    { phrase: 'auto optimization', screen: 'settings/device-care', settingKey: 'autoOptimization' },
+    { phrase: 'device care', screen: 'settings/device-care', settingKey: 'autoOptimization' },
+    { phrase: 'memory', screen: 'settings/device-care' },
+    { phrase: 'permission', screen: 'settings/privacy' },
+    { phrase: 'fingerprint', screen: 'settings/privacy' },
+    { phrase: 'privacy', screen: 'settings/privacy' },
+    { phrase: 'security', screen: 'settings/privacy' },
+    { phrase: 'thermal', screen: 'settings/advanced', settingKey: 'gameBoosterThermal' },
+    { phrase: 'game booster', screen: 'settings/advanced', settingKey: 'gameBoosterThermal' },
+    { phrase: 'notification', screen: 'settings/notifications' },
+    { phrase: 'apps', screen: 'settings/apps' },
+    { phrase: 'advanced', screen: 'settings/advanced' },
+  ];
+
+  let screen: Screen = 'settings';
+  let settingKey: DeviceSettingKey | undefined;
+  for (let i = pathSegments.length - 1; i >= 0; i--) {
+    const segment = pathSegments[i].toLowerCase();
+    let bestLen = 0;
+    for (const rule of rules) {
+      if (segment.includes(rule.phrase) && rule.phrase.length > bestLen) {
+        bestLen = rule.phrase.length;
+        screen = rule.screen;
+        settingKey = rule.settingKey;
+      }
+    }
+    if (bestLen > 0) break;
   }
 
-  // 2. Display & Motion
-  if (pathStr.includes('motion smoothness') || pathStr.includes('refresh rate') || pathStr.includes('120hz')) {
-    return {
-      screen: 'settings/motion-smoothness',
-      targetNode: leafNode,
-      settingKey: 'motionSmoothness',
-      path: pathSegments,
-    };
-  }
-  if (pathStr.includes('display') || pathStr.includes('dark mode') || pathStr.includes('brightness') || pathStr.includes('eye comfort')) {
-    return {
-      screen: 'settings/display',
-      targetNode: leafNode,
-      settingKey: pathStr.includes('dark') ? 'darkMode' : pathStr.includes('bright') ? 'brightness' : undefined,
-      path: pathSegments,
-    };
-  }
-
-  // 3. Connections
-  if (pathStr.includes('connection') || pathStr.includes('wi-fi') || pathStr.includes('wifi') || pathStr.includes('bluetooth') || pathStr.includes('nfc') || pathStr.includes('flight mode') || pathStr.includes('hotspot')) {
-    return {
-      screen: 'settings/connections',
-      targetNode: leafNode,
-      settingKey: pathStr.includes('wi-fi') || pathStr.includes('wifi') ? 'wifi' : pathStr.includes('bluetooth') ? 'bluetooth' : pathStr.includes('nfc') ? 'nfc' : undefined,
-      path: pathSegments,
-    };
-  }
-
-  // 4. Sounds & Vibration
-  if (pathStr.includes('sound') || pathStr.includes('vibration') || pathStr.includes('volume') || pathStr.includes('ringtone') || pathStr.includes('dolby')) {
-    return {
-      screen: 'settings/sound',
-      targetNode: leafNode,
-      settingKey: pathStr.includes('dolby') ? 'dolbyAtmos' : 'soundMode',
-      path: pathSegments,
-    };
-  }
-
-  // 5. Camera
-  if (pathStr.includes('camera')) {
-    return {
-      screen: 'settings/camera',
-      targetNode: leafNode,
-      settingKey: pathStr.includes('scene') ? 'sceneOptimizer' : pathStr.includes('hdr') ? 'autoHdr' : undefined,
-      path: pathSegments,
-    };
-  }
-
-  // 6. Device Care & Storage
-  if (pathStr.includes('storage') || pathStr.includes('clean now')) {
-    return {
-      screen: 'settings/storage',
-      targetNode: leafNode,
-      settingKey: 'storageCleaned',
-      path: pathSegments,
-    };
-  }
-  if (pathStr.includes('device care') || pathStr.includes('performance profile') || pathStr.includes('auto optimization')) {
-    return {
-      screen: 'settings/device-care',
-      targetNode: leafNode,
-      settingKey: pathStr.includes('profile') ? 'performanceProfile' : 'autoOptimization',
-      path: pathSegments,
-    };
-  }
-
-  // 7. Privacy & Security
-  if (pathStr.includes('privacy') || pathStr.includes('permission') || pathStr.includes('security')) {
-    return {
-      screen: 'settings/privacy',
-      targetNode: leafNode,
-      settingKey: pathStr.includes('camera') ? 'cameraAccess' : pathStr.includes('mic') ? 'microphoneAccess' : undefined,
-      path: pathSegments,
-    };
-  }
-
-  // 8. Advanced Features
-  if (pathStr.includes('advanced') || pathStr.includes('game booster') || pathStr.includes('thermal')) {
-    return {
-      screen: 'settings/advanced',
-      targetNode: leafNode,
-      settingKey: pathStr.includes('thermal') ? 'gameBoosterThermal' : undefined,
-      path: pathSegments,
-    };
-  }
-
-  // 9. Root Settings fallback
   return {
-    screen: 'settings',
+    screen,
     targetNode: leafNode,
+    settingKey,
     path: pathSegments,
   };
 }

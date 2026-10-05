@@ -124,7 +124,7 @@ export function useFixbyQuery() {
           context: {}, 
           siis_response: siisResponse 
         }),
-        signal: AbortSignal.timeout(15000),
+        signal: AbortSignal.timeout(12000),
       });
       if (res.ok) {
         const d = await res.json();
@@ -160,29 +160,9 @@ export function useFixbyQuery() {
           }
         }
 
-        // If we have verified catalog fixes, prioritize them at the front
-        if (catalogGoals.length > 0) {
-          const seen = new Set(catalogGoals.map(g => g.title.toLowerCase()));
-          for (const eg of extractedGoals) {
-            if (!seen.has(eg.title.toLowerCase())) {
-              seen.add(eg.title.toLowerCase());
-              catalogGoals.push(eg);
-            }
-          }
-          goals = catalogGoals;
-        } else {
-          // Prioritize direct toggle/setting fixes (such as Power saving)
-          extractedGoals.sort((a, b) => {
-            const aTitle = a.title.toLowerCase();
-            const bTitle = b.title.toLowerCase();
-            const aIsDirectFix = aTitle.includes('power saving') || aTitle.includes('protect');
-            const bIsDirectFix = bTitle.includes('power saving') || bTitle.includes('protect');
-            if (aIsDirectFix && !bIsDirectFix) return -1;
-            if (!aIsDirectFix && bIsDirectFix) return 1;
-            return 0;
-          });
-          goals = extractedGoals;
-        }
+        // If we have an API answer, show that ranking. The local catalog is only
+        // an offline fallback when the request fails.
+        goals = extractedGoals;
 
         // Extract primary path from first goal for backward compat
         const pathStr = goals[0]?.actions?.[0]?.stepGroups?.[0]?.actionableDeeplink?.classes?.path;

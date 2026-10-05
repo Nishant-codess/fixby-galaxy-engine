@@ -7,7 +7,8 @@ import json
 import time
 import logging
 import asyncio
-from typing import Optional, Dict, Any, Type
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeout
+from typing import Optional, Dict, Any, List
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -84,7 +85,7 @@ class LLMClient:
         if self.groq_api_key:
             try:
                 from groq import Groq
-                self.groq_client = Groq(api_key=self.groq_api_key)
+                self.groq_client = Groq(api_key=self.groq_api_key, max_retries=0, timeout=5.0)
                 logger.info("Groq client initialized successfully.")
             except TypeError as e:
                 # Newer groq SDK removed 'proxies' — try with explicit http_client
@@ -93,7 +94,8 @@ class LLMClient:
                     from groq import Groq
                     self.groq_client = Groq(
                         api_key=self.groq_api_key,
-                        http_client=httpx.Client()
+                        http_client=httpx.Client(timeout=5.0),
+                        max_retries=0,
                     )
                     logger.info("Groq client initialized with explicit http_client.")
                 except Exception as e2:
@@ -121,7 +123,13 @@ class LLMClient:
             except Exception as e:
                 logger.warning(f"Failed to initialize Gemini client: {e}")
 
-    def _call_groq_sync(self, prompt: str, system_prompt: Optional[str] = None) -> str:
+    def _call_groq_model(
+        self,
+        model: str,
+        prompt: str,
+        system_prompt: Optional[str] = None,
+        timeout_s: float = 4.0,
+    ) -> str:
         if not self.groq_client:
             raise RuntimeError("Groq client not available.")
 
@@ -130,22 +138,71 @@ class LLMClient:
             messages.append({"role": "system", "content": system_prompt})
         messages.append({"role": "user", "content": prompt})
 
-        # Try models in order of preference — verified active on this account
-        models_to_try = ["qwen/qwen3.8-27b", "openai/gpt-oss-120b", "openai/gpt-oss-20b"]
+        def _request() -> str:
+            completion = self.groq_client.chat.completions.create(
+                model=model,
+                messages=messages,
+                temperature=0.1,
+                response_format={"type": "json_object"},
+                timeout=timeout_s,
+            )
+            return completion.choices[0].message.content
+
+        pool = ThreadPoolExecutor(max_workers=1)
+        future = pool.submit(_request)
+        try:
+            return future.result(timeout=timeout_s + 0.4)
+        except FuturesTimeout as exc:
+            raise TimeoutError(f"Groq model {model} exceeded {timeout_s}s") from exc
+        finally:
+            pool.shutdown(wait=False, cancel_futures=True)
+
+    def _call_groq_sync(self, prompt: str, system_prompt: Optional[str] = None) -> str:
+        if not self.groq_client:
+            raise RuntimeError("Groq client not available.")
+
+        # Fast model first, then one verified fallback. Each call is bounded.
+        models_to_try = ["qwen/qwen3.8-27b", "openai/gpt-oss-20b"]
         last_exc = None
         for model in models_to_try:
             try:
-                completion = self.groq_client.chat.completions.create(
-                    model=model,
-                    messages=messages,
-                    temperature=0.1,
-                    response_format={"type": "json_object"}
-                )
-                return completion.choices[0].message.content
+                return self._call_groq_model(model, prompt, system_prompt, timeout_s=4.0)
             except Exception as e:
                 last_exc = e
+                logger.warning(f"Groq model {model} failed: {e}")
                 continue
         raise last_exc or RuntimeError("All Groq models failed.")
+
+    def generate_json_bounded(
+        self,
+        prompt: str,
+        system_prompt: Optional[str] = None,
+        timeout_s: float = 3.5,
+        models: Optional[List[str]] = None,
+    ) -> Optional[Dict[str, Any]]:
+        """
+        One JSON completion inside a hard timeout.
+        Returns None when the circuit is open or every model fails.
+        Does not substitute the offline battery fixture.
+        """
+        if not self.circuit_breaker.can_execute():
+            logger.info("Circuit breaker open — skipping LLM call.")
+            return None
+
+        model_list = models or ["qwen/qwen3.8-27b"]
+        if self.groq_client:
+            per_model = max(1.2, timeout_s / max(len(model_list), 1))
+            for model in model_list:
+                try:
+                    raw_text = self._call_groq_model(model, prompt, system_prompt, timeout_s=per_model)
+                    parsed = json.loads(raw_text)
+                    self.circuit_breaker.record_success()
+                    return parsed
+                except Exception as e:
+                    logger.warning(f"Bounded Groq call failed ({model}): {e}")
+
+        self.circuit_breaker.record_failure()
+        return None
 
     def _call_gemini_sync(self, prompt: str, system_prompt: Optional[str] = None) -> str:
         if not self.gemini_client:

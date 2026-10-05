@@ -7,7 +7,7 @@ import { useFixbyQuery } from '../../../hooks/useFixbyQuery';
 import type { GoalData } from '../../../hooks/useFixbyQuery';
 import { OneUISlider } from '../ui/OneUISlider';
 import { ResolutionCards } from './ResolutionCards';
-import { IZap, ICheck, IClock, IChevronRight, ISettings } from '../ui/Icons';
+import { IZap, ICheck, IClock, ISettings } from '../ui/Icons';
 import { FixAction } from '../../../settings/actions';
 import { SPEECH_LANGUAGES, useSpeechInput } from '../../../hooks/useSpeechInput';
 
@@ -81,7 +81,6 @@ export function FixbyOrb({
   const [isDragging, setIsDragging] = useState(false);
   const [query, setQuery] = useState("");
   const [showResults, setShowResults] = useState(false);
-  const [showAdvancedSiis, setShowAdvancedSiis] = useState(false);
   
   // SIIS mock telemetry states
   const [siisBattery, setSiisBattery] = useState(85);
@@ -146,12 +145,14 @@ export function FixbyOrb({
     setResolvedQuery(q);
     
     const signalLabel = siisSignal >= 70 ? 'Excellent' : siisSignal >= 40 ? 'Good' : siisSignal >= 15 ? 'Weak' : 'None';
-    const siisPayload = JSON.stringify({
-      batteryLevel: siisBattery,
-      storageUsed: siisStorage,
-      temperature: siisTemp,
-      signalStrength: signalLabel
-    });
+    const siisPayload = sensorsAdjusted
+      ? JSON.stringify({
+          batteryLevel: siisBattery,
+          storageUsed: siisStorage,
+          temperature: siisTemp,
+          signalStrength: signalLabel
+        })
+      : "";
 
     const { dynamicPath, apiTelemetry, allGoals: goals } = await executeQuery(q, siisPayload);
     
@@ -559,37 +560,24 @@ export function FixbyOrb({
                   )}
                 </div>
 
-                {/* Collapsible Advanced SIIS Telemetry Accordion */}
+                {/* Device sensors are visible as soon as FixBy opens */}
                 <div style={{
                   background: darkMode ? 'rgba(0,0,0,0.25)' : 'rgba(0,0,0,0.02)',
                   borderRadius: '20px',
                   border: darkMode ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(0,0,0,0.05)',
                   overflow: 'hidden',
                 }}>
-                  <div 
-                    onClick={() => setShowAdvancedSiis(prev => !prev)}
+                  <div
                     style={{
-                      padding: '12px 18px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      cursor: 'pointer',
+                      padding: '12px 18px 4px',
                       fontSize: '12px',
                       fontWeight: 600,
                       color: 'var(--oneui-text-secondary)',
                     }}
                   >
-                    <span>Advanced: Simulate Device Sensors (SIIS)</span>
-                    <span style={{
-                      transform: showAdvancedSiis ? 'rotate(90deg)' : 'rotate(0deg)',
-                      transition: 'transform 0.2s',
-                    }}>
-                      <IChevronRight style={{ width: '14px', height: '14px' }} />
-                    </span>
+                    Device sensors
                   </div>
-
-                  {showAdvancedSiis && (
-                    <div style={{ padding: '0 18px 16px', display: 'grid', gap: '14px' }}>
+                  <div style={{ padding: '8px 18px 16px', display: 'grid', gap: '14px' }}>
                       <div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '6px' }}>
                           <span style={{ color: siisBattery < 15 ? 'var(--oneui-error)' : 'var(--oneui-text-primary)' }}>Battery Level</span>
@@ -622,7 +610,6 @@ export function FixbyOrb({
                         <OneUISlider value={siisSignal} onChange={setSiisSignal} min={0} max={100} trackColor={siisSignal > 80 ? 'var(--oneui-success)' : siisSignal < 20 ? 'var(--oneui-error)' : '#2075d6'} />
                       </div>
                     </div>
-                  )}
                 </div>
               </>
             ) : (

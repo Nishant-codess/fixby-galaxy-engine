@@ -24,26 +24,46 @@ export interface SettingsRowProps {
 // Tooltip rendered via portal so it escapes overflow:hidden cards
 function HighlightTooltip({ anchorRef, label }: { anchorRef: React.RefObject<HTMLDivElement | null>, label: string }) {
   const [coords, setCoords] = useState<{ top: number; left: number } | null>(null);
+  const [visible, setVisible] = useState(true);
 
   useEffect(() => {
+    const hideTimer = window.setTimeout(() => setVisible(false), 6000);
+    let frame = 0;
     const update = () => {
-      if (!anchorRef.current) return;
-      const rect = anchorRef.current.getBoundingClientRect();
+      const node = anchorRef.current;
+      if (!node || !node.isConnected) {
+        setCoords(null);
+        return;
+      }
+      const rect = node.getBoundingClientRect();
+      if (rect.width < 2 || rect.height < 2) {
+        setCoords(null);
+        return;
+      }
       setCoords({
-        top: rect.top - 8,   // 8px gap above the anchor
+        top: rect.top - 8,
         left: rect.left + rect.width / 2,
       });
     };
+    const schedule = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(update);
+    };
     update();
-    window.addEventListener('resize', update);
-    window.addEventListener('scroll', update, true);
+    const observer = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(schedule) : null;
+    if (anchorRef.current && observer) observer.observe(anchorRef.current);
+    window.addEventListener('resize', schedule);
+    window.addEventListener('scroll', schedule, true);
     return () => {
-      window.removeEventListener('resize', update);
-      window.removeEventListener('scroll', update, true);
+      window.clearTimeout(hideTimer);
+      cancelAnimationFrame(frame);
+      observer?.disconnect();
+      window.removeEventListener('resize', schedule);
+      window.removeEventListener('scroll', schedule, true);
     };
   }, [anchorRef]);
 
-  if (!coords) return null;
+  if (!visible || !coords) return null;
 
   return createPortal(
     <div

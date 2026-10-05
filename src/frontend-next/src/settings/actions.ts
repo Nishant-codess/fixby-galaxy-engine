@@ -429,8 +429,9 @@ export function resolveGoalToAction(goal: GoalData): FixAction {
     };
   }
 
-  // 8. Storage Cleaner / Purge Cache
-  if (titleLower.includes('storage') || descLower.includes('storage') || descLower.includes('junk') || pathStr.toLowerCase().includes('storage')) {
+  // 8. Storage cleaner only when the fix itself is the storage cleanup, not when
+  // some other setting happens to live under a Storage screen.
+  if (titleLower.includes('storage') || titleLower.includes('junk') || titleLower.includes('clean now')) {
     return {
       id: 'fix-storage-cleaner',
       title: 'Clean Storage Junk & Cache Files',

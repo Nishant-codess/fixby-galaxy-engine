@@ -14,8 +14,12 @@ Contains Day 1-2 stubs for standalone testing and benchmarking.
 On Day 3, stubs will be swapped with Member 2's live AI modules.
 """
 import copy
+import logging
+import re
 import time
 from typing import Optional, List
+
+logger = logging.getLogger("fixby.pipeline")
 from contracts.schema import (
     TroubleshootResponse,
     FollowupResponse,
@@ -229,11 +233,50 @@ def _stub_generate_paraphrases(query: str) -> List[str]:
 # ============================================================================
 
 
+def _active_telemetry(siis_response: Optional[str]) -> Optional[str]:
+    """Keep telemetry only when a sensor has moved off the demo defaults."""
+    if not siis_response or siis_response.strip() in ("", "{}"):
+        return None
+    try:
+        import json as _json
+        data = _json.loads(siis_response)
+    except Exception:
+        return None
+    battery = data.get("batteryLevel", 85)
+    storage = data.get("storageUsed", 60)
+    temp = data.get("temperature", 32)
+    signal = str(data.get("signalStrength", "Excellent")).strip().lower()
+    if battery == 85 and storage == 60 and temp == 32 and signal in ("excellent", "good"):
+        return None
+    return siis_response
+
+
+def _escalation_label(siis_response: Optional[str]) -> Optional[str]:
+    """Status badge only. Does not choose a fix."""
+    if not siis_response:
+        return None
+    try:
+        import json as _json
+        data = _json.loads(siis_response)
+    except Exception:
+        return None
+    battery = data.get("batteryLevel", 100)
+    storage = data.get("storageUsed", 0)
+    temp = data.get("temperature", 30)
+    signal = data.get("signalStrength", "Excellent")
+    if battery <= 15 or storage >= 95 or temp >= 55 or signal == "None":
+        return "CRITICAL"
+    if battery <= 30 or storage >= 80 or temp >= 45 or signal == "Weak":
+        return "WARNING"
+    return None
+
+
 def run_troubleshoot_pipeline(query: str, siis_response: Optional[str] = None) -> TroubleshootResponse:
     """
     Executes the 8-stage Fixby troubleshooting pipeline.
     """
     start_time = time.time()
+    siis_response = _active_telemetry(siis_response)
 
     # Stage 0: Taxonomy Classification & Slot Extraction (<0.1ms)
     complaint_cats = classify_complaint_taxonomy(query)
@@ -258,8 +301,9 @@ def run_troubleshoot_pipeline(query: str, siis_response: Optional[str] = None) -
         }
         has_kw = any(kw in lower for kw in all_keywords)
         has_device = any(w in lower for w in device_words)
+        has_non_latin = bool(re.search(r"[\u0900-\u097F\uAC00-\uD7AF]", query))
 
-        if not has_kw and not has_device and complaint_cats == ["general.unknown"]:
+        if not has_non_latin and not has_kw and not has_device and complaint_cats == ["general.unknown"]:
             latency = round((time.time() - start_time) * 1000, 2)
             meta = PipelineMeta(
                 latency_ms=latency,
@@ -297,7 +341,30 @@ def run_troubleshoot_pipeline(query: str, siis_response: Optional[str] = None) -
             resp_copy.meta.language_detected = lang
             return resp_copy
 
+    # Dynamic path: the model extracts intent and keywords, then chooses IDs
+    # from deeplinks.json. Telemetry is context for that choice, not a fix table.
+    _dynamic = None
+    _use_dynamic = False
+    if AI_MODULES_AVAILABLE:
+        try:
+            from src.ai.dynamic_resolver import resolve_dynamically
+            _dynamic = resolve_dynamically(query, siis_response)
+            if _dynamic.cached_response is not None:
+                latency = round((time.time() - start_time) * 1000, 2)
+                resp_copy = copy.deepcopy(_dynamic.cached_response)
+                resp_copy.query = query
+                resp_copy.meta.latency_ms = latency
+                resp_copy.meta.cache_hit = True
+                resp_copy.meta.cache_tier = _dynamic.cache_tier or "tier1_hash"
+                resp_copy.meta.language_detected = lang
+                return resp_copy
+            _use_dynamic = bool(_dynamic.goals)
+        except Exception as exc:
+            logger.warning("Dynamic resolver failed, using legacy extraction: %s", exc)
+            _use_dynamic = False
+
     # ── SIIS Deterministic Decision Matrix ────────────────────────────────────────
+    # Retired when the dynamic resolver returns catalog-backed goals.
     # Multi-winner 2D lookup: Query Domain × Live Device State → ranked deeplink list.
     # Priority order:
     #   0. Named-App query (hardest signal — overrides everything when hardware is fine)
@@ -305,7 +372,7 @@ def run_troubleshoot_pipeline(query: str, siis_response: Optional[str] = None) -
     #   2. Single Tier-1 emergency (one critical threshold)
     #   3. Domain × device-state matrix
     siis_override_goals: List[Goal] = []
-    hardware_escalation: Optional[str] = None
+    hardware_escalation: Optional[str] = _escalation_label(siis_response) if _use_dynamic else None
     is_named_app_query: bool = False
     q_domain = slots.get("domain", "general")
 
@@ -333,7 +400,7 @@ def run_troubleshoot_pipeline(query: str, siis_response: Optional[str] = None) -
 
 
 
-    if siis_response and siis_response.strip() not in ("", "{}"):
+    if (not _use_dynamic) and siis_response and siis_response.strip() not in ("", "{}"):
         try:
             import json as _json
             _sd = _json.loads(siis_response)
@@ -1041,26 +1108,20 @@ def run_troubleshoot_pipeline(query: str, siis_response: Optional[str] = None) -
     # Always use AI for everything (dynamic)
     use_ai = AI_MODULES_AVAILABLE
 
-    if use_ai:
-        candidate_ids = live_get_candidate_ids(query, top_k=10)
+    if _use_dynamic:
+        candidate_ids = list(_dynamic.candidate_ids)
+        raw_goals = list(_dynamic.goals)
     else:
-        candidate_ids = _stub_get_candidate_ids(query, top_k=5)
+        if use_ai:
+            candidate_ids = live_get_candidate_ids(query, top_k=10)
+        else:
+            candidate_ids = _stub_get_candidate_ids(query, top_k=5)
 
-    # Force inject critical candidates if telemetry warrants it
-    if hardware_escalation in ["CRITICAL", "WARNING"]:
-        if _bat <= 30 and "DL_POWER_SAVING" not in candidate_ids:
-            candidate_ids.insert(0, "DL_POWER_SAVING")
-        if _sto >= 80 and "DL_DEVICE_CARE_STORAGE" not in candidate_ids:
-            candidate_ids.insert(0, "DL_DEVICE_CARE_STORAGE")
-        if _tmp >= 45 and "DL_GAME_BOOSTER_THERMAL" not in candidate_ids:
-            candidate_ids.insert(0, "DL_GAME_BOOSTER_THERMAL")
-
-
-    # Stage 5: Retrieval-Bound Schema Extraction
-    if use_ai:
-        raw_goals = live_extract_structured_plan(query, candidate_ids, siis_response)
-    else:
-        raw_goals = _stub_extract_structured_plan(query, candidate_ids, siis_response)
+        # Stage 5: Retrieval-Bound Schema Extraction
+        if use_ai:
+            raw_goals = live_extract_structured_plan(query, candidate_ids, siis_response)
+        else:
+            raw_goals = _stub_extract_structured_plan(query, candidate_ids, siis_response)
 
     # Stage 6: SHKG Leaf Resolution
     leaf_id = settings_graph.resolve_deepest_screen(candidate_ids, domain=slots.get("domain"))
@@ -1094,8 +1155,8 @@ def run_troubleshoot_pipeline(query: str, siis_response: Optional[str] = None) -
 
             sg.actionableDeeplink.classes = classes_dict
 
-    # Inject SIIS deterministic override goals (ranked, hardware-aware) ahead of AI goals
-    if siis_override_goals:
+    # Legacy matrix goals are not mixed into a dynamic, catalog-backed answer.
+    if siis_override_goals and not _use_dynamic:
         if hardware_escalation in ["CRITICAL", "WARNING"] and q_domain in ("battery", "performance", "storage", "thermal", "general", "unknown"):
             raw_goals = siis_override_goals + raw_goals
         elif is_named_app_query:
@@ -1142,7 +1203,7 @@ def run_troubleshoot_pipeline(query: str, siis_response: Optional[str] = None) -
             else:
                 g.resolution_modes = ["auto", "demo", "manual"]
 
-    # Stage 8: Paraphrase Generation & Write-Through Cache Warming
+    # Stage 8: local paraphrase warming. This does not call a model.
     if use_ai:
         variations = live_generate_query_variations(query, slots)
         diag_graph = live_generate_diagnostic_graph(repaired_goals)
@@ -1150,13 +1211,18 @@ def run_troubleshoot_pipeline(query: str, siis_response: Optional[str] = None) -
         variations = _stub_generate_paraphrases(query)
         diag_graph = None
 
+    if _use_dynamic:
+        for extra in (_dynamic.intent_summary, _dynamic.english_query):
+            if extra and extra.lower() not in {v.lower() for v in variations}:
+                variations.append(extra)
+
     latency = round((time.time() - start_time) * 1000, 2)
 
     meta = PipelineMeta(
         latency_ms=latency,
         cache_hit=False,
         cache_tier="cold",
-        model="groq-llama3-70b" if use_ai else "stub-pipeline",
+        model=("dynamic-llm" if _use_dynamic and _dynamic.source == "llm" else "dynamic-retrieval" if _use_dynamic else "groq-llama3-70b") if use_ai else "stub-pipeline",
         cost_usd=0.0,
         complaint_category=complaint_cats[0] if complaint_cats else "general.unknown",
         language_detected=lang,
@@ -1182,6 +1248,8 @@ def run_troubleshoot_pipeline(query: str, siis_response: Optional[str] = None) -
     
     cache_query = query if not siis_response else f"{query}__siis__{siis_response}"
     cache.put(cache_query, resp, slots=slots, variations=cache_vars)
+    if _use_dynamic and _dynamic.intent_summary and not siis_response:
+        cache.put(_dynamic.intent_summary.strip().lower(), resp, slots=None)
     return resp
 
 
