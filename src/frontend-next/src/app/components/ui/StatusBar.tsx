@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ISun, IMoon } from './Icons';
+import { useSettings } from '../../context/SettingsContext';
 
 function BatterySVG({ level, color }: { level: number; color: string }) {
   const fill = Math.max(0, Math.min(1, level / 100)) * 14;
@@ -24,10 +25,13 @@ function SignalBars({ bars, color }: { bars: number; color: string }) {
   );
 }
 
-export function StatusBar({ battery = 78, hasNotif = true, theme = 'dark', onToggleTheme }: {
+export function StatusBar({ battery, hasNotif = true, theme = 'dark', onToggleTheme }: {
   battery?: number; hasNotif?: boolean; theme?: 'dark' | 'light'; onToggleTheme?: () => void;
 }) {
+  const { settings } = useSettings();
   const [time, setTime] = useState('');
+  const batteryLevel = battery ?? settings.batteryPercentage;
+  const signalBars = Math.max(0, Math.min(4, Math.ceil(settings.signalStrengthPercent / 25)));
 
   useEffect(() => {
     const getTime = () => {
@@ -60,9 +64,10 @@ export function StatusBar({ battery = 78, hasNotif = true, theme = 'dark', onTog
             {theme === "dark" ? <ISun /> : <IMoon />}
           </button>
         )}
-        <SignalBars bars={4} color={color} />
-        <span style={{ fontSize: "11px", fontWeight: 600 }}>5G</span>
-        <BatterySVG level={battery} color={color} />
+        <SignalBars bars={signalBars} color={color} />
+        <span style={{ fontSize: "11px", fontWeight: 600 }}>{signalBars === 0 ? 'No service' : '5G'}</span>
+        <span style={{ fontSize: "11px", fontWeight: 600 }}>{batteryLevel}%</span>
+        <BatterySVG level={batteryLevel} color={color} />
       </div>
     </div>
   );

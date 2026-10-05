@@ -21,6 +21,10 @@ export interface DeviceSettingsState {
   batteryPercentage: number;
   wirelessPowerSharing: boolean;
 
+  // Live hardware sensors driven by the SIIS panel
+  deviceTemperatureC: number;
+  signalStrengthPercent: number;
+
   // Connectivity
   wifi: boolean;
   intelligentWifi: boolean;
@@ -88,6 +92,8 @@ export const INITIAL_SETTINGS_STATE: DeviceSettingsState = {
   batteryOptimized: false,
   batteryPercentage: 78,
   wirelessPowerSharing: false,
+  deviceTemperatureC: 32,
+  signalStrengthPercent: 80,
 
   // Connectivity
   wifi: true,
@@ -208,6 +214,24 @@ export const SETTING_DEFINITIONS: Record<DeviceSettingKey, SettingMetadata> = {
     screen: 'settings/battery',
     destinationPath: ['Settings', 'Battery'],
     description: 'Current battery charge percentage.',
+    actionType: 'CONFIG_CHANGE',
+  },
+  deviceTemperatureC: {
+    key: 'deviceTemperatureC',
+    title: 'Device temperature',
+    category: 'Device care',
+    screen: 'settings/device-care',
+    destinationPath: ['Settings', 'Device care'],
+    description: 'Current device temperature in Celsius.',
+    actionType: 'CONFIG_CHANGE',
+  },
+  signalStrengthPercent: {
+    key: 'signalStrengthPercent',
+    title: 'Signal strength',
+    category: 'Connections',
+    screen: 'settings/connections',
+    destinationPath: ['Settings', 'Connections'],
+    description: 'Current mobile network signal strength.',
     actionType: 'CONFIG_CHANGE',
   },
   wirelessPowerSharing: {

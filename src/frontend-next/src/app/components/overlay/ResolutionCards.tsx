@@ -8,6 +8,7 @@ import { getHonestCapabilityLabel } from '../../../settings/capabilities';
 export interface ResolutionCardsProps {
   goals: GoalData[];
   query: string;
+  telemetryReason?: string | null;
   onWatchDemo: (action: FixAction) => void;
   onPerformAuto: (action: FixAction) => void;
   onPerformManual: (action: FixAction) => void;
@@ -19,6 +20,7 @@ export interface ResolutionCardsProps {
 export function ResolutionCards({ 
   goals, 
   query, 
+  telemetryReason,
   onWatchDemo, 
   onPerformAuto, 
   onPerformManual, 
@@ -115,6 +117,26 @@ export function ResolutionCards({
             </button>
           </div>
         </div>
+
+        {/* Live sensor readings that steered the ranking */}
+        {telemetryReason && (
+          <div
+            data-testid="telemetry-reason-banner"
+            style={{
+              margin: '0 16px 14px',
+              padding: '12px 16px',
+              borderRadius: '20px',
+              background: darkMode ? 'rgba(255, 159, 10, 0.14)' : 'rgba(255, 159, 10, 0.1)',
+              border: darkMode ? '1px solid rgba(255, 159, 10, 0.3)' : '1px solid rgba(255, 159, 10, 0.25)',
+              display: 'flex', alignItems: 'center', gap: '10px',
+            }}
+          >
+            <IZap style={{ width: '16px', height: '16px', color: '#FF9F0A', flexShrink: 0 }} />
+            <span style={{ fontSize: '13px', lineHeight: 1.4, color: 'var(--oneui-text-primary)' }}>
+              {telemetryReason}
+            </span>
+          </div>
+        )}
 
         {/* Diagnostic Reasoning Section */}
         {(() => {

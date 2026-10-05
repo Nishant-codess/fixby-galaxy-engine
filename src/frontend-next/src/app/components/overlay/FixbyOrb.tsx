@@ -10,6 +10,7 @@ import { ResolutionCards } from './ResolutionCards';
 import { IZap, ICheck, IClock, ISettings } from '../ui/Icons';
 import { FixAction } from '../../../settings/actions';
 import { SPEECH_LANGUAGES, useSpeechInput } from '../../../hooks/useSpeechInput';
+import { INITIAL_SETTINGS_STATE } from '../../../settings/definitions';
 
 /** Turn adjusted sensor readings into a real troubleshooting query. */
 function queryFromSiis(battery: number, storage: number, temp: number, signal: number): string {
@@ -82,14 +83,21 @@ export function FixbyOrb({
   const [query, setQuery] = useState("");
   const [showResults, setShowResults] = useState(false);
   
-  // SIIS mock telemetry states
-  const [siisBattery, setSiisBattery] = useState(85);
-  const [siisStorage, setSiisStorage] = useState(60);
-  const [siisTemp, setSiisTemp] = useState(32);
-  const [siisSignal, setSiisSignal] = useState(80);
-
   const { executeQuery, stages, isProcessing, reset } = useFixbyQuery();
-  const { darkMode } = useSettings();
+  const { darkMode, settings, setSetting } = useSettings();
+
+  // The sliders read and write the simulated device, so the phone screens,
+  // status bar, and the query all see the same readings.
+  const siisBattery = settings.batteryPercentage;
+  const siisStorage = Math.round((settings.storageUsedGB / settings.storageTotalGB) * 100);
+  const siisTemp = settings.deviceTemperatureC;
+  const siisSignal = settings.signalStrengthPercent;
+
+  const setSiisBattery = (value: number) => setSetting('batteryPercentage', value);
+  const setSiisStorage = (value: number) =>
+    setSetting('storageUsedGB', Math.round((value / 100) * settings.storageTotalGB * 10) / 10);
+  const setSiisTemp = (value: number) => setSetting('deviceTemperatureC', value);
+  const setSiisSignal = (value: number) => setSetting('signalStrengthPercent', value);
   const { addHistoryItem, recordAppliedFix, recordDemoViewed, history } = useHistory();
   const speech = useSpeechInput((text) => setQuery(text));
   const orbRef = useRef<HTMLDivElement>(null);
@@ -97,6 +105,7 @@ export function FixbyOrb({
   // Current goals and query for resolution cards
   const [resolvedGoals, setResolvedGoals] = useState<GoalData[]>([]);
   const [resolvedQuery, setResolvedQuery] = useState("");
+  const [telemetryReason, setTelemetryReason] = useState<string | null>(null);
 
   // Handle external or restored history session
   useEffect(() => {
@@ -133,7 +142,17 @@ export function FixbyOrb({
     };
   }, [isDragging]);
 
-  const sensorsAdjusted = siisBattery !== 85 || siisStorage !== 60 || siisTemp !== 32 || siisSignal !== 80;
+  // Matches the backend thresholds that decide whether a reading is diagnostic.
+  const sensorsUnhealthy =
+    siisTemp >= 43 || siisBattery <= 30 || siisStorage >= 80 || siisSignal < 40;
+  const baselineStorage = Math.round(
+    (INITIAL_SETTINGS_STATE.storageUsedGB / INITIAL_SETTINGS_STATE.storageTotalGB) * 100
+  );
+  const sensorsAdjusted =
+    siisBattery !== INITIAL_SETTINGS_STATE.batteryPercentage ||
+    siisStorage !== baselineStorage ||
+    siisTemp !== INITIAL_SETTINGS_STATE.deviceTemperatureC ||
+    siisSignal !== INITIAL_SETTINGS_STATE.signalStrengthPercent;
 
   const handleSubmit = async (raw?: string) => {
     const typed = (raw ?? query).trim();
@@ -145,14 +164,14 @@ export function FixbyOrb({
     setResolvedQuery(q);
     
     const signalLabel = siisSignal >= 70 ? 'Excellent' : siisSignal >= 40 ? 'Good' : siisSignal >= 15 ? 'Weak' : 'None';
-    const siisPayload = sensorsAdjusted
-      ? JSON.stringify({
-          batteryLevel: siisBattery,
-          storageUsed: siisStorage,
-          temperature: siisTemp,
-          signalStrength: signalLabel
-        })
-      : "";
+    // Always report the device state. The backend keeps it only when a reading
+    // is out of range, so healthy sensors still resolve from cache.
+    const siisPayload = JSON.stringify({
+      batteryLevel: siisBattery,
+      storageUsed: siisStorage,
+      temperature: siisTemp,
+      signalStrength: signalLabel
+    });
 
     const { dynamicPath, apiTelemetry, allGoals: goals } = await executeQuery(q, siisPayload);
     
@@ -160,6 +179,7 @@ export function FixbyOrb({
       // Save session to persistent history
       addHistoryItem(q, goals, apiTelemetry);
       setResolvedGoals(goals);
+      setTelemetryReason(apiTelemetry?.telemetry_reason ?? null);
       setShowResults(true);
     } else {
       onResolved(dynamicPath, apiTelemetry?.hardware_escalation);
@@ -198,6 +218,7 @@ export function FixbyOrb({
       <ResolutionCards
         goals={resolvedGoals}
         query={resolvedQuery}
+        telemetryReason={telemetryReason}
         onWatchDemo={(action) => handleGoalAction(action, 'demo')}
         onPerformAuto={(action) => handleGoalAction(action, 'auto')}
         onPerformManual={(action) => handleGoalAction(action, 'manual')}
@@ -529,10 +550,10 @@ export function FixbyOrb({
                   style={{ 
                     width: '100%',
                     padding: '16px', 
-                    background: (siisBattery !== 85 || siisStorage !== 60 || siisTemp !== 32 || siisSignal !== 80) 
+                    background: sensorsUnhealthy 
                       ? 'linear-gradient(135deg, #FF453A 0%, #FF9F0A 100%)' 
                       : 'linear-gradient(135deg, #2075D6 0%, #6C47FF 100%)',
-                    boxShadow: (siisBattery !== 85 || siisStorage !== 60 || siisTemp !== 32 || siisSignal !== 80) 
+                    boxShadow: sensorsUnhealthy 
                       ? '0 12px 24px rgba(255, 69, 58, 0.4), inset 0 2px 4px rgba(255,255,255,0.4)' 
                       : '0 12px 24px rgba(32, 117, 214, 0.4), inset 0 2px 4px rgba(255,255,255,0.4)',
                     color: '#fff',
@@ -548,12 +569,12 @@ export function FixbyOrb({
                     justifyContent: 'center',
                     gap: '8px',
                     textShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                    animation: (siisBattery !== 85 || siisStorage !== 60 || siisTemp !== 32 || siisSignal !== 80) 
+                    animation: sensorsUnhealthy 
                       ? 'pulseGlowOrange 2s infinite ease-in-out' 
                       : 'pulseGlowPremium 3s infinite ease-in-out'
                   }}
                 >
-                  {(siisBattery !== 85 || siisStorage !== 60 || siisTemp !== 32 || siisSignal !== 80) ? (
+                  {sensorsUnhealthy ? (
                     <><IZap style={{ width: '18px', height: '18px' }} /> Diagnose with SIIS</>
                   ) : (
                     'Diagnose Problem →'

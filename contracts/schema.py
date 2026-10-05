@@ -99,6 +99,7 @@ class PipelineMeta(BaseModel):
     screen_resolution: Literal["leaf_screen", "parent_menu", "manual_only"] = "leaf_screen"
     pipeline_source: Literal["live", "mock"] = "live"
     hardware_escalation: Optional[str] = None  # "WARNING", "CRITICAL", or None
+    telemetry_reason: Optional[str] = None  # Sensor readings that shaped this answer
 
 
 class TroubleshootResponse(BaseModel):

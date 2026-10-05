@@ -64,7 +64,8 @@ Rules:
 - ranked_ids must be copied from the candidate list. Never invent an ID.
 - Order from most relevant to least. Return 1 to 3 IDs.
 - Pick different settings, not duplicates of the same screen.
-- Use device telemetry only when a reading is unhealthy and it changes which setting helps.
+- Device telemetry is live sensor data. When a reading is listed as out of range, treat it as the likely cause even if the user did not mention it, and rank the setting that addresses that reading first.
+- When every reading is normal, ignore telemetry and rank by the complaint alone.
 - Do not pick Safe mode, factory reset, force stop, or a restart unless the user says an app crashes or asks to reset.
 - Do not add a battery or device-care setting unless the complaint or the telemetry is about battery, heat, storage, or speed.
 """
@@ -75,6 +76,7 @@ class DynamicResolution:
     goals: List[Goal] = field(default_factory=list)
     candidate_ids: List[str] = field(default_factory=list)
     intent_summary: str = ""
+    intent_cache_key: str = ""
     english_query: str = ""
     source: str = "retrieval"
     cached_response: Any = None
@@ -237,23 +239,91 @@ def _parse_intent(payload: Optional[Dict[str, Any]], query: str) -> Dict[str, An
     }
 
 
-def _telemetry_context(siis_response: Optional[str]) -> str:
+def _read_telemetry(siis_response: Optional[str]) -> Optional[Dict[str, Any]]:
     if not siis_response or siis_response.strip() in ("", "{}"):
-        return ""
+        return None
     try:
         data = json.loads(siis_response)
     except Exception:
-        return ""
-    battery = data.get("batteryLevel")
-    storage = data.get("storageUsed")
+        return None
+    return data if isinstance(data, dict) else None
+
+
+def _unhealthy_readings(data: Optional[Dict[str, Any]]) -> List[Dict[str, str]]:
+    """
+    Sensor thresholds, not problem rules. Each entry describes the hardware
+    state in plain words so the catalog can be searched with it.
+    """
+    if not data:
+        return []
+    out: List[Dict[str, str]] = []
+
     temp = data.get("temperature")
-    signal = data.get("signalStrength")
-    if battery is None and storage is None and temp is None:
+    if isinstance(temp, (int, float)):
+        if temp >= 50:
+            out.append({"reading": f"temperature {temp}C (critical)",
+                        "terms": "overheating hot thermal temperature throttling"})
+        elif temp >= 43:
+            out.append({"reading": f"temperature {temp}C (high)",
+                        "terms": "overheating hot thermal temperature"})
+
+    battery = data.get("batteryLevel")
+    if isinstance(battery, (int, float)):
+        if battery <= 15:
+            out.append({"reading": f"battery {battery}% (critical)",
+                        "terms": "battery drain power saving charge"})
+        elif battery <= 30:
+            out.append({"reading": f"battery {battery}% (low)",
+                        "terms": "battery drain power saving"})
+
+    storage = data.get("storageUsed")
+    if isinstance(storage, (int, float)):
+        if storage >= 90:
+            out.append({"reading": f"storage {storage}% full (critical)",
+                        "terms": "storage full space cache trash large files"})
+        elif storage >= 80:
+            out.append({"reading": f"storage {storage}% full (high)",
+                        "terms": "storage space cache trash"})
+
+    signal = str(data.get("signalStrength", "")).strip().lower()
+    if signal in ("none", "weak"):
+        out.append({"reading": f"signal {signal}",
+                    "terms": "signal network mobile data reception"})
+
+    return out
+
+
+def _telemetry_context(siis_response: Optional[str]) -> str:
+    data = _read_telemetry(siis_response)
+    if not data:
         return ""
-    return (
-        f"Battery {battery}%, storage used {storage}%, "
-        f"temperature {temp}C, signal {signal}."
+    summary = (
+        f"Battery {data.get('batteryLevel')}%, storage used {data.get('storageUsed')}%, "
+        f"temperature {data.get('temperature')}C, signal {data.get('signalStrength')}."
     )
+    flagged = _unhealthy_readings(data)
+    if flagged:
+        summary += " Out of range: " + "; ".join(item["reading"] for item in flagged) + "."
+    else:
+        summary += " All readings are normal."
+    return summary
+
+
+def telemetry_reason(siis_response: Optional[str]) -> str:
+    """One sentence naming the readings that steered the answer, for the UI."""
+    flagged = _unhealthy_readings(_read_telemetry(siis_response))
+    if not flagged:
+        return ""
+    readings = ", ".join(item["reading"].replace("C (", "\u00b0C (") for item in flagged)
+    return f"Device sensors report {readings}. These fixes target that."
+
+
+def telemetry_cache_suffix(siis_response: Optional[str]) -> str:
+    """Distinguishes cache entries by the hardware state that shaped the answer."""
+    flagged = _unhealthy_readings(_read_telemetry(siis_response))
+    if not flagged:
+        return ""
+    return "__hw__" + "|".join(sorted(item["reading"] for item in flagged))
 
 
 def _rank_with_model(
@@ -325,21 +395,30 @@ def resolve_dynamically(
     result.intent_summary = intent["intent_summary"]
     result.english_query = intent["english_query"]
 
-    if result.intent_summary:
+    flagged = _unhealthy_readings(_read_telemetry(siis_response))
+    result.intent_cache_key = (
+        f"{result.intent_summary.strip().lower()}{telemetry_cache_suffix(siis_response)}"
+        if result.intent_summary else ""
+    )
+
+    if result.intent_cache_key:
         from src.core.cache import cache
 
-        cached, tier = cache.get(result.intent_summary.strip().lower(), slots=None)
+        cached, tier = cache.get(result.intent_cache_key, slots=None)
         if cached is not None and tier == "tier1_hash":
             result.cached_response = cached
             result.cache_tier = tier
             result.source = "intent-cache"
-            logger.info("Intent cache hit for '%s' in %.0fms", result.intent_summary, (time.time() - started) * 1000)
+            logger.info("Intent cache hit for '%s' in %.0fms", result.intent_cache_key, (time.time() - started) * 1000)
             return result
 
+    # Out-of-range sensors widen the search, so hardware the user did not
+    # mention can still surface the screen that addresses it.
+    hardware_terms = [item["terms"] for item in flagged]
     search_text = " ".join(
-        part for part in [result.english_query, " ".join(intent["keywords"]), query] if part
+        part for part in [result.english_query, " ".join(intent["keywords"]), query, *hardware_terms] if part
     )
-    scored = _score_catalog(search_text, intent["keywords"])
+    scored = _score_catalog(search_text, intent["keywords"] + hardware_terms)
     candidates = [row[3] for row in scored]
     result.candidate_ids = [entry.get("id") for entry in candidates if entry.get("id")]
 

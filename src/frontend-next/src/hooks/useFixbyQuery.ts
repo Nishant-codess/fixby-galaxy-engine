@@ -133,6 +133,9 @@ export function useFixbyQuery() {
         const rawContexts = (d.response?.contexts || []) as GoalData[];
         const extractedGoals: GoalData[] = [];
         const seenActionTitles = new Set<string>();
+        // A sensor reading already explains the ranking. The local catalog
+        // diagnosis is based on the wording alone and would contradict it.
+        const sensorLed = Boolean(d.meta?.telemetry_reason);
 
         // Flatten all actions across contexts so all actionable fixes appear as individual cards
         for (const ctx of rawContexts) {
@@ -146,16 +149,16 @@ export function useFixbyQuery() {
                   ...ctx,
                   title: actName,
                   actions: [act],
-                  diagnosis: matchedPlan?.diagnosis || ctx.diagnosis,
-                  likelyCauses: matchedPlan?.likelyCauses || ctx.likelyCauses,
+                  diagnosis: sensorLed ? ctx.diagnosis : (matchedPlan?.diagnosis || ctx.diagnosis),
+                  likelyCauses: sensorLed ? ctx.likelyCauses : (matchedPlan?.likelyCauses || ctx.likelyCauses),
                 });
               }
             }
           } else {
             extractedGoals.push({
               ...ctx,
-              diagnosis: matchedPlan?.diagnosis || ctx.diagnosis,
-              likelyCauses: matchedPlan?.likelyCauses || ctx.likelyCauses,
+              diagnosis: sensorLed ? ctx.diagnosis : (matchedPlan?.diagnosis || ctx.diagnosis),
+              likelyCauses: sensorLed ? ctx.likelyCauses : (matchedPlan?.likelyCauses || ctx.likelyCauses),
             });
           }
         }

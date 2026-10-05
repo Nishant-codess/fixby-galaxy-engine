@@ -94,7 +94,12 @@ export function DeviceCareScreen({ targetPath, onNavigate }: Props) {
             divider 
             highlight={isHighlighted(targetPath, 'memory')} 
           />
-          <SettingsRow title="App protection" rightLabel="No threats" showChevron onPress={() => {}} highlight={isHighlighted(targetPath, 'app protection')} />
+          <SettingsRow title="App protection" rightLabel="No threats" showChevron onPress={() => {}} divider highlight={isHighlighted(targetPath, 'app protection')} />
+          <SettingsRow
+            title="Device temperature"
+            rightLabel={`${settings.deviceTemperatureC}°C${settings.deviceTemperatureC >= 43 ? ' · High' : ''}`}
+            highlight={isHighlighted(targetPath, 'temperature', 'thermal')}
+          />
         </div>
 
         {/* Group 2 */}

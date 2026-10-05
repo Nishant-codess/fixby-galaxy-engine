@@ -234,21 +234,27 @@ def _stub_generate_paraphrases(query: str) -> List[str]:
 
 
 def _active_telemetry(siis_response: Optional[str]) -> Optional[str]:
-    """Keep telemetry only when a sensor has moved off the demo defaults."""
+    """
+    Keep telemetry only when a sensor reads out of range. Healthy readings
+    carry no diagnostic signal, so dropping them lets the cache serve the query.
+    """
     if not siis_response or siis_response.strip() in ("", "{}"):
         return None
     try:
-        import json as _json
-        data = _json.loads(siis_response)
-    except Exception:
-        return None
-    battery = data.get("batteryLevel", 85)
-    storage = data.get("storageUsed", 60)
-    temp = data.get("temperature", 32)
-    signal = str(data.get("signalStrength", "Excellent")).strip().lower()
-    if battery == 85 and storage == 60 and temp == 32 and signal in ("excellent", "good"):
+        from src.ai.dynamic_resolver import _read_telemetry, _unhealthy_readings
+    except ImportError:
+        return siis_response
+    if not _unhealthy_readings(_read_telemetry(siis_response)):
         return None
     return siis_response
+
+
+def _telemetry_reason(siis_response: Optional[str]) -> str:
+    try:
+        from src.ai.dynamic_resolver import telemetry_reason
+    except ImportError:
+        return ""
+    return telemetry_reason(siis_response)
 
 
 def _escalation_label(siis_response: Optional[str]) -> Optional[str]:
@@ -1230,7 +1236,8 @@ def run_troubleshoot_pipeline(query: str, siis_response: Optional[str] = None) -
         hallucination_check_passed=True,
         screen_resolution="leaf_screen",
         pipeline_source="live",
-        hardware_escalation=hardware_escalation
+        hardware_escalation=hardware_escalation,
+        telemetry_reason=_telemetry_reason(siis_response) or None
     )
 
     resp = TroubleshootResponse(
@@ -1247,9 +1254,16 @@ def run_troubleshoot_pipeline(query: str, siis_response: Optional[str] = None) -
         cache_vars = [f"{v}__siis__{siis_response}" for v in variations]
     
     cache_query = query if not siis_response else f"{query}__siis__{siis_response}"
-    cache.put(cache_query, resp, slots=slots, variations=cache_vars)
-    if _use_dynamic and _dynamic.intent_summary and not siis_response:
-        cache.put(_dynamic.intent_summary.strip().lower(), resp, slots=None)
+    # Telemetry-shaped answers stay out of the slot and vector tiers, which are
+    # keyed by wording alone and would serve them to a query with healthy sensors.
+    cache.put(
+        cache_query,
+        resp,
+        slots=None if siis_response else slots,
+        variations=cache_vars,
+    )
+    if _use_dynamic and _dynamic.intent_cache_key:
+        cache.put(_dynamic.intent_cache_key, resp, slots=None)
     return resp
 
 
